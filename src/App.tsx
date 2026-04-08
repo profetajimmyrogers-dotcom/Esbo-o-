@@ -49,7 +49,7 @@ function handleFirestoreError(error: unknown, operationType: OperationType, path
 }
 
 export default function App() {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [sermoes, setSermoes] = useState<Sermon[]>([]);
   const [busca, setBusca] = useState('');
@@ -77,21 +77,20 @@ export default function App() {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (u) => {
-      setUser(u);
+      if (u) {
+        setUser(u);
+      } else {
+        setUser({ uid: 'public-user', displayName: 'Visitante' });
+      }
       setLoading(false);
     });
     return () => unsubscribe();
   }, []);
 
   useEffect(() => {
-    if (!user) {
-      setSermoes([]);
-      return;
-    }
-
+    // Agora buscamos todos os sermões (público)
     const q = query(
       collection(db, 'sermoes'), 
-      where('userId', '==', user.uid),
       orderBy('createdAt', 'desc')
     );
 
@@ -227,35 +226,6 @@ export default function App() {
     );
   }
 
-  if (!user) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen p-4">
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center space-y-8"
-        >
-          <div className="space-y-2">
-            <h1 className="text-4xl md:text-6xl font-orbitron font-black bg-gradient-to-br from-neon-cyan to-neon-pink bg-clip-text text-transparent animate-logo-flicker">
-              SYSTEMA SERMÕES
-            </h1>
-            <p className="font-rajdhani tracking-[0.3em] text-text-dim text-sm">
-              // GERENCIADOR DE PREGAÇÕES v3.0 //
-            </p>
-          </div>
-          
-          <button 
-            onClick={loginWithGoogle}
-            className="flex items-center gap-3 bg-transparent border border-neon-cyan px-8 py-4 font-orbitron font-bold text-neon-cyan hover:bg-neon-cyan/10 transition-all hover:shadow-[0_0_20px_rgba(0,245,255,0.3)] group"
-          >
-            <LogIn className="w-5 h-5 group-hover:rotate-12 transition-transform" />
-            ACESSAR SISTEMA
-          </button>
-        </motion.div>
-      </div>
-    );
-  }
-
   const filteredSermoes = sermoes.filter(s => s.tema.toLowerCase().includes(busca.toLowerCase()));
 
   return (
@@ -276,13 +246,23 @@ export default function App() {
             <UserIcon className="w-4 h-4" />
             <span className="text-sm">{user.displayName}</span>
           </div>
-          <button 
-            onClick={logout}
-            className="p-2 border border-neon-pink/30 text-neon-pink/60 hover:text-neon-pink hover:border-neon-pink transition-all"
-            title="Sair"
-          >
-            <LogOut className="w-5 h-5" />
-          </button>
+          {user.uid !== 'public-user' ? (
+            <button 
+              onClick={logout}
+              className="p-2 border border-neon-pink/30 text-neon-pink/60 hover:text-neon-pink hover:border-neon-pink transition-all"
+              title="Sair"
+            >
+              <LogOut className="w-5 h-5" />
+            </button>
+          ) : (
+            <button 
+              onClick={loginWithGoogle}
+              className="p-2 border border-neon-cyan/30 text-neon-cyan/60 hover:text-neon-cyan hover:border-neon-cyan transition-all"
+              title="Entrar"
+            >
+              <LogIn className="w-5 h-5" />
+            </button>
+          )}
         </div>
         <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-neon-cyan to-transparent animate-border-flow" />
       </header>
