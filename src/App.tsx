@@ -87,25 +87,25 @@ const PulpitoTopic = ({
   return (
     <div 
       className={cn(
-        "flex gap-8 items-start p-8 border border-neon-cyan/10 transition-all duration-300 rounded-xl",
-        isChecked ? "bg-black/40 opacity-40 grayscale" : "bg-neon-cyan/[0.05] border-l-8 border-l-neon-cyan shadow-[0_0_20px_rgba(0,245,255,0.05)]"
+        "flex gap-4 items-start p-5 border border-neon-cyan/10 transition-all duration-300 rounded-xl",
+        isChecked ? "bg-black/40 opacity-40 grayscale" : "bg-neon-cyan/[0.05] border-l-4 border-l-neon-cyan shadow-[0_0_15px_rgba(0,245,255,0.05)]"
       )}
     >
-      <div className="relative flex items-center justify-center mt-1">
+      <div className="relative flex items-center justify-center mt-1 shrink-0">
         <input 
           type="checkbox" 
           checked={isChecked}
           onChange={() => setIsChecked(!isChecked)}
-          className="w-10 h-10 accent-neon-pink cursor-pointer opacity-0 absolute inset-0 z-10" 
+          className="w-8 h-8 accent-neon-pink cursor-pointer opacity-0 absolute inset-0 z-10" 
         />
         <div className={cn(
-          "w-10 h-10 border-2 flex items-center justify-center transition-all rounded-md",
+          "w-8 h-8 border-2 flex items-center justify-center transition-all rounded-md",
           isChecked ? "bg-neon-pink border-neon-pink" : "border-neon-cyan/40 bg-dark-bg"
         )}>
-          {isChecked && <Play className="w-6 h-6 text-white fill-current" />}
+          {isChecked && <Play className="w-4 h-4 text-white fill-current" />}
         </div>
       </div>
-      <div className="text-2xl md:text-3xl lg:text-4xl leading-relaxed text-text-mid whitespace-pre-wrap flex-1 font-medium">
+      <div className="text-xl md:text-2xl lg:text-3xl leading-relaxed text-text-mid whitespace-pre-wrap flex-1 font-medium">
         <HighlightableText 
           text={p} 
           sermonId={sermonId} 
@@ -769,13 +769,13 @@ export default function App() {
               )}
 
               {/* Footer Actions */}
-              <div className="pt-12 flex justify-center">
+              <div className="pt-20 pb-12 flex justify-center">
                 <button 
                   onClick={() => setMode('grid')}
-                  className="group flex items-center gap-4 px-12 py-6 border-2 border-neon-pink text-neon-pink font-orbitron text-xl font-bold hover:bg-neon-pink hover:text-white transition-all shadow-[0_0_20px_rgba(255,0,170,0.2)]"
+                  className="group flex items-center gap-2 px-6 py-2 border border-neon-pink/40 text-neon-pink/60 font-orbitron text-[10px] tracking-[0.3em] uppercase hover:border-neon-pink hover:text-neon-pink hover:bg-neon-pink/5 transition-all duration-500 rounded-sm"
                 >
-                  <LogOut className="w-6 h-6 group-hover:-translate-x-1 transition-transform" />
-                  ENCERRAR PÚLPITO
+                  <LogOut className="w-3 h-3 opacity-50 group-hover:opacity-100 transition-opacity" />
+                  ENCERRAR SESSÃO
                 </button>
               </div>
             </div>
