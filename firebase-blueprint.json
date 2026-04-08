@@ -1,0 +1,46 @@
+{
+  "entities": {
+    "Sermon": {
+      "title": "Sermon",
+      "description": "A sermon outline saved by a user.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "The UID of the owner." },
+        "tema": { "type": "string", "description": "Main theme." },
+        "texto": { "type": "string", "description": "Biblical text." },
+        "agr": { "type": "string", "description": "Initial thanks." },
+        "img": { "type": "string", "description": "Base64 image string." },
+        "intro": { "type": "string", "description": "Introduction text." },
+        "pontos": { "type": "array", "items": { "type": "string" }, "description": "Topics/Points." },
+        "setores": { "type": "array", "items": { "type": "string" }, "description": "Sectors where preached (e.g. 55, 66)." },
+        "apl": { "type": "string", "description": "Application and conclusion." },
+        "highlights": { "type": "object", "description": "Saved highlights for words." },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "tema"]
+    },
+    "User": {
+      "title": "User",
+      "description": "User profile data.",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "user"] }
+      },
+      "required": ["email"]
+    }
+  },
+  "firestore": {
+    "/sermoes/{sermonId}": {
+      "schema": "Sermon",
+      "description": "Collection of sermons."
+    },
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profiles."
+    }
+  }
+}

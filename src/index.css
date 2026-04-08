@@ -1,0 +1,94 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-orbitron: "Orbitron", sans-serif;
+  --font-mono: "Share Tech Mono", monospace;
+  --font-rajdhani: "Rajdhani", sans-serif;
+
+  --color-neon-cyan: #00f5ff;
+  --color-neon-pink: #ff00aa;
+  --color-neon-yellow: #ffee00;
+  --color-neon-green: #00ff88;
+  --color-dark-bg: #020810;
+  --color-mid-bg: #040d1a;
+  --color-card-bg: #050f20;
+  --color-text-dim: #4a7a9b;
+  --color-text-mid: #7ab8d8;
+}
+
+@layer base {
+  body {
+    @apply bg-dark-bg text-neon-cyan font-mono min-h-screen relative;
+  }
+
+  body::before {
+    content: '';
+    @apply fixed inset-0 pointer-events-none z-0;
+    background-image: linear-gradient(rgba(0, 245, 255, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 245, 255, 0.04) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+
+  /* Scanlines */
+  body::after {
+    content: '';
+    @apply fixed inset-0 pointer-events-none z-50;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 0, 0, 0.12) 2px,
+      rgba(0, 0, 0, 0.12) 4px
+    );
+    animation: scanline 10s linear infinite;
+  }
+}
+
+@keyframes scanline {
+  0% { background-position: 0 0; }
+  100% { background-position: 0 100%; }
+}
+
+@keyframes borderFlow {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+@keyframes logoFlicker {
+  0%, 94%, 100% { opacity: 1; }
+  95% { opacity: 0.6; }
+  97% { opacity: 0.3; }
+  99% { opacity: 1; }
+}
+
+.animate-border-flow {
+  animation: borderFlow 3s linear infinite;
+}
+
+.animate-logo-flicker {
+  animation: logoFlicker 5s infinite;
+}
+
+.riscado {
+  @apply opacity-30 grayscale transition-all duration-300;
+}
+
+.palavra-clicavel {
+  @apply cursor-pointer transition-all duration-200 rounded-sm hover:opacity-80;
+}
+
+.highlight-yellow {
+  @apply bg-neon-yellow text-dark-bg px-1 font-bold;
+  box-shadow: 0 0 8px rgba(255, 238, 0, 0.6);
+}
+
+.highlight-cyan {
+  @apply bg-neon-cyan text-dark-bg px-1 font-bold;
+  box-shadow: 0 0 8px rgba(0, 245, 255, 0.6);
+}
+
+.highlight-pink {
+  @apply bg-neon-pink text-dark-bg px-1 font-bold;
+  box-shadow: 0 0 8px rgba(255, 0, 170, 0.6);
+}
