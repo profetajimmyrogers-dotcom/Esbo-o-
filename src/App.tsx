@@ -18,16 +18,12 @@ import {
 } from 'firebase/firestore';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { auth, db, loginWithGoogle, logout } from './firebase';
-import { Sermon } from './types';
+import { Sermon, OperationType, FirestoreErrorInfo } from './types';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Search, 
-  Plus, 
   X, 
-  Image as ImageIcon, 
   Trash2, 
-  Edit3, 
-  ChevronLeft, 
   Play, 
   LogOut, 
   LogIn,
@@ -35,23 +31,9 @@ import {
   User as UserIcon
 } from 'lucide-react';
 import { cn } from './lib/utils';
-
-// --- Error Handling ---
-enum OperationType {
-  CREATE = 'create',
-  UPDATE = 'update',
-  DELETE = 'delete',
-  LIST = 'list',
-  GET = 'get',
-  WRITE = 'write',
-}
-
-interface FirestoreErrorInfo {
-  error: string;
-  operationType: OperationType;
-  path: string | null;
-  authInfo: any;
-}
+import { HighlightableText } from './components/HighlightableText';
+import { PulpitoTopic } from './components/PulpitoTopic';
+import { PulpitoSectors } from './components/PulpitoSectors';
 
 function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
   const errInfo: FirestoreErrorInfo = {
@@ -64,155 +46,7 @@ function handleFirestoreError(error: unknown, operationType: OperationType, path
     path
   };
   console.error('Firestore Error: ', JSON.stringify(errInfo));
-  // In a real app, you'd show a toast or alert
 }
-
-// --- Components ---
-
-const PulpitoTopic = ({ 
-  p, 
-  i, 
-  sermonId, 
-  highlights, 
-  onHighlight 
-}: { 
-  p: string; 
-  i: number; 
-  sermonId: string; 
-  highlights?: Record<string, string>;
-  onHighlight: (key: string, color: string) => void;
-}) => {
-  const [isChecked, setIsChecked] = useState(false);
-  
-  return (
-    <div 
-      className={cn(
-        "flex gap-4 items-start p-5 border border-neon-cyan/10 transition-all duration-300 rounded-xl",
-        isChecked ? "bg-black/40 opacity-40 grayscale" : "bg-neon-cyan/[0.05] border-l-4 border-l-neon-cyan shadow-[0_0_15px_rgba(0,245,255,0.05)]"
-      )}
-    >
-      <div className="relative flex items-center justify-center mt-1 shrink-0">
-        <input 
-          type="checkbox" 
-          checked={isChecked}
-          onChange={() => setIsChecked(!isChecked)}
-          className="w-8 h-8 accent-neon-pink cursor-pointer opacity-0 absolute inset-0 z-10" 
-        />
-        <div className={cn(
-          "w-8 h-8 border-2 flex items-center justify-center transition-all rounded-md",
-          isChecked ? "bg-neon-pink border-neon-pink" : "border-neon-cyan/40 bg-dark-bg"
-        )}>
-          {isChecked && <Play className="w-4 h-4 text-white fill-current" />}
-        </div>
-      </div>
-      <div className="text-xl md:text-2xl lg:text-3xl leading-relaxed text-text-mid whitespace-pre-wrap flex-1 font-medium">
-        <HighlightableText 
-          text={p} 
-          sermonId={sermonId} 
-          sectionKey={`ponto_${i}`} 
-          highlights={highlights}
-          onHighlight={onHighlight}
-        />
-      </div>
-    </div>
-  );
-};
-
-const HighlightableText = ({ 
-  text, 
-  sermonId, 
-  sectionKey, 
-  highlights, 
-  onHighlight 
-}: { 
-  text: string; 
-  sermonId: string; 
-  sectionKey: string; 
-  highlights?: Record<string, string>;
-  onHighlight: (key: string, color: string) => void;
-}) => {
-  if (!text) return null;
-
-  const coresMarcador = ['', 'highlight-yellow', 'highlight-cyan', 'highlight-pink'];
-
-  const handleClick = (wordIndex: number, currentColor: string) => {
-    const nextIndex = (coresMarcador.indexOf(currentColor) + 1) % coresMarcador.length;
-    onHighlight(`${sectionKey}_${wordIndex}`, coresMarcador[nextIndex]);
-  };
-
-  return (
-    <>
-      {text.split(/\s+/).map((word, i) => {
-        const key = `${sectionKey}_${i}`;
-        const colorClass = highlights?.[key] || '';
-        return (
-          <span 
-            key={i} 
-            className={cn("palavra-clicavel inline-block mr-1", colorClass)}
-            onClick={(e) => {
-              e.stopPropagation();
-              handleClick(i, colorClass);
-            }}
-          >
-            {word}
-          </span>
-        );
-      })}
-    </>
-  );
-};
-
-const PulpitoSectors = ({ setores, onAdd }: { setores: string[], onAdd: (s: string) => void }) => {
-  const [isAdding, setIsAdding] = useState(false);
-  const [newSetor, setNewSetor] = useState('');
-
-  return (
-    <div className="flex flex-wrap items-center gap-4 py-3 border-t border-neon-cyan/10 mt-6 opacity-60 hover:opacity-100 transition-opacity">
-      <div className="flex items-center gap-2">
-        <div className="w-1.5 h-1.5 rounded-full bg-neon-yellow animate-pulse shadow-[0_0_5px_rgba(255,238,0,0.8)]" />
-        <span className="text-[10px] font-orbitron text-neon-cyan/40 tracking-[0.2em] uppercase">Registros de Setor:</span>
-      </div>
-      
-      <div className="flex flex-wrap gap-2">
-        {setores.map((s, i) => (
-          <div key={i} className="px-2 py-0.5 border border-neon-yellow/30 bg-neon-yellow/5 text-neon-yellow font-mono text-xs rounded-sm">
-            {s}
-          </div>
-        ))}
-        
-        {isAdding ? (
-          <div className="flex items-center gap-1">
-            <input 
-              autoFocus
-              value={newSetor}
-              onChange={(e) => setNewSetor(e.target.value.slice(0, 3))}
-              onBlur={() => {
-                if (!newSetor.trim()) setIsAdding(false);
-              }}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && newSetor.trim()) {
-                  onAdd(newSetor.trim());
-                  setNewSetor('');
-                  setIsAdding(false);
-                }
-                if (e.key === 'Escape') setIsAdding(false);
-              }}
-              className="w-14 bg-neon-yellow/10 border border-neon-yellow text-neon-yellow text-center text-xs outline-none py-0.5 font-mono"
-              placeholder="00"
-            />
-          </div>
-        ) : (
-          <button 
-            onClick={() => setIsAdding(true)}
-            className="px-3 py-0.5 border border-dashed border-neon-cyan/20 text-neon-cyan/30 hover:border-neon-cyan hover:text-neon-cyan text-[10px] font-orbitron transition-all"
-          >
-            + REGISTRAR
-          </button>
-        )}
-      </div>
-    </div>
-  );
-};
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
