@@ -49,8 +49,11 @@ function handleFirestoreError(error: unknown, operationType: OperationType, path
 }
 
 export default function App() {
-  const [user, setUser] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const [authorized, setAuthorized] = useState(() => localStorage.getItem('system_auth') === 'true');
+  const [passInput, setPassInput] = useState('');
+  const [passError, setPassError] = useState(false);
+  const [user, setUser] = useState<any>(authorized ? { uid: 'admin', displayName: 'Pastor' } : null);
+  const [loading, setLoading] = useState(false);
   const [sermoes, setSermoes] = useState<Sermon[]>([]);
   const [busca, setBusca] = useState('');
   const [showForm, setShowForm] = useState(false);
@@ -74,18 +77,6 @@ export default function App() {
   // Timer State
   const [tempo, setTempo] = useState(0);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (u) => {
-      if (u) {
-        setUser(u);
-      } else {
-        setUser({ uid: 'public-user', displayName: 'Visitante' });
-      }
-      setLoading(false);
-    });
-    return () => unsubscribe();
-  }, []);
 
   useEffect(() => {
     // Agora buscamos todos os sermões (público)
@@ -218,10 +209,95 @@ export default function App() {
     }
   };
 
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (passInput === '3434') {
+      setAuthorized(true);
+      setUser({ uid: 'admin', displayName: 'Pastor' });
+      localStorage.setItem('system_auth', 'true');
+      setPassError(false);
+    } else {
+      setPassError(true);
+      setTimeout(() => setPassError(false), 2000);
+    }
+  };
+
+  const handleLogout = () => {
+    setAuthorized(false);
+    setUser(null);
+    localStorage.removeItem('system_auth');
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-neon-cyan font-orbitron animate-pulse">LOADING SYSTEM...</div>
+      </div>
+    );
+  }
+
+  if (!authorized) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-dark-bg overflow-hidden">
+        {/* Background Effects */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-neon-cyan/5 rounded-full blur-[120px] animate-pulse" />
+          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-neon-pink/5 rounded-full blur-[120px] animate-pulse delay-1000" />
+        </div>
+
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="relative z-10 w-full max-w-md"
+        >
+          <div className="text-center space-y-8 p-8 border border-neon-cyan/20 bg-black/40 backdrop-blur-xl rounded-2xl shadow-[0_0_50px_rgba(0,245,255,0.05)]">
+            <div className="space-y-2">
+              <h1 className="text-3xl md:text-5xl font-orbitron font-black bg-gradient-to-br from-neon-cyan to-neon-pink bg-clip-text text-transparent animate-logo-flicker">
+                SYSTEMA
+              </h1>
+              <p className="font-rajdhani tracking-[0.3em] text-text-dim text-xs">
+                // ACESSO RESTRITO //
+              </p>
+            </div>
+            
+            <form onSubmit={handleLogin} className="space-y-6">
+              <div className="relative group">
+                <input 
+                  type="password"
+                  value={passInput}
+                  onChange={(e) => setPassInput(e.target.value)}
+                  placeholder="DIGITE A SENHA"
+                  className={cn(
+                    "w-full bg-neon-cyan/5 border p-4 text-center font-orbitron tracking-[0.5em] outline-none transition-all",
+                    passError ? "border-neon-pink shadow-[0_0_20px_rgba(255,0,128,0.3)] text-neon-pink" : "border-neon-cyan/20 text-neon-cyan focus:border-neon-cyan focus:shadow-[0_0_20px_rgba(0,245,255,0.2)]"
+                  )}
+                />
+                {passError && (
+                  <motion.p 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="absolute -bottom-6 left-0 right-0 text-[10px] text-neon-pink font-orbitron tracking-widest"
+                  >
+                    ACESSO NEGADO
+                  </motion.p>
+                )}
+              </div>
+
+              <button 
+                type="submit"
+                className="w-full bg-neon-cyan/10 border border-neon-cyan py-4 font-orbitron font-bold text-neon-cyan hover:bg-neon-cyan hover:text-black transition-all hover:shadow-[0_0_30px_rgba(0,245,255,0.4)] active:scale-95"
+              >
+                AUTENTICAR
+              </button>
+            </form>
+
+            <div className="pt-4 border-t border-neon-cyan/10">
+              <p className="text-[9px] font-mono text-text-dim/40 uppercase tracking-widest">
+                Terminal ID: {Math.random().toString(36).substring(7).toUpperCase()}
+              </p>
+            </div>
+          </div>
+        </motion.div>
       </div>
     );
   }
@@ -244,25 +320,15 @@ export default function App() {
         <div className="flex items-center gap-4 mt-4 md:mt-0">
           <div className="flex items-center gap-2 text-text-mid font-rajdhani">
             <UserIcon className="w-4 h-4" />
-            <span className="text-sm">{user.displayName}</span>
+            <span className="text-sm">{user?.displayName}</span>
           </div>
-          {user.uid !== 'public-user' ? (
-            <button 
-              onClick={logout}
-              className="p-2 border border-neon-pink/30 text-neon-pink/60 hover:text-neon-pink hover:border-neon-pink transition-all"
-              title="Sair"
-            >
-              <LogOut className="w-5 h-5" />
-            </button>
-          ) : (
-            <button 
-              onClick={loginWithGoogle}
-              className="p-2 border border-neon-cyan/30 text-neon-cyan/60 hover:text-neon-cyan hover:border-neon-cyan transition-all"
-              title="Entrar"
-            >
-              <LogIn className="w-5 h-5" />
-            </button>
-          )}
+          <button 
+            onClick={handleLogout}
+            className="p-2 border border-neon-pink/30 text-neon-pink/60 hover:text-neon-pink hover:border-neon-pink transition-all"
+            title="Sair"
+          >
+            <LogOut className="w-5 h-5" />
+          </button>
         </div>
         <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-neon-cyan to-transparent animate-border-flow" />
       </header>
