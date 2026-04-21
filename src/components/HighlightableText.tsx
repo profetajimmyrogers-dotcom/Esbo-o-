@@ -19,26 +19,38 @@ export const HighlightableText = ({
 
   const coresMarcador = ['', 'highlight-yellow', 'highlight-cyan', 'highlight-pink'];
 
-  const handleClick = (wordIndex: number, currentColor: string) => {
-    const nextIndex = (coresMarcador.indexOf(currentColor) + 1) % coresMarcador.length;
-    onHighlight(`${sectionKey}_${wordIndex}`, coresMarcador[nextIndex]);
-  };
+  // Dividimos o texto mantendo os espaços e quebras de linha como elementos (tokens)
+  const tokens = text.split(/(\s+)/);
+  
+  let nonWhitespaceCounter = 0;
 
   return (
     <>
-      {text.split(/\s+/).map((word, i) => {
-        const key = `${sectionKey}_${i}`;
+      {tokens.map((token, i) => {
+        const isWhitespace = /^\s+$/.test(token);
+        
+        if (isWhitespace) {
+          // Renderiza espaços e quebras de linha exatamente como são
+          return <span key={i}>{token}</span>;
+        }
+
+        // É uma palavra real
+        const currentWordIndex = nonWhitespaceCounter++;
+        const key = `${sectionKey}_${currentWordIndex}`;
         const colorClass = highlights?.[key] || '';
+        
         return (
           <span 
             key={i} 
-            className={cn("palavra-clicavel inline-block mr-1", colorClass)}
+            translate="no"
+            className={cn("palavra-clicavel inline", colorClass)}
             onClick={(e) => {
               e.stopPropagation();
-              handleClick(i, colorClass);
+              const nextIndex = (coresMarcador.indexOf(colorClass) + 1) % coresMarcador.length;
+              onHighlight(key, coresMarcador[nextIndex]);
             }}
           >
-            {word}
+            {token}
           </span>
         );
       })}

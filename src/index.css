@@ -79,16 +79,16 @@
 }
 
 .highlight-yellow {
-  @apply bg-neon-yellow text-dark-bg px-1 font-bold;
-  box-shadow: 0 0 8px rgba(255, 238, 0, 0.6);
+  @apply bg-neon-yellow text-dark-bg px-0.5 rounded-xs font-bold ring-1 ring-neon-yellow/30;
+  box-shadow: 0 0 5px rgba(255, 238, 0, 0.4);
 }
 
 .highlight-cyan {
-  @apply bg-neon-cyan text-dark-bg px-1 font-bold;
-  box-shadow: 0 0 8px rgba(0, 245, 255, 0.6);
+  @apply bg-neon-cyan text-dark-bg px-0.5 rounded-xs font-bold ring-1 ring-neon-cyan/30;
+  box-shadow: 0 0 5px rgba(0, 245, 255, 0.4);
 }
 
 .highlight-pink {
-  @apply bg-neon-pink text-dark-bg px-1 font-bold;
-  box-shadow: 0 0 8px rgba(255, 0, 170, 0.6);
+  @apply bg-neon-pink text-dark-bg px-0.5 rounded-xs font-bold ring-1 ring-neon-pink/30;
+  box-shadow: 0 0 5px rgba(255, 0, 170, 0.4);
 }

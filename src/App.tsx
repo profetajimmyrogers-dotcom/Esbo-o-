@@ -139,16 +139,20 @@ export default function App() {
   const handleSave = async () => {
     if (!user || !tema) return;
 
+    const cleanedPontos = pontos
+      .map(p => p.trim())
+      .filter(p => p !== '');
+
     const data: any = {
       userId: user.uid,
-      tema,
-      texto,
-      agr,
+      tema: tema.trim(),
+      texto: texto.trim(),
+      agr: agr.trim(),
       img,
-      intro,
-      pontos,
+      intro: intro.trim(),
+      pontos: cleanedPontos,
       setores,
-      apl,
+      apl: apl.trim(),
       updatedAt: serverTimestamp(),
     };
 
@@ -305,7 +309,7 @@ export default function App() {
   const filteredSermoes = sermoes.filter(s => s.tema.toLowerCase().includes(busca.toLowerCase()));
 
   return (
-    <div className="relative z-10 pb-20">
+    <div className="relative z-10 pb-20" translate="no">
       {/* Header */}
       <header className="header flex flex-col md:flex-row justify-between items-center p-4 md:p-8 border-b border-neon-cyan/20 bg-gradient-to-b from-neon-cyan/5 to-transparent mb-8 relative">
         <div className="text-center md:text-left">
@@ -374,12 +378,14 @@ export default function App() {
                       onChange={(e) => setTema(e.target.value)}
                       className="w-full bg-neon-cyan/5 border border-neon-cyan/20 text-neon-cyan p-3 outline-none focus:border-neon-cyan"
                       placeholder="TEMA PRINCIPAL"
+                      translate="no"
                     />
                     <input 
                       value={texto}
                       onChange={(e) => setTexto(e.target.value)}
                       className="w-full bg-neon-cyan/5 border border-neon-cyan/20 text-neon-cyan p-3 outline-none focus:border-neon-cyan"
                       placeholder="TEXTO BÍBLICO BASE"
+                      translate="no"
                     />
                   </div>
 
@@ -388,6 +394,7 @@ export default function App() {
                     onChange={(e) => setAgr(e.target.value)}
                     className="w-full bg-neon-cyan/5 border border-neon-cyan/20 text-neon-cyan p-3 outline-none focus:border-neon-cyan"
                     placeholder="AGRADECIMENTOS INICIAIS"
+                    translate="no"
                   />
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -407,6 +414,7 @@ export default function App() {
                       onChange={(e) => setIntro(e.target.value)}
                       className="w-full bg-neon-cyan/5 border border-neon-cyan/20 text-neon-cyan p-3 outline-none focus:border-neon-cyan h-full min-h-[160px]"
                       placeholder="INTRODUÇÃO"
+                      translate="no"
                     />
                   </div>
 
@@ -422,6 +430,7 @@ export default function App() {
                           }}
                           className="flex-1 bg-neon-cyan/5 border border-neon-cyan/20 text-neon-cyan p-3 outline-none focus:border-neon-cyan"
                           placeholder={`TÓPICO ${i + 1}`}
+                          translate="no"
                         />
                         <button 
                           onClick={() => setPontos(pontos.filter((_, idx) => idx !== i))}
@@ -444,6 +453,7 @@ export default function App() {
                     onChange={(e) => setApl(e.target.value)}
                     className="w-full bg-neon-cyan/5 border border-neon-cyan/20 text-neon-cyan p-3 outline-none focus:border-neon-cyan min-h-[100px]"
                     placeholder="APLICAÇÃO E CONCLUSÃO"
+                    translate="no"
                   />
 
                   <div className="space-y-2">
@@ -527,10 +537,10 @@ export default function App() {
                     </div>
                   )}
                   
-                  <h3 className="font-rajdhani font-bold text-xl text-[#c8e8f5] group-hover:text-neon-cyan transition-colors">
+                  <h3 className="font-rajdhani font-bold text-xl text-[#c8e8f5] group-hover:text-neon-cyan transition-colors" translate="no">
                     {s.tema}
                   </h3>
-                  <p className="text-xs text-text-dim mt-2 font-mono truncate">
+                  <p className="text-xs text-text-dim mt-2 font-mono truncate" translate="no">
                     {s.texto || '// SEM TEXTO BASE'}
                   </p>
                 </motion.div>
@@ -539,7 +549,7 @@ export default function App() {
           </>
         ) : (
           /* Pulpito Mode */
-          <div className="fixed inset-0 z-[2000] bg-dark-bg overflow-y-auto p-6 md:p-12 font-rajdhani">
+          <div className="fixed inset-0 z-[2000] bg-dark-bg overflow-y-auto p-6 md:p-12 font-rajdhani" translate="no">
             {/* Floating Timer */}
             <div className="fixed top-4 right-4 bg-black/90 border border-neon-green text-neon-green px-4 py-2 font-orbitron text-xl md:text-2xl font-bold shadow-[0_0_15px_rgba(0,255,136,0.2)] z-[2001] rounded-md">
               {formatTime(tempo)}
@@ -599,7 +609,7 @@ export default function App() {
                   <h4 className="font-orbitron text-neon-cyan/60 text-sm tracking-[0.4em] uppercase font-bold">
                     // INTRODUÇÃO
                   </h4>
-                  <div className="text-2xl md:text-3xl lg:text-4xl leading-relaxed text-text-mid whitespace-pre-wrap font-medium">
+                  <div className="text-xl md:text-2xl lg:text-3xl leading-relaxed text-text-mid whitespace-pre-wrap font-medium">
                     <HighlightableText 
                       text={selectedSermon.intro} 
                       sermonId={selectedSermon.id!} 
@@ -636,7 +646,7 @@ export default function App() {
                   <h4 className="font-orbitron text-neon-pink/60 text-sm tracking-[0.4em] uppercase font-bold">
                     // APLICAÇÃO & CONCLUSÃO
                   </h4>
-                  <div className="text-2xl md:text-3xl lg:text-4xl leading-relaxed text-text-mid whitespace-pre-wrap font-medium">
+                  <div className="text-xl md:text-2xl lg:text-3xl leading-relaxed text-text-mid whitespace-pre-wrap font-medium">
                     <HighlightableText 
                       text={selectedSermon.apl} 
                       sermonId={selectedSermon.id!} 
@@ -681,11 +691,19 @@ export default function App() {
               </button>
 
               <div className="space-y-6">
-                <h2 className="text-4xl font-orbitron font-black text-neon-cyan">{selectedSermon.tema}</h2>
-                <p className="text-xl text-neon-yellow font-rajdhani flex items-center gap-2">
-                  <BookOpen className="w-5 h-5" />
-                  {selectedSermon.texto}
-                </p>
+                <h2 className="text-3xl md:text-4xl font-orbitron font-black text-neon-cyan" translate="no">
+                  {selectedSermon.tema}
+                </h2>
+                <div className="text-lg md:text-xl text-neon-yellow font-rajdhani flex items-center gap-2">
+                  <BookOpen className="w-5 h-5 flex-shrink-0" />
+                  <HighlightableText 
+                    text={selectedSermon.texto || ''} 
+                    sermonId={selectedSermon.id!} 
+                    sectionKey="texto" 
+                    highlights={selectedSermon.highlights}
+                    onHighlight={(key, color) => handleHighlight(selectedSermon.id!, key, color)}
+                  />
+                </div>
                 
                 {selectedSermon.agr && (
                   <p className="text-text-mid">
@@ -694,25 +712,49 @@ export default function App() {
                 )}
 
                 <div className="space-y-4">
-                  <h4 className="font-rajdhani text-neon-yellow text-xl border-b border-neon-cyan/20 pb-2">// INTRODUÇÃO</h4>
-                  <p className="whitespace-pre-wrap text-text-mid leading-relaxed">{selectedSermon.intro}</p>
+                  <h4 className="font-rajdhani text-neon-yellow text-lg border-b border-neon-cyan/20 pb-2 uppercase tracking-widest">// INTRODUÇÃO</h4>
+                  <div className="whitespace-pre-wrap text-text-mid leading-relaxed text-lg">
+                    <HighlightableText 
+                      text={selectedSermon.intro} 
+                      sermonId={selectedSermon.id!} 
+                      sectionKey="intro" 
+                      highlights={selectedSermon.highlights}
+                      onHighlight={(key, color) => handleHighlight(selectedSermon.id!, key, color)}
+                    />
+                  </div>
                 </div>
 
                 <div className="space-y-4">
-                  <h4 className="font-rajdhani text-neon-yellow text-xl border-b border-neon-cyan/20 pb-2">// DESENVOLVIMENTO</h4>
+                  <h4 className="font-rajdhani text-neon-yellow text-lg border-b border-neon-cyan/20 pb-2 uppercase tracking-widest">// DESENVOLVIMENTO</h4>
                   <div className="space-y-3">
                     {selectedSermon.pontos.map((p, i) => (
                       <div key={i} className="flex gap-4 items-start bg-neon-cyan/5 p-4 border-l-2 border-neon-cyan">
-                        <input type="checkbox" className="mt-1 accent-neon-pink" />
-                        <p className="whitespace-pre-wrap text-text-mid">{p}</p>
+                        <input type="checkbox" className="mt-1 accent-neon-pink w-5 h-5" />
+                        <div className="whitespace-pre-wrap text-text-mid">
+                          <HighlightableText 
+                            text={p} 
+                            sermonId={selectedSermon.id!} 
+                            sectionKey={`ponto_${i}`} 
+                            highlights={selectedSermon.highlights}
+                            onHighlight={(key, color) => handleHighlight(selectedSermon.id!, key, color)}
+                          />
+                        </div>
                       </div>
                     ))}
                   </div>
                 </div>
 
                 <div className="space-y-4">
-                  <h4 className="font-rajdhani text-neon-yellow text-xl border-b border-neon-cyan/20 pb-2">// APLICAÇÃO</h4>
-                  <p className="whitespace-pre-wrap text-text-mid leading-relaxed">{selectedSermon.apl}</p>
+                  <h4 className="font-rajdhani text-neon-yellow text-lg border-b border-neon-cyan/20 pb-2 uppercase tracking-widest">// APLICAÇÃO</h4>
+                  <div className="whitespace-pre-wrap text-text-mid leading-relaxed text-lg">
+                    <HighlightableText 
+                      text={selectedSermon.apl} 
+                      sermonId={selectedSermon.id!} 
+                      sectionKey="apl" 
+                      highlights={selectedSermon.highlights}
+                      onHighlight={(key, color) => handleHighlight(selectedSermon.id!, key, color)}
+                    />
+                  </div>
                 </div>
 
                 <div className="flex flex-wrap gap-4 pt-8 border-t border-neon-cyan/20">

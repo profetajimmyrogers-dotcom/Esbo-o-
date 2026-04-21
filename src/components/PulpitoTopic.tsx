@@ -41,7 +41,7 @@ export const PulpitoTopic = ({
           {isChecked && <Play className="w-4 h-4 text-white fill-current" />}
         </div>
       </div>
-      <div className="text-xl md:text-2xl lg:text-3xl leading-relaxed text-text-mid whitespace-pre-wrap flex-1 font-medium">
+      <div className="text-lg md:text-xl lg:text-2xl leading-relaxed text-text-mid whitespace-pre-wrap flex-1 font-medium">
         <HighlightableText 
           text={p} 
           sermonId={sermonId} 
