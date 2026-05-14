@@ -76,6 +76,14 @@ service cloud.firestore {
              (!('highlights' in data) || data.highlights is map);
     }
 
+    function isValidBlockedDate(data) {
+      return data.keys().hasAll(['dateStr']) && data.dateStr is string;
+    }
+
+    function isValidSystemSettings(data) {
+      return data.keys().hasAll(['fields']) && data.fields is map;
+    }
+
     // ===============================================================
     // Rules
     // ===============================================================
@@ -91,6 +99,16 @@ service cloud.firestore {
       allow create: if isValidSermon(request.resource.data);
       allow update: if isValidSermon(request.resource.data);
       allow delete: if true;
+    }
+
+    match /blockedDates/{dateId} {
+      allow read: if true;
+      allow write: if true; // In this prototype phase, keeping it simple as requested
+    }
+
+    match /systemSettings/{settingId} {
+      allow read: if true;
+      allow write: if true;
     }
   }
 }

@@ -22,6 +22,16 @@ export interface UserProfile {
   role?: string;
 }
 
+export interface BlockedDate {
+  id?: string;
+  dateStr: string; // YYYY-MM-D
+}
+
+export interface SystemSettings {
+  id: string; // e.g. "sidebar_status"
+  fields: Record<string, string>;
+}
+
 export enum OperationType {
   CREATE = 'create',
   UPDATE = 'update',

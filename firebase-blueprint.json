@@ -31,6 +31,24 @@
         "role": { "type": "string", "enum": ["admin", "user"] }
       },
       "required": ["email"]
+    },
+    "BlockedDate": {
+      "title": "BlockedDate",
+      "description": "A date marked as unavailable in the calendar.",
+      "type": "object",
+      "properties": {
+        "dateStr": { "type": "string", "description": "YYYY-MM-D format" }
+      },
+      "required": ["dateStr"]
+    },
+    "SystemSettings": {
+      "title": "SystemSettings",
+      "description": "Global settings or specific panel contents.",
+      "type": "object",
+      "properties": {
+        "fields": { "type": "object", "description": "Key-value pair of strings." }
+      },
+      "required": ["fields"]
     }
   },
   "firestore": {
@@ -41,6 +59,14 @@
     "/users/{userId}": {
       "schema": "User",
       "description": "User profiles."
+    },
+    "/blockedDates/{dateId}": {
+      "schema": "BlockedDate",
+      "description": "Calendar blocked dates."
+    },
+    "/systemSettings/{settingId}": {
+      "schema": "SystemSettings",
+      "description": "Global system configuration and panel texts."
     }
   }
 }

@@ -8,6 +8,8 @@ import {
   collection, 
   query, 
   where, 
+  getDocs,
+  setDoc,
   onSnapshot, 
   addDoc, 
   updateDoc, 
@@ -121,6 +123,23 @@ export default function App() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
   const [mode, setMode] = useState<'grid' | 'pulpito'>('grid');
   
+  // New State for Calendar & Sidebar
+  const [moonMode, setMoonMode] = useState(false);
+  const [showSidebar, setShowSidebar] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [blockedDates, setBlockedDates] = useState<string[]>([]);
+  const [systemFields, setSystemFields] = useState<Record<string, string>>({
+    id1: 'LED',
+    id2: 'TLL',
+    id3: 'St. Petersburg',
+    id4: 'JAN 13, 6:15 AM',
+    id5: 'Tallinn',
+    id6: 'JAN 13, 12:35 PM'
+  });
+  const [currentDate] = useState(new Date());
+
+  const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+  
   const selectedSermon = sermoes.find(s => s.id === selectedSermonId) || null;
   
   // Form State
@@ -156,6 +175,110 @@ export default function App() {
 
     return () => unsubscribe();
   }, [user]);
+
+  useEffect(() => {
+    // Load System Settings
+    const unsubscribeSettings = onSnapshot(doc(db, 'systemSettings', 'sidebar'), (docSnap) => {
+      if (docSnap.exists()) {
+        setSystemFields(docSnap.data().fields);
+      }
+    });
+
+    // Load Blocked Dates
+    const unsubscribeDates = onSnapshot(collection(db, 'blockedDates'), (snapshot) => {
+      const dates = snapshot.docs.map(doc => doc.data().dateStr);
+      setBlockedDates(dates);
+    });
+
+    return () => {
+      unsubscribeSettings();
+      unsubscribeDates();
+    };
+  }, []);
+
+  const toggleMoonMode = () => setMoonMode(!moonMode);
+  const toggleSidebar = () => setShowSidebar(!showSidebar);
+
+  // Robust toggle implementation for Firestore
+  const handleDateToggle = async (dateStr: string) => {
+    if (!editMode) return;
+    try {
+      const q = query(collection(db, 'blockedDates'), where('dateStr', '==', dateStr));
+      const snapshot = await getDocs(q);
+      
+      if (!snapshot.empty) {
+        // Delete all matching (should be just one)
+        const deletePromises = snapshot.docs.map(d => deleteDoc(d.ref));
+        await Promise.all(deletePromises);
+      } else {
+        await addDoc(collection(db, 'blockedDates'), { dateStr });
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const [editPassInput, setEditPassInput] = useState('');
+  const [showMiniLogin, setShowMiniLogin] = useState(false);
+  const [showLockMessage, setShowLockMessage] = useState(false);
+
+  const checkEditAuth = () => {
+    if (editPassInput === '3434') {
+      setEditMode(true);
+      alert("Modo Edição Ativado! Clique nos dias do calendário para alternar.");
+      setShowMiniLogin(false);
+    } else if (editPassInput === '4343') {
+      setEditMode(false);
+      setShowLockMessage(true);
+      setTimeout(() => setShowLockMessage(false), 2500);
+      setShowMiniLogin(false);
+    } else {
+      alert("Senha inválida!");
+    }
+    setEditPassInput('');
+  };
+  
+  const updateSystemField = async (id: string, value: string) => {
+    const newFields = { ...systemFields, [id]: value };
+    setSystemFields(newFields);
+    try {
+      await setDoc(doc(db, 'systemSettings', 'sidebar'), { fields: newFields }, { merge: true });
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const renderCalendarDays = () => {
+    const date = currentDate;
+    const firstDay = new Date(date.getFullYear(), date.getMonth(), 1).getDay();
+    const totalDays = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+    const today = new Date();
+    
+    const days = [];
+    for (let x = 0; x < firstDay; x++) { days.push(<div key={`empty-${x}`}></div>); }
+
+    for (let i = 1; i <= totalDays; i++) {
+        const dateStr = `${date.getFullYear()}-${date.getMonth()}-${i}`;
+        const isBlocked = blockedDates.includes(dateStr);
+        const isToday = i === today.getDate() && date.getMonth() === today.getMonth() && date.getFullYear() === today.getFullYear();
+        
+        days.push(
+          <div 
+            key={i} 
+            onClick={() => handleDateToggle(dateStr)}
+            className={cn(
+              "aspect-square flex items-center justify-center rounded-lg text-[13px] cursor-pointer transition-all border border-transparent",
+              isBlocked ? "bg-red-500/15 text-white/50 blur-[0.5px] border-red-600" : "bg-white/5 text-[#00ffcc] border-transparent hover:border-neon-cyan vacant",
+              isToday && "bg-[#ff5e00]! text-white! font-bold shadow-[0_0_15px_rgba(255,94,0,0.5)]",
+              editMode && isBlocked && "cursor-pointer blur-none opacity-80"
+            )}
+          >
+            {i}
+          </div>
+        );
+    }
+    return days;
+  };
 
   useEffect(() => {
     if (mode === 'pulpito') {
@@ -319,66 +442,219 @@ export default function App() {
 
   if (!authorized) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-dark-bg overflow-hidden">
-        {/* Background Effects */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-neon-cyan/5 rounded-full blur-[120px] animate-pulse" />
-          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-neon-pink/5 rounded-full blur-[120px] animate-pulse delay-1000" />
+      <div className="min-h-screen relative overflow-hidden bg-cover bg-center" style={{ backgroundImage: 'url("https://i.postimg.cc/mgFfPT7C/Firefly.jpg")' }}>
+        <div className={cn("fixed inset-0 transition-all duration-1000 pointer-events-none z-1", moonMode ? "bg-black/85" : "bg-transparent")} />
+        
+        {/* Lock Message */}
+        <AnimatePresence>
+          {showLockMessage && (
+            <motion.div 
+              initial={{ opacity: 0, x: '-50%', y: '-50%' }}
+              animate={{ opacity: 1, x: '-50%', y: '-50%' }}
+              exit={{ opacity: 0, x: '-50%', y: '-50%' }}
+              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 px-8 py-4 rounded-[15px] bg-white/10 backdrop-blur-[20px] border border-white/20 text-white font-bold tracking-[1px] z-[2000]"
+            >
+              🔒 CONFIGURAÇÕES SALVAS
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Sidebar Container */}
+        <div className="fixed left-5 top-1/2 -translate-y-1/2 z-[100] flex flex-col items-start gap-4">
+          <button 
+            onClick={toggleSidebar}
+            className="px-6 py-4 rounded-[15px] bg-white/10 backdrop-blur-[20px] border border-white/20 text-white font-bold uppercase tracking-[1px] text-[12px] hover:bg-white/20 transition-all"
+          >
+            Evento
+          </button>
+          
+          <AnimatePresence>
+            {showSidebar && (
+              <motion.div 
+                initial={{ maxHeight: 0, opacity: 0 }}
+                animate={{ maxHeight: 600, opacity: 1 }}
+                exit={{ maxHeight: 0, opacity: 0 }}
+                className="w-[320px] overflow-hidden rounded-[20px] bg-[#141414]/85 backdrop-blur-[20px] border border-white/20 p-6 relative"
+              >
+                <div 
+                  onClick={() => setShowMiniLogin(!showMiniLogin)}
+                  className="w-1.5 h-1.5 bg-[#ff5e00] rounded-full absolute top-[15px] right-[15px] cursor-pointer shadow-[0_0_8px_#ff5e00] animate-pulse z-10" 
+                />
+                
+                <AnimatePresence>
+                  {showMiniLogin && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="bg-black/60 rounded-xl p-3 border border-white/10 mb-4 flex gap-2"
+                    >
+                      <input 
+                        type="password" 
+                        value={editPassInput}
+                        onChange={(e) => setEditPassInput(e.target.value)}
+                        placeholder="Senha"
+                        className="flex-1 bg-white/80 border-none rounded-md p-1.5 text-[12px] outline-none text-[#222]" 
+                      />
+                      <button 
+                        onClick={checkEditAuth}
+                        className="bg-[#ff5e00] border-none text-white rounded-md px-3 py-1 text-[10px] cursor-pointer"
+                      >
+                        OK
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                <div className="flex items-center gap-3 font-mono text-[32px] text-[#eee] mb-4">
+                  <span 
+                    contentEditable={editMode}
+                    onBlur={(e) => updateSystemField('id1', e.currentTarget.innerText)}
+                    suppressContentEditableWarning
+                    className={cn("outline-none transition-all", editMode && "border-b border-dashed border-[#ff5e00]")}
+                  >
+                    {systemFields.id1}
+                  </span>
+                  <span className="text-[#555] text-[20px]">→</span>
+                  <span 
+                    contentEditable={editMode}
+                    onBlur={(e) => updateSystemField('id2', e.currentTarget.innerText)}
+                    suppressContentEditableWarning
+                    className={cn("outline-none transition-all", editMode && "border-b border-dashed border-[#ff5e00]")}
+                  >
+                    {systemFields.id2}
+                  </span>
+                </div>
+
+                <div className="flex justify-between text-[12px] text-[#aaa] mb-4">
+                  <div>
+                    <b 
+                      contentEditable={editMode}
+                      onBlur={(e) => updateSystemField('id3', e.currentTarget.innerText)}
+                      suppressContentEditableWarning
+                      className={cn("outline-none transition-all block", editMode && "border-b border-dashed border-[#ff5e00]")}
+                    >
+                      {systemFields.id3}
+                    </b>
+                    <small 
+                      contentEditable={editMode}
+                      onBlur={(e) => updateSystemField('id4', e.currentTarget.innerText)}
+                      suppressContentEditableWarning
+                      className={cn("outline-none transition-all block", editMode && "border-b border-dashed border-[#ff5e00]")}
+                    >
+                      {systemFields.id4}
+                    </small>
+                  </div>
+                  <div className="text-right">
+                    <b 
+                      contentEditable={editMode}
+                      onBlur={(e) => updateSystemField('id5', e.currentTarget.innerText)}
+                      suppressContentEditableWarning
+                      className={cn("outline-none transition-all block", editMode && "border-b border-dashed border-[#ff5e00]")}
+                    >
+                      {systemFields.id5}
+                    </b>
+                    <small 
+                      contentEditable={editMode}
+                      onBlur={(e) => updateSystemField('id6', e.currentTarget.innerText)}
+                      suppressContentEditableWarning
+                      className={cn("outline-none transition-all block", editMode && "border-b border-dashed border-[#ff5e00]")}
+                    >
+                      {systemFields.id6}
+                    </small>
+                  </div>
+                </div>
+
+                <div className="w-full h-3.5 bg-[#222] rounded-full relative mt-5">
+                  <div className="w-[70%] h-full bg-gradient-to-r from-[#a2ff00] to-[#00ffcc] rounded-full relative">
+                    <div className="absolute -right-2.5 -top-2.5 bg-[#00bfff] w-[30px] h-[30px] rounded-full flex items-center justify-center text-[14px]">
+                      ✈
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="relative z-10 w-full max-w-md"
+        {/* Moon Toggle */}
+        <button 
+          onClick={toggleMoonMode}
+          className={cn(
+            "fixed top-5 right-5 w-11 h-11 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center cursor-pointer border border-white/20 z-[1001] transition-transform duration-700 text-2xl outline-none",
+            moonMode && "rotate-[360deg]"
+          )}
         >
-          <div className="text-center space-y-8 p-8 border border-neon-cyan/20 bg-black/40 backdrop-blur-xl rounded-2xl shadow-[0_0_50px_rgba(0,245,255,0.05)]">
-            <div className="space-y-2">
-              <h1 className="text-3xl md:text-5xl font-orbitron font-black bg-gradient-to-br from-neon-cyan to-neon-pink bg-clip-text text-transparent animate-logo-flicker">
-                SYSTEMA
-              </h1>
-              <p className="font-rajdhani tracking-[0.3em] text-text-dim text-xs">
-                // ACESSO RESTRITO //
-              </p>
-            </div>
-            
-            <form onSubmit={handleLogin} className="space-y-6">
-              <div className="relative group">
-                <input 
-                  type="password"
-                  value={passInput}
-                  onChange={(e) => setPassInput(e.target.value)}
-                  placeholder="DIGITE A SENHA"
-                  className={cn(
-                    "w-full bg-neon-cyan/5 border p-4 text-center font-orbitron tracking-[0.5em] outline-none transition-all",
-                    passError ? "border-neon-pink shadow-[0_0_20px_rgba(255,0,128,0.3)] text-neon-pink" : "border-neon-cyan/20 text-neon-cyan focus:border-neon-cyan focus:shadow-[0_0_20px_rgba(0,245,255,0.2)]"
-                  )}
-                />
-                {passError && (
-                  <motion.p 
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="absolute -bottom-6 left-0 right-0 text-[10px] text-neon-pink font-orbitron tracking-widest"
-                  >
-                    ACESSO NEGADO
-                  </motion.p>
-                )}
+          {moonMode ? '🌕' : '🌙'}
+        </button>
+
+        {/* Calendar */}
+        <AnimatePresence>
+          {moonMode && (
+            <motion.div 
+              initial={{ opacity: 0, y: -20, x: '-50%' }}
+              animate={{ opacity: 1, y: '-50%', x: '-50%' }}
+              exit={{ opacity: 0, y: -20, x: '-50%' }}
+              className="fixed top-[45%] left-1/2 -translate-x-1/2 -translate-y-1/2 z-[50] p-5 rounded-[24px] w-[340px] bg-[#0f0f0f]/95 border border-white/10 shadow-2xl"
+            >
+              <div className="flex justify-between items-center mb-4 text-white text-lg">
+                <span className="font-orbitron tracking-widest uppercase">{monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}</span>
+                <div className="text-[10px] text-neon-cyan select-none">● VAGO</div>
               </div>
-
-              <button 
-                type="submit"
-                className="w-full bg-neon-cyan/10 border border-neon-cyan py-4 font-orbitron font-bold text-neon-cyan hover:bg-neon-cyan hover:text-black transition-all hover:shadow-[0_0_30px_rgba(0,245,255,0.4)] active:scale-95"
-              >
-                AUTENTICAR
-              </button>
-            </form>
-
-            <div className="pt-4 border-t border-neon-cyan/10">
-              <p className="text-[9px] font-mono text-text-dim/40 uppercase tracking-widest">
-                Terminal ID: {Math.random().toString(36).substring(7).toUpperCase()}
-              </p>
+            <div className="grid grid-cols-7 gap-2 text-center">
+              {["D", "S", "T", "Q", "Q", "S", "S"].map((d, i) => (
+                <div key={`${d}-${i}`} className="text-neon-yellow text-[12px] font-bold uppercase pb-1 flex justify-center items-center">{d}</div>
+              ))}
+              {renderCalendarDays()}
             </div>
-          </div>
-        </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <div className="flex items-end justify-center min-h-screen pb-10 px-4">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="w-[280px] p-6 rounded-[25px] bg-white/10 backdrop-blur-[20px] border border-white/20 shadow-2xl text-white text-center z-10"
+          >
+            <h2 className="text-xl font-bold mb-2">Bem-vindo(a)!</h2>
+            <div className="mb-5">
+              <input 
+                type="password"
+                value={passInput}
+                onChange={(e) => setPassInput(e.target.value)}
+                placeholder="Palavra-passe"
+                className="w-full p-3 rounded-lg border-none bg-white/90 text-[#222] font-rajdahni outline-none text-center"
+              />
+            </div>
+            <div className="flex flex-col items-center gap-2">
+              <label className="relative inline-block w-[70px] h-[35px] cursor-pointer">
+                <input 
+                  type="checkbox" 
+                  className="sr-only peer"
+                  onChange={(e) => {
+                    if (e.target.checked) {
+                      if (passInput === '3434') {
+                        setAuthorized(true);
+                        setUser({ uid: 'admin', displayName: 'Pastor' });
+                        localStorage.setItem('system_auth', 'true');
+                        setMoonMode(false);
+                        setShowSidebar(false);
+                      } else {
+                        alert("Senha Incorreta.");
+                        setTimeout(() => { e.target.checked = false; }, 500);
+                      }
+                    }
+                  }}
+                />
+                <div className="w-full h-full bg-[#1a1a1a] rounded-full transition-all peer-checked:bg-neon-pink">
+                  <div className="absolute top-1 left-1 w-[27px] h-[27px] bg-gradient-to-b from-[#555] to-[#222] rounded-full transition-all peer-checked:translate-x-[34px] peer-checked:bg-neon-pink peer-checked:shadow-[0_0_15px_#ff0080]" />
+                </div>
+              </label>
+              <span className="text-[10px] uppercase tracking-widest">Entrar</span>
+            </div>
+          </motion.div>
+        </div>
       </div>
     );
   }
@@ -386,7 +662,7 @@ export default function App() {
   const filteredSermoes = sermoes.filter(s => s.tema.toLowerCase().includes(busca.toLowerCase()));
 
   return (
-    <div className="relative z-10 pb-20" translate="no">
+    <div className="min-h-screen relative z-10 pb-20 transition-all duration-1000 bg-[#0b0b0b]" translate="no">
       {/* Header */}
       <header className="header flex flex-col md:flex-row justify-between items-center p-4 md:p-8 border-b border-neon-cyan/20 bg-gradient-to-b from-neon-cyan/5 to-transparent mb-8 relative">
         <div className="text-center md:text-left">
