@@ -474,7 +474,7 @@ export default function App() {
                 initial={{ maxHeight: 0, opacity: 0 }}
                 animate={{ maxHeight: 600, opacity: 1 }}
                 exit={{ maxHeight: 0, opacity: 0 }}
-                className="w-[320px] overflow-hidden rounded-[20px] bg-[#141414]/85 backdrop-blur-[20px] border border-white/20 p-6 relative"
+                className="w-[90vw] max-w-[320px] overflow-hidden rounded-[20px] bg-[#141414]/85 backdrop-blur-[20px] border border-white/20 p-5 md:p-6 relative"
               >
                 <div 
                   onClick={() => setShowMiniLogin(!showMiniLogin)}
@@ -595,7 +595,7 @@ export default function App() {
               initial={{ opacity: 0, y: -20, x: '-50%' }}
               animate={{ opacity: 1, y: '-50%', x: '-50%' }}
               exit={{ opacity: 0, y: -20, x: '-50%' }}
-              className="fixed top-[45%] left-1/2 -translate-x-1/2 -translate-y-1/2 z-[50] p-5 rounded-[24px] w-[340px] bg-[#0f0f0f]/95 border border-white/10 shadow-2xl"
+              className="fixed top-[45%] left-1/2 -translate-x-1/2 -translate-y-1/2 z-[50] p-4 md:p-5 rounded-[24px] w-[90%] max-w-[340px] bg-[#0f0f0f]/95 border border-white/10 shadow-2xl"
             >
               <div className="flex justify-between items-center mb-4 text-white text-lg">
                 <span className="font-orbitron tracking-widest uppercase">{monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}</span>
