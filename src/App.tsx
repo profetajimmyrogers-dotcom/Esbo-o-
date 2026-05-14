@@ -21,6 +21,7 @@ import { auth, db, loginWithGoogle, logout } from './firebase';
 import { Sermon, OperationType, FirestoreErrorInfo } from './types';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
+  Plus,
   Search, 
   X, 
   Trash2, 
@@ -28,7 +29,9 @@ import {
   LogOut, 
   LogIn,
   BookOpen,
-  User as UserIcon
+  User as UserIcon,
+  ChevronUp,
+  ChevronDown
 } from 'lucide-react';
 import { cn } from './lib/utils';
 import { HighlightableText } from './components/HighlightableText';
@@ -36,8 +39,9 @@ import { PulpitoTopic } from './components/PulpitoTopic';
 import { PulpitoSectors } from './components/PulpitoSectors';
 
 function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
+  const message = error instanceof Error ? error.message : String(error);
   const errInfo: FirestoreErrorInfo = {
-    error: error instanceof Error ? error.message : String(error),
+    error: message,
     authInfo: {
       userId: auth.currentUser?.uid,
       email: auth.currentUser?.email,
@@ -46,6 +50,61 @@ function handleFirestoreError(error: unknown, operationType: OperationType, path
     path
   };
   console.error('Firestore Error: ', JSON.stringify(errInfo));
+  
+  // Mostrar alerta visual para o usuário
+  if (message.includes('permission-denied') || message.includes('insufficient permissions')) {
+    alert('ERRO: Sem permissão para gravar no banco de dados. Verifique a senha ou regras.');
+  } else if (message.includes('quota-exceeded')) {
+    alert('ERRO: Limite de uso do banco de dados atingido (Quota exceeded).');
+  } else {
+    alert(`ERRO NO SISTEMA: ${message}`);
+  }
+}
+
+function PontoItem({ index, total, value, onChange, onRemove, onMove }: { 
+  index: number, 
+  total: number, 
+  value: string, 
+  onChange: (val: string) => void, 
+  onRemove: () => void,
+  onMove: (dir: 'up' | 'down') => void 
+}) {
+  return (
+    <div className="flex gap-2 group">
+      <div className="flex flex-col gap-1">
+        <button 
+          onClick={(e) => { e.preventDefault(); onMove('up'); }}
+          disabled={index === 0}
+          className="p-1 border border-neon-cyan/20 bg-neon-cyan/5 text-neon-cyan/40 hover:text-neon-cyan disabled:opacity-0 transition-all shrink-0"
+          title="Mover para cima"
+        >
+          <ChevronUp className="w-4 h-4" />
+        </button>
+        <button 
+          onClick={(e) => { e.preventDefault(); onMove('down'); }}
+          disabled={index === total - 1}
+          className="p-1 border border-neon-cyan/20 bg-neon-cyan/5 text-neon-cyan/40 hover:text-neon-cyan disabled:opacity-0 transition-all shrink-0"
+          title="Mover para baixo"
+        >
+          <ChevronDown className="w-4 h-4" />
+        </button>
+      </div>
+      <textarea 
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="flex-1 bg-neon-cyan/5 border border-neon-cyan/20 text-neon-cyan p-3 outline-none focus:border-neon-cyan h-auto min-h-[46px]"
+        placeholder={`TÓPICO ${index + 1}`}
+        translate="no"
+        rows={1}
+      />
+      <button 
+        onClick={(e) => { e.preventDefault(); onRemove(); }}
+        className="p-3 border border-neon-pink/30 text-neon-pink hover:bg-neon-pink/10 shrink-0 self-center"
+      >
+        <X className="w-5 h-5" />
+      </button>
+    </div>
+  );
 }
 
 export default function App() {
@@ -70,7 +129,7 @@ export default function App() {
   const [agr, setAgr] = useState('');
   const [img, setImg] = useState('');
   const [intro, setIntro] = useState('');
-  const [pontos, setPontos] = useState<string[]>([]);
+  const [pontos, setPontos] = useState<{ id: string, text: string }[]>([]);
   const [setores, setSetores] = useState<string[]>([]);
   const [apl, setApl] = useState('');
 
@@ -86,7 +145,10 @@ export default function App() {
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Sermon));
+      const data = snapshot.docs.map(doc => ({ 
+        id: doc.id, 
+        ...doc.data({ serverTimestamps: 'estimate' }) 
+      } as Sermon));
       setSermoes(data);
     }, (error) => {
       handleFirestoreError(error, OperationType.LIST, 'sermoes');
@@ -136,11 +198,24 @@ export default function App() {
     setShowForm(false);
   };
 
+  const movePonto = (index: number, direction: 'up' | 'down') => {
+    const newIndex = direction === 'up' ? index - 1 : index + 1;
+    if (newIndex < 0 || newIndex >= pontos.length) return;
+    
+    setPontos(prev => {
+      const items = [...prev];
+      const temp = items[index];
+      items[index] = items[newIndex];
+      items[newIndex] = temp;
+      return items;
+    });
+  };
+
   const handleSave = async () => {
     if (!user || !tema) return;
 
     const cleanedPontos = pontos
-      .map(p => p.trim())
+      .map(p => p.text.trim())
       .filter(p => p !== '');
 
     const data: any = {
@@ -159,10 +234,12 @@ export default function App() {
     try {
       if (editId) {
         await updateDoc(doc(db, 'sermoes', editId), data);
+        alert('REGISTRO ATUALIZADO COM SUCESSO!');
       } else {
         data.createdAt = serverTimestamp();
         data.highlights = {};
         await addDoc(collection(db, 'sermoes'), data);
+        alert('NOVO SERMÃO SALVO COM SUCESSO!');
       }
       resetForm();
     } catch (error) {
@@ -188,7 +265,7 @@ export default function App() {
     setAgr(s.agr);
     setImg(s.img);
     setIntro(s.intro);
-    setPontos(s.pontos);
+    setPontos(s.pontos.map(text => ({ id: Math.random().toString(36).substring(7), text })));
     setSetores(s.setores || []);
     setApl(s.apl);
     setShowForm(true);
@@ -400,13 +477,24 @@ export default function App() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <input 
-                        type="file" 
-                        accept="image/*"
-                        onChange={handleUpload}
-                        className="w-full bg-neon-cyan/5 border border-neon-cyan/20 text-neon-cyan p-2 outline-none"
+                        type="text" 
+                        value={img}
+                        onChange={(e) => setImg(e.target.value)}
+                        className="w-full bg-neon-cyan/5 border border-neon-cyan/20 text-neon-cyan p-3 outline-none focus:border-neon-cyan"
+                        placeholder="LINK DA IMAGEM (URL)"
+                        translate="no"
                       />
                       <div className="h-40 bg-black/50 border border-dashed border-neon-cyan/30 flex items-center justify-center overflow-hidden text-text-dim">
-                        {img ? <img src={img} className="w-full h-full object-cover opacity-80" /> : '// IMAGEM NÃO CARREGADA //'}
+                        {img ? (
+                          <img 
+                            src={img} 
+                            className="w-full h-full object-cover opacity-80" 
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = ''; 
+                              console.error('Erro ao carregar link da imagem');
+                            }}
+                          />
+                        ) : '// COLE O LINK DA IMAGEM ACIMA //'}
                       </div>
                     </div>
                     <textarea 
@@ -418,34 +506,42 @@ export default function App() {
                     />
                   </div>
 
-                  <div className="space-y-2">
-                    {pontos.map((p, i) => (
-                      <div key={i} className="flex gap-2">
-                        <textarea 
-                          value={p}
-                          onChange={(e) => {
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-orbitron text-neon-cyan text-sm tracking-widest uppercase font-bold">// TÓPICOS DO DESENVOLVIMENTO</h3>
+                      <button 
+                        onClick={() => setPontos([...pontos, { id: Math.random().toString(36).substring(7), text: '' }])}
+                        className="p-1 px-3 border border-neon-cyan/40 text-neon-cyan/60 hover:border-neon-cyan hover:text-neon-cyan transition-all flex items-center gap-2 font-orbitron text-[10px]"
+                      >
+                        <Plus className="w-3 h-3" />
+                        ADICIONAR
+                      </button>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      {pontos.map((p, i) => (
+                        <PontoItem 
+                          key={p.id} 
+                          index={i}
+                          total={pontos.length}
+                          value={p.text}
+                          onChange={(val) => {
                             const newPontos = [...pontos];
-                            newPontos[i] = e.target.value;
+                            newPontos[i].text = val;
                             setPontos(newPontos);
                           }}
-                          className="flex-1 bg-neon-cyan/5 border border-neon-cyan/20 text-neon-cyan p-3 outline-none focus:border-neon-cyan"
-                          placeholder={`TÓPICO ${i + 1}`}
-                          translate="no"
+                          onRemove={() => setPontos(pontos.filter((_, idx) => idx !== i))}
+                          onMove={(dir) => movePonto(i, dir)}
                         />
-                        <button 
-                          onClick={() => setPontos(pontos.filter((_, idx) => idx !== i))}
-                          className="p-3 border border-neon-pink/30 text-neon-pink hover:bg-neon-pink/10"
-                        >
-                          <X className="w-5 h-5" />
-                        </button>
-                      </div>
-                    ))}
-                    <button 
-                      onClick={() => setPontos([...pontos, ''])}
-                      className="w-full border border-neon-cyan/30 text-neon-cyan/60 py-2 hover:text-neon-cyan hover:border-neon-cyan transition-all"
-                    >
-                      [+] ADICIONAR TÓPICO
-                    </button>
+                      ))}
+                      
+                      {pontos.length === 0 && (
+                        <div className="py-8 border border-dashed border-neon-cyan/20 flex flex-col items-center justify-center gap-2 text-neon-cyan/30 bg-neon-cyan/5">
+                          <Plus className="w-6 h-6 opacity-20" />
+                          <span className="font-orbitron text-[10px] tracking-widest uppercase">Nenhum tópico adicionado</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   <textarea 

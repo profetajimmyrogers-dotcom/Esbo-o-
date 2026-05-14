@@ -65,12 +65,13 @@ service cloud.firestore {
     function isValidSermon(data) {
       return data.keys().hasAll(['userId', 'tema', 'createdAt', 'updatedAt']) &&
              data.userId is string &&
-             data.tema is string && data.tema.size() <= 200 &&
-             (!('texto' in data) || (data.texto is string && data.texto.size() <= 500)) &&
-             (!('agr' in data) || (data.agr is string && data.agr.size() <= 500)) &&
-             (!('intro' in data) || (data.intro is string && data.intro.size() <= 5000)) &&
-             (!('apl' in data) || (data.apl is string && data.apl.size() <= 5000)) &&
-             (!('pontos' in data) || (data.pontos is list && data.pontos.size() <= 50)) &&
+             data.tema is string && data.tema.size() <= 500 &&
+             (!('texto' in data) || (data.texto is string && data.texto.size() <= 10000)) &&
+             (!('agr' in data) || (data.agr is string && data.agr.size() <= 10000)) &&
+             (!('img' in data) || (data.img is string && data.img.size() <= 2048)) &&
+             (!('intro' in data) || (data.intro is string && data.intro.size() <= 20000)) &&
+             (!('apl' in data) || (data.apl is string && data.apl.size() <= 20000)) &&
+             (!('pontos' in data) || (data.pontos is list && data.pontos.size() <= 100)) &&
              (!('setores' in data) || (data.setores is list && data.setores.size() <= 100)) &&
              (!('highlights' in data) || data.highlights is map);
     }
