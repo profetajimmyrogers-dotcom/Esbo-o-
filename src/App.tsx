@@ -592,21 +592,21 @@ export default function App() {
         <AnimatePresence>
           {moonMode && (
             <motion.div 
-              initial={{ opacity: 0, y: -20, x: '-50%' }}
-              animate={{ opacity: 1, y: '-50%', x: '-50%' }}
-              exit={{ opacity: 0, y: -20, x: '-50%' }}
-              className="fixed top-[45%] left-1/2 -translate-x-1/2 -translate-y-1/2 z-[50] p-4 md:p-5 rounded-[24px] w-[90%] max-w-[340px] bg-[#0f0f0f]/95 border border-white/10 shadow-2xl"
+              initial={{ opacity: 0, x: '-50%', y: '-60%' }}
+              animate={{ opacity: 1, x: '-50%', y: '-50%' }}
+              exit={{ opacity: 0, x: '-50%', y: '-60%' }}
+              className="fixed top-1/2 left-1/2 z-[500] p-4 md:p-5 rounded-[24px] w-[90%] max-w-[340px] bg-[#0f0f0f]/95 border border-white/10 shadow-2xl backdrop-blur-xl"
             >
-              <div className="flex justify-between items-center mb-4 text-white text-lg">
-                <span className="font-orbitron tracking-widest uppercase">{monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}</span>
-                <div className="text-[10px] text-neon-cyan select-none">● VAGO</div>
+              <div className="flex justify-between items-center mb-4 text-white text-lg px-1">
+                <span className="font-orbitron tracking-widest uppercase text-sm md:text-base">{monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}</span>
+                <div className="text-[10px] text-neon-cyan select-none whitespace-nowrap">● VAGO</div>
               </div>
-            <div className="grid grid-cols-7 gap-2 text-center">
-              {["D", "S", "T", "Q", "Q", "S", "S"].map((d, i) => (
-                <div key={`${d}-${i}`} className="text-neon-yellow text-[12px] font-bold uppercase pb-1 flex justify-center items-center">{d}</div>
-              ))}
-              {renderCalendarDays()}
-            </div>
+              <div className="grid grid-cols-7 gap-1 md:gap-2 text-center">
+                {["D", "S", "T", "Q", "Q", "S", "S"].map((d, i) => (
+                  <div key={`${d}-${i}`} className="text-neon-yellow text-[11px] md:text-[12px] font-bold uppercase pb-1 flex justify-center items-center">{d}</div>
+                ))}
+                {renderCalendarDays()}
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
