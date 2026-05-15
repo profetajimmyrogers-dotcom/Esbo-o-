@@ -577,15 +577,25 @@ export default function App() {
           </AnimatePresence>
         </div>
 
-        {/* Moon Toggle */}
+        {/* Moon Toggle - Consultar Agenda */}
         <button 
           onClick={toggleMoonMode}
           className={cn(
-            "fixed top-5 right-5 w-11 h-11 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center cursor-pointer border border-white/20 z-[1001] transition-transform duration-700 text-2xl outline-none",
-            moonMode && "rotate-[360deg]"
+            "fixed top-5 right-5 group flex items-center gap-3 px-4 py-2 rounded-full bg-black/40 backdrop-blur-md border border-white/20 z-[1001] transition-all duration-500 hover:scale-105 active:scale-95 cursor-pointer outline-none",
+            "shadow-[0_0_15px_rgba(0,255,204,0.2)] hover:shadow-[0_0_25px_rgba(0,255,204,0.4)]",
+            moonMode ? "border-neon-cyan/50 shadow-[0_0_30px_rgba(0,255,204,0.6)]" : ""
           )}
         >
-          {moonMode ? '🌕' : '🌙'}
+          <div className={cn(
+            "w-8 h-8 rounded-full flex items-center justify-center transition-transform duration-700 text-xl",
+            moonMode && "rotate-[360deg]"
+          )}>
+            {moonMode ? '🌕' : '🌙'}
+          </div>
+          <div className="flex flex-col items-start mr-1 select-none">
+            <span className="text-[9px] text-neon-cyan font-black uppercase tracking-[0.2em] leading-none mb-0.5 animate-pulse">Agenda</span>
+            <span className="text-white text-[12px] font-orbitron font-bold uppercase tracking-wide leading-none">Consultar</span>
+          </div>
         </button>
 
         {/* Calendar */}
