@@ -593,8 +593,8 @@ export default function App() {
             {moonMode ? '🌕' : '🌙'}
           </div>
           <div className="flex flex-col items-start mr-1 select-none">
-            <span className="text-[9px] text-neon-cyan font-black uppercase tracking-[0.2em] leading-none mb-0.5 animate-pulse">Agenda</span>
-            <span className="text-white text-[12px] font-orbitron font-bold uppercase tracking-wide leading-none">Consultar</span>
+            <span className="text-[9px] text-neon-cyan font-black uppercase tracking-[0.2em] leading-none mb-0.5 animate-pulse">Minha</span>
+            <span className="text-white text-[12px] font-orbitron font-bold uppercase tracking-wide leading-none">Agenda</span>
           </div>
         </button>
 
