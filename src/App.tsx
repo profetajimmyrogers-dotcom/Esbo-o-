@@ -33,7 +33,8 @@ import {
   BookOpen,
   User as UserIcon,
   ChevronUp,
-  ChevronDown
+  ChevronDown,
+  MessageCircle
 } from 'lucide-react';
 import { cn } from './lib/utils';
 import { HighlightableText } from './components/HighlightableText';
@@ -137,6 +138,11 @@ export default function App() {
     id6: 'JAN 13, 12:35 PM'
   });
   const [currentDate] = useState(new Date());
+
+  // WhatsApp Lead State
+  const [showWhatsAppForm, setShowWhatsAppForm] = useState(false);
+  const [waName, setWaName] = useState('');
+  const [waChurch, setWaChurch] = useState('');
 
   const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
   
@@ -576,6 +582,105 @@ export default function App() {
             )}
           </AnimatePresence>
         </div>
+
+        {/* WhatsApp Toggle */}
+        <button 
+          onClick={() => setShowWhatsAppForm(true)}
+          className={cn(
+            "fixed bottom-24 right-5 group flex items-center gap-3 px-4 py-2 rounded-full bg-black/40 backdrop-blur-md border border-white/20 z-[1001] transition-all duration-500 hover:scale-110 active:scale-95 cursor-pointer outline-none",
+            "shadow-[0_0_15px_rgba(37,211,102,0.2)] hover:shadow-[0_0_25px_rgba(37,211,102,0.4)] border-green-500/30"
+          )}
+        >
+          <div className="w-8 h-8 rounded-full flex items-center justify-center bg-green-500 text-white shadow-[0_0_15px_rgba(37,211,102,0.5)]">
+            <MessageCircle className="w-5 h-5 fill-current" />
+          </div>
+          <div className="flex flex-col items-start mr-1 select-none">
+            <span className="text-[9px] text-green-400 font-black uppercase tracking-[0.2em] leading-none mb-0.5 animate-pulse">Online</span>
+            <span className="text-white text-[12px] font-orbitron font-bold uppercase tracking-wide leading-none">WhatsApp</span>
+          </div>
+        </button>
+
+        {/* WhatsApp Backdrop */}
+        <AnimatePresence>
+          {showWhatsAppForm && (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowWhatsAppForm(false)}
+              className="fixed inset-0 bg-black/60 backdrop-blur-md z-[1500]"
+            />
+          )}
+        </AnimatePresence>
+
+        {/* WhatsApp Lead Form Modal */}
+        <AnimatePresence>
+          {showWhatsAppForm && (
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, x: '-50%', y: '-50%' }}
+              animate={{ opacity: 1, scale: 1, x: '-50%', y: '-50%' }}
+              exit={{ opacity: 0, scale: 0.9, x: '-50%', y: '-50%' }}
+              className="fixed top-1/2 left-1/2 z-[2000] p-6 rounded-[24px] w-[90%] max-w-[320px] bg-[#0f0f0f]/95 border border-white/10 shadow-2xl backdrop-blur-xl"
+            >
+              <div className="flex justify-between items-center mb-6">
+                <div>
+                  <h3 className="text-white font-orbitron font-bold text-lg leading-tight">CONTATO</h3>
+                  <p className="text-[10px] text-green-400 font-black tracking-widest uppercase mt-0.5">// WHATSAPP DIRETO</p>
+                </div>
+                <button 
+                  onClick={() => setShowWhatsAppForm(false)}
+                  className="p-2 text-white/50 hover:text-white transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div className="space-y-1.5">
+                  <label className="text-[10px] text-white/50 uppercase font-black tracking-widest ml-1">Seu Nome</label>
+                  <input 
+                    type="text"
+                    value={waName}
+                    onChange={(e) => setWaName(e.target.value)}
+                    placeholder="Ex: João Silva"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white outline-none focus:border-green-500/50 transition-all font-rajdhani"
+                  />
+                </div>
+                
+                <div className="space-y-1.5">
+                  <label className="text-[10px] text-white/50 uppercase font-black tracking-widest ml-1">Sua Igreja</label>
+                  <input 
+                    type="text"
+                    value={waChurch}
+                    onChange={(e) => setWaChurch(e.target.value)}
+                    placeholder="Ex: Igreja Central"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white outline-none focus:border-green-500/50 transition-all font-rajdhani"
+                  />
+                </div>
+
+                <button 
+                  onClick={() => {
+                    if (!waName || !waChurch) {
+                      alert("Por favor, preencha todos os campos.");
+                      return;
+                    }
+                    const text = encodeURIComponent(`Olá! Me chamo ${waName}, sou da igreja ${waChurch}. Gostaria de conversar.`);
+                    window.open(`https://wa.me/5547988997312?text=${text}`, '_blank');
+                    setShowWhatsAppForm(false);
+                  }}
+                  className="w-full mt-2 bg-green-600 hover:bg-green-500 text-white font-orbitron font-bold py-4 rounded-xl shadow-[0_0_20px_rgba(37,211,102,0.3)] transition-all flex items-center justify-center gap-3 uppercase tracking-widest text-xs"
+                >
+                  <MessageCircle className="w-4 h-4" />
+                  Iniciar Conversa
+                </button>
+                
+                <p className="text-[9px] text-white/30 text-center italic mt-2">
+                  * Campos obrigatórios para iniciar o atendimento.
+                </p>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Moon Toggle - Consultar Agenda */}
         <button 
@@ -1201,6 +1306,100 @@ export default function App() {
               </div>
             </motion.div>
           </div>
+        )}
+      </AnimatePresence>
+
+      {/* WhatsApp Floating Section */}
+      <button 
+        onClick={() => setShowWhatsAppForm(true)}
+        className={cn(
+          "fixed bottom-24 right-5 group flex items-center gap-3 px-4 py-2 rounded-full bg-black/40 backdrop-blur-md border border-white/20 z-[1001] transition-all duration-500 hover:scale-110 active:scale-95 cursor-pointer outline-none",
+          "shadow-[0_0_15px_rgba(37,211,102,0.2)] hover:shadow-[0_0_25px_rgba(37,211,102,0.4)] border-green-500/30"
+        )}
+      >
+        <div className="w-8 h-8 rounded-full flex items-center justify-center bg-green-500 text-white shadow-[0_0_15px_rgba(37,211,102,0.5)]">
+          <MessageCircle className="w-5 h-5 fill-current" />
+        </div>
+        <div className="flex flex-col items-start mr-1 select-none">
+          <span className="text-[9px] text-green-400 font-black uppercase tracking-[0.2em] leading-none mb-0.5 animate-pulse">Online</span>
+          <span className="text-white text-[12px] font-orbitron font-bold uppercase tracking-wide leading-none">WhatsApp</span>
+        </div>
+      </button>
+
+      <AnimatePresence>
+        {showWhatsAppForm && (
+          <>
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowWhatsAppForm(false)}
+              className="fixed inset-0 bg-black/60 backdrop-blur-md z-[1500]"
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, x: '-50%', y: '-50%' }}
+              animate={{ opacity: 1, scale: 1, x: '-50%', y: '-50%' }}
+              exit={{ opacity: 0, scale: 0.9, x: '-50%', y: '-50%' }}
+              className="fixed top-1/2 left-1/2 z-[2000] p-6 rounded-[24px] w-[90%] max-w-[320px] bg-[#0f0f0f]/95 border border-white/10 shadow-2xl backdrop-blur-xl"
+            >
+              <div className="flex justify-between items-center mb-6">
+                <div>
+                  <h3 className="text-white font-orbitron font-bold text-lg leading-tight uppercase tracking-tight">Contato</h3>
+                  <p className="text-[10px] text-green-400 font-black tracking-widest uppercase mt-0.5 font-orbitron">// WhatsApp Direto</p>
+                </div>
+                <button 
+                  onClick={() => setShowWhatsAppForm(false)}
+                  className="p-2 text-white/50 hover:text-white transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div className="space-y-1.5 text-left">
+                  <label className="text-[10px] text-white/50 uppercase font-black tracking-widest ml-1 font-orbitron">Seu Nome</label>
+                  <input 
+                    type="text"
+                    value={waName}
+                    onChange={(e) => setWaName(e.target.value)}
+                    placeholder="Ex: João Silva"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white outline-none focus:border-green-500/50 transition-all font-rajdhani"
+                  />
+                </div>
+                
+                <div className="space-y-1.5 text-left">
+                  <label className="text-[10px] text-white/50 uppercase font-black tracking-widest ml-1 font-orbitron">Sua Igreja</label>
+                  <input 
+                    type="text"
+                    value={waChurch}
+                    onChange={(e) => setWaChurch(e.target.value)}
+                    placeholder="Ex: Igreja Central"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white outline-none focus:border-green-500/50 transition-all font-rajdhani"
+                  />
+                </div>
+
+                <button 
+                  onClick={() => {
+                    if (!waName || !waChurch) {
+                      alert("Por favor, preencha todos os campos.");
+                      return;
+                    }
+                    const text = encodeURIComponent(`Olá! Me chamo ${waName}, sou da igreja ${waChurch}. Gostaria de conversar.`);
+                    window.open(`https://wa.me/5547988997312?text=${text}`, '_blank');
+                    setShowWhatsAppForm(false);
+                  }}
+                  className="w-full mt-2 bg-green-600 hover:bg-green-500 text-white font-orbitron font-bold py-4 rounded-xl shadow-[0_0_20px_rgba(37,211,102,0.3)] transition-all flex items-center justify-center gap-3 uppercase tracking-widest text-[11px]"
+                >
+                  <MessageCircle className="w-4 h-4" />
+                  Abrir WhatsApp
+                </button>
+                
+                <p className="text-[9px] text-white/30 text-center italic mt-2">
+                  * Campos obrigatórios para identificação.
+                </p>
+              </div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
     </div>
