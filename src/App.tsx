@@ -664,7 +664,7 @@ export default function App() {
                       alert("Por favor, preencha todos os campos.");
                       return;
                     }
-                    const text = encodeURIComponent(`Olá! Me chamo ${waName}, sou da igreja ${waChurch}. Gostaria de conversar.`);
+                    const text = encodeURIComponent(`Paz me chama ${waName} sou da igreja ${waChurch} gostaria de agendar uma data para irmão está pregando aqui.`);
                     window.open(`https://wa.me/5547988997312?text=${text}`, '_blank');
                     setShowWhatsAppForm(false);
                   }}
