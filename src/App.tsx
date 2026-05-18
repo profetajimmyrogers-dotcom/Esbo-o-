@@ -442,7 +442,7 @@ export default function App() {
 
   if (!authorized) {
     return (
-      <div className="min-h-screen relative overflow-hidden bg-cover bg-center" style={{ backgroundImage: 'url("https://i.postimg.cc/zvt9DGd2/IMG-20260515-185044.png")' }}>
+      <div className="min-h-screen relative overflow-hidden bg-cover bg-center" style={{ backgroundImage: 'url("https://i.postimg.cc/2jgRP7BJ/file-00000000aa9c71f58b7e1dea34210739.png")' }}>
         <div className={cn("fixed inset-0 transition-all duration-1000 pointer-events-none z-1", moonMode ? "bg-black/85" : "bg-transparent")} />
         
         {/* Lock Message */}
