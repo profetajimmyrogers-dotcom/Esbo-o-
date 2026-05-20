@@ -92,3 +92,84 @@
   @apply bg-neon-pink text-dark-bg px-0.5 rounded-xs font-bold ring-1 ring-neon-pink/30;
   box-shadow: 0 0 5px rgba(255, 0, 170, 0.4);
 }
+
+/* Background Effects, Cinematic Zoom & Drifting Divine Clouds */
+@keyframes kenBurns {
+  0% {
+    transform: scale(1) translate(0, 0);
+  }
+  50% {
+    transform: scale(1.06) translate(1%, -0.5%);
+  }
+  100% {
+    transform: scale(1) translate(0, 0);
+  }
+}
+
+@keyframes fogDrift1 {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(12%, 6%) scale(1.15);
+  }
+}
+
+@keyframes fogDrift2 {
+  0%, 100% {
+    transform: translate(0, 0) scale(1.1);
+  }
+  50% {
+    transform: translate(-8%, -10%) scale(0.9);
+  }
+}
+
+@keyframes fogDrift3 {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(6%, -12%) scale(1.2);
+  }
+}
+
+@keyframes particleRise {
+  0% {
+    transform: translateY(0) translateX(0) scale(0.5);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.55;
+  }
+  80% {
+    opacity: 0.55;
+  }
+  100% {
+    transform: translateY(-95vh) translateX(30px) scale(1.2);
+    opacity: 0;
+  }
+}
+
+.animate-ken-burns {
+  animation: kenBurns 45s ease-in-out infinite;
+}
+
+.animate-fog-drift-slow {
+  animation: fogDrift1 35s ease-in-out infinite;
+}
+
+.animate-fog-drift-medium {
+  animation: fogDrift2 28s ease-in-out infinite;
+}
+
+.animate-fog-drift-fast {
+  animation: fogDrift3 22s ease-in-out infinite;
+}
+
+.animate-particle-float-1 { animation: particleRise 15s linear infinite; animation-delay: 0s; }
+.animate-particle-float-2 { animation: particleRise 12s linear infinite; animation-delay: 3s; }
+.animate-particle-float-3 { animation: particleRise 17s linear infinite; animation-delay: 6s; }
+.animate-particle-float-4 { animation: particleRise 14s linear infinite; animation-delay: 1.5s; }
+.animate-particle-float-5 { animation: particleRise 19s linear infinite; animation-delay: 4.5s; }
+.animate-particle-float-6 { animation: particleRise 16s linear infinite; animation-delay: 8s; }
+

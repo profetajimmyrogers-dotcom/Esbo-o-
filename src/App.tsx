@@ -448,8 +448,31 @@ export default function App() {
 
   if (!authorized) {
     return (
-      <div className="min-h-screen relative overflow-hidden bg-cover bg-center" style={{ backgroundImage: 'url("https://i.postimg.cc/DygNnfLG/file-000000000e1871fbb4f8be5449287cdd.png")' }}>
-        <div className={cn("fixed inset-0 transition-all duration-1000 pointer-events-none z-1", moonMode ? "bg-black/85" : "bg-transparent")} />
+      <div className="min-h-screen relative overflow-hidden bg-[#06070a]">
+        {/* Cinematic Animated Background Image (Ken Burns Zoom/Pan Movement) */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center pointer-events-none select-none z-0 transform will-change-transform scale-[1.01] animate-ken-burns" 
+          style={{ backgroundImage: 'url("https://i.postimg.cc/DygNnfLG/file-000000000e1871fbb4f8be5449287cdd.png")' }}
+        />
+
+        {/* Ambient Drifting Clouds (Multi-layered moving foggy blurs to animate clouds) */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden z-[1] mix-blend-screen opacity-20">
+          <div className="absolute -top-[10%] -left-[20%] w-[60%] h-[50%] bg-white rounded-full blur-[140px] animate-fog-drift-slow" />
+          <div className="absolute top-[30%] -right-[15%] w-[55%] h-[60%] bg-cyan-400 rounded-full blur-[160px] animate-fog-drift-medium" />
+          <div className="absolute -bottom-[15%] left-[10%] w-[70%] h-[45%] bg-pink-400 rounded-full blur-[180px] animate-fog-drift-fast" />
+        </div>
+
+        {/* Divine Sparkles & Floating Light Particles rising through the clouds */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden z-[2] select-none">
+          <div className="absolute bottom-0 left-[12%] w-[2px] h-[2px] bg-white rounded-full animate-particle-float-1" />
+          <div className="absolute bottom-0 left-[28%] w-[2.5px] h-[2.5px] bg-cyan-300 rounded-full animate-particle-float-2 animate-pulse" />
+          <div className="absolute bottom-0 left-[47%] w-[1.5px] h-[1.5px] bg-white rounded-full animate-particle-float-3" />
+          <div className="absolute bottom-0 left-[62%] w-[2px] h-[2px] bg-pink-300 rounded-full animate-particle-float-4" />
+          <div className="absolute bottom-0 left-[78%] w-[3px] h-[3px] bg-white rounded-full animate-particle-float-5 animate-pulse" />
+          <div className="absolute bottom-0 left-[88%] w-[2px] h-[2px] bg-cyan-200 rounded-full animate-particle-float-6" />
+        </div>
+
+        <div className={cn("fixed inset-0 transition-all duration-1000 pointer-events-none z-[3]", moonMode ? "bg-black/85" : "bg-transparent")} />
         
         {/* Lock Message */}
         <AnimatePresence>
