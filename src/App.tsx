@@ -35,7 +35,9 @@ import {
   ChevronUp,
   ChevronDown,
   MessageCircle,
-  Menu
+  Menu,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { cn } from './lib/utils';
 import { HighlightableText } from './components/HighlightableText';
@@ -196,15 +198,16 @@ export default function App() {
   const [showRightSidebar, setShowRightSidebar] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [blockedDates, setBlockedDates] = useState<string[]>([]);
-  const [systemFields, setSystemFields] = useState<Record<string, string>>({
+  const defaultFields = {
     id1: 'LED',
     id2: 'TLL',
     id3: 'St. Petersburg',
     id4: 'JAN 13, 6:15 AM',
     id5: 'Tallinn',
     id6: 'JAN 13, 12:35 PM'
-  });
-  const [currentDate] = useState(new Date());
+  };
+  const [systemFields, setSystemFields] = useState<Record<string, string>>(defaultFields);
+  const [currentDate, setCurrentDate] = useState(new Date());
 
   // WhatsApp Lead State
   const [showWhatsAppForm, setShowWhatsAppForm] = useState(false);
@@ -266,7 +269,20 @@ export default function App() {
     // Load System Settings
     const unsubscribeSettings = onSnapshot(doc(db, 'systemSettings', 'sidebar'), (docSnap) => {
       if (docSnap.exists()) {
-        setSystemFields(docSnap.data().fields);
+        const data = docSnap.data();
+        if (data && data.fields) {
+          setSystemFields(prev => {
+            const merged = { ...defaultFields, ...prev, ...data.fields };
+            // Ensure no empty strings or undefined elements overwrite default keys
+            Object.keys(defaultFields).forEach((key) => {
+              const k = key as keyof typeof defaultFields;
+              if (!merged[k] || String(merged[k]).trim() === '') {
+                merged[k] = defaultFields[k];
+              }
+            });
+            return merged;
+          });
+        }
       }
     });
 
@@ -284,6 +300,14 @@ export default function App() {
 
   const toggleMoonMode = () => setMoonMode(!moonMode);
   const toggleSidebar = () => setShowSidebar(!showSidebar);
+
+  const handlePrevMonth = () => {
+    setCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
+  };
+
+  const handleNextMonth = () => {
+    setCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
+  };
 
   // Robust toggle implementation for Firestore
   const handleDateToggle = async (dateStr: string) => {
@@ -325,13 +349,13 @@ export default function App() {
   };
   
   const updateSystemField = async (id: string, value: string) => {
-    const newFields = { ...systemFields, [id]: value };
-    setSystemFields(newFields);
-    try {
-      await setDoc(doc(db, 'systemSettings', 'sidebar'), { fields: newFields }, { merge: true });
-    } catch (e) {
-      console.error(e);
-    }
+    const finalValue = value.trim() === '' ? (defaultFields[id as keyof typeof defaultFields] || '') : value;
+    setSystemFields(prev => {
+      const newFields = { ...prev, [id]: finalValue };
+      setDoc(doc(db, 'systemSettings', 'sidebar'), { fields: newFields }, { merge: true })
+        .catch(e => console.error("Error saving setting:", e));
+      return newFields;
+    });
   };
 
   const renderCalendarDays = () => {
@@ -353,10 +377,12 @@ export default function App() {
             key={i} 
             onClick={() => handleDateToggle(dateStr)}
             className={cn(
-              "aspect-square flex items-center justify-center rounded-lg text-[13px] cursor-pointer transition-all border border-transparent",
-              isBlocked ? "bg-red-500/15 text-white/50 blur-[0.5px] border-red-600" : "bg-white/5 text-[#00ffcc] border-transparent hover:border-neon-cyan vacant",
-              isToday && "bg-[#ff5e00]! text-white! font-bold shadow-[0_0_15px_rgba(255,94,0,0.5)]",
-              editMode && isBlocked && "cursor-pointer blur-none opacity-80"
+              "aspect-square flex items-center justify-center rounded-xl text-[11px] font-orbitron font-bold transition-all relative border select-none duration-300",
+              isBlocked 
+                ? "bg-red-950/20 text-red-500/40 border-red-950/50 hover:bg-red-950/35 hover:border-red-500/30 line-through decoration-red-500/20" 
+                : "bg-white/5 text-[#00f5ff] border-transparent hover:border-[#00f5ff]/40 hover:bg-[#00f5ff]/5 hover:shadow-[0_0_8px_rgba(0,245,255,0.2)] vacant cursor-pointer",
+              isToday && "bg-[#ff5e00]! text-white! font-black border-transparent shadow-[0_0_15px_rgba(255,94,0,0.6)] ring-1 ring-white/10 scale-[1.03] z-10",
+              editMode && "cursor-pointer"
             )}
           >
             {i}
@@ -977,26 +1003,80 @@ export default function App() {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 onClick={() => setMoonMode(false)}
-                className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[499]"
+                className="fixed inset-0 bg-black/50 backdrop-blur-md z-[499]"
               />
 
-              <motion.div 
-                initial={{ opacity: 0, x: '-50%', y: '-60%' }}
-                animate={{ opacity: 1, x: '-50%', y: '-50%' }}
-                exit={{ opacity: 0, x: '-50%', y: '-60%' }}
-                className="fixed top-1/2 left-1/2 z-[500] p-4 md:p-5 rounded-[24px] w-[90%] max-w-[340px] bg-[#0f0f0f]/95 border border-white/10 shadow-2xl backdrop-blur-xl"
-              >
-                <div className="flex justify-between items-center mb-4 text-white text-lg px-1">
-                  <span className="font-orbitron tracking-widest uppercase text-sm md:text-base">{monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}</span>
-                  <div className="text-[10px] text-neon-cyan select-none whitespace-nowrap">● VAGO</div>
-                </div>
-                <div className="grid grid-cols-7 gap-1 md:gap-2 text-center">
-                  {["D", "S", "T", "Q", "Q", "S", "S"].map((d, i) => (
-                    <div key={`${d}-${i}`} className="text-neon-yellow text-[11px] md:text-[12px] font-bold uppercase pb-1 flex justify-center items-center">{d}</div>
-                  ))}
-                  {renderCalendarDays()}
-                </div>
-              </motion.div>
+              {/* Robust Centering Container for Viewport Safety */}
+              <div className="fixed inset-0 pointer-events-none flex items-center justify-center p-4 z-[500]">
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.95, y: -20 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, y: -20 }}
+                  transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                  className="pointer-events-auto p-4 rounded-[24px] w-full max-w-[285px] bg-[#0c0c0e]/95 border border-white/10 shadow-[0_0_50px_rgba(0,245,255,0.12)] backdrop-blur-2xl relative overflow-visible"
+                >
+                  {/* Admin Mode Floating Badge */}
+                  {editMode && (
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-red-600 text-white font-mono text-[7px] tracking-[2.5px] px-3 py-1 rounded-full uppercase border border-red-500 shadow-md animate-pulse whitespace-nowrap z-50 font-bold">
+                      // MODO EDITOR ATIVO
+                    </div>
+                  )}
+
+                  {/* Header with Navigation */}
+                  <div className="flex justify-between items-center mb-3.5 px-1">
+                    <button 
+                      onClick={handlePrevMonth}
+                      className="w-7 h-7 rounded-full border border-white/5 bg-white/5 flex items-center justify-center cursor-pointer transition-all duration-300 hover:border-[#00f5ff]/30 hover:bg-[#00f5ff]/5 hover:text-[#00f5ff] text-white/50 active:scale-90"
+                      title="Mês Anterior"
+                    >
+                      <ChevronLeft className="w-3.5 h-3.5" />
+                    </button>
+
+                    <div className="flex flex-col items-center">
+                      <span className="font-orbitron tracking-[3px] uppercase text-[10px] sm:text-xs font-extrabold text-white text-center select-none">
+                        {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
+                      </span>
+                    </div>
+
+                    <button 
+                      onClick={handleNextMonth}
+                      className="w-7 h-7 rounded-full border border-white/5 bg-white/5 flex items-center justify-center cursor-pointer transition-all duration-300 hover:border-[#00f5ff]/30 hover:bg-[#00f5ff]/5 hover:text-[#00f5ff] text-white/50 active:scale-90"
+                      title="Próximo Mês"
+                    >
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+
+                  {/* Calendar Days Table */}
+                  <div className="grid grid-cols-7 gap-1 text-center">
+                    {["D", "S", "T", "Q", "Q", "S", "S"].map((d, i) => (
+                      <div 
+                        key={`${d}-${i}`} 
+                        className="text-white/40 text-[8px] font-black font-orbitron tracking-[1px] pb-1.5 uppercase flex justify-center items-center"
+                      >
+                        {d}
+                      </div>
+                    ))}
+                    {renderCalendarDays()}
+                  </div>
+
+                  {/* Minimalist Visual Legend / Footer info */}
+                  <div className="mt-4 pt-2.5 border-t border-white/5 flex justify-center items-center gap-4 text-[7px] font-mono tracking-widest text-[#00f5ff]/60 select-none uppercase">
+                    <div className="flex items-center gap-1">
+                      <span className="w-1 h-1 rounded-full bg-[#00f5ff]" />
+                      <span>Vago</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <span className="w-1 h-1 rounded-full bg-red-600" />
+                      <span>Reservado</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <span className="w-1 h-1 rounded-full bg-[#ff5e00]" />
+                      <span>Hoje</span>
+                    </div>
+                  </div>
+                </motion.div>
+              </div>
             </>
           )}
         </AnimatePresence>
