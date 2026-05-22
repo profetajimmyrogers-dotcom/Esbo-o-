@@ -173,3 +173,102 @@
 .animate-particle-float-5 { animation: particleRise 19s linear infinite; animation-delay: 4.5s; }
 .animate-particle-float-6 { animation: particleRise 16s linear infinite; animation-delay: 8s; }
 
+/* 🧠 Short-circuit (curto circuito) flickering & float movements */
+@keyframes shortCircuit {
+  0%, 100% { opacity: 0.85; filter: drop-shadow(0 0 12px var(--glow-color, #00f5ff)); }
+  12% { opacity: 0.15; filter: drop-shadow(0 0 1px var(--glow-color, #00f5ff)); }
+  14% { opacity: 0.95; filter: drop-shadow(0 0 16px var(--glow-color, #00f5ff)); }
+  15% { opacity: 0.35; }
+  17% { opacity: 0.75; }
+  30% { opacity: 0.90; }
+  42% { opacity: 0.10; }
+  44% { opacity: 0.85; }
+  70% { opacity: 0.95; }
+  72% { opacity: 0.20; }
+  75% { opacity: 0.90; }
+  90% { opacity: 0.80; }
+  92% { opacity: 0.15; }
+  95% { opacity: 1; filter: drop-shadow(0 0 20px var(--glow-color, #00f5ff)); }
+}
+
+@keyframes floatSubtle {
+  0%, 100% { transform: translateY(0px) translateX(0px); }
+  50% { transform: translateY(-6px) translateX(4px); }
+}
+
+.animate-short-circuit-1 {
+  animation: shortCircuit 5s ease-in-out infinite, floatSubtle 9s ease-in-out infinite;
+}
+
+.animate-short-circuit-2 {
+  animation: shortCircuit 3.8s ease-in-out infinite, floatSubtle 7s ease-in-out infinite;
+  animation-delay: 1.2s, 0.5s;
+}
+
+.animate-short-circuit-3 {
+  animation: shortCircuit 6.2s ease-in-out infinite, floatSubtle 11s ease-in-out infinite;
+  animation-delay: 2.5s, 1.8s;
+}
+
+/* 💫 Flowing Luxury Gradient for Progress Bar matching letters */
+@keyframes luxuryGradientFlow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.luxury-progress-track {
+  background: linear-gradient(270deg, #00f5ff, #ff00aa, #ffee00, #00ff88, #00f5ff);
+  background-size: 400% 400%;
+  animation: luxuryGradientFlow 8s ease infinite;
+}
+
+/* ✈️ Floating / cruising / tilting effect for the airplane icon */
+@keyframes airplaneCruising {
+  0%, 100% { transform: translateY(0px) rotate(10deg); }
+  50% { transform: translateY(-4px) rotate(15deg); }
+}
+
+.animate-airplane-fly {
+  animation: airplaneCruising 2.5s ease-in-out infinite;
+}
+
+/* Sparkle / thruster fire engine glow */
+@keyframes engineGlow {
+  0%, 100% { box-shadow: 0 0 8px #00f5ff, 0 0 20px #00f5ff, inset 0 0 4px #fff; }
+  50% { box-shadow: 0 0 16px #ff00aa, 0 0 35px #ff00aa, inset 0 0 6px #fff; }
+}
+
+.animate-engine-glow {
+  animation: engineGlow 1.5s ease-in-out infinite;
+}
+
+/* 🔒 Modern Luxury Shake and Glowing effects for Login Panel */
+@keyframes cardErrorShake {
+  0%, 100% { transform: translateX(0); }
+  15%, 45%, 75% { transform: translateX(-8px); }
+  30%, 60%, 90% { transform: translateX(8px); }
+}
+
+.animate-card-shake {
+  animation: cardErrorShake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+@keyframes luxuryPulseAndTilt {
+  0%, 100% { box-shadow: 0 0 15px rgba(0, 245, 255, 0.25), inset 0 0 15px rgba(255, 0, 170, 0.1); border-color: rgba(0, 245, 255, 0.3); }
+  50% { box-shadow: 0 0 32px rgba(255, 0, 170, 0.4), inset 0 0 25px rgba(0, 245, 255, 0.15); border-color: rgba(255, 0, 170, 0.5); }
+}
+
+.luxury-card-glow {
+  animation: luxuryPulseAndTilt 4.5s ease-in-out infinite;
+}
+
+/* Shining luxury button border outline flow */
+.glow-button-border {
+  background: linear-gradient(90deg, #00f5ff, #ff00aa, #ffee00, #00ff88, #00f5ff);
+  background-size: 300% 300%;
+}
+
+
+
+

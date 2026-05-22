@@ -34,7 +34,8 @@ import {
   User as UserIcon,
   ChevronUp,
   ChevronDown,
-  MessageCircle
+  MessageCircle,
+  Menu
 } from 'lucide-react';
 import { cn } from './lib/utils';
 import { HighlightableText } from './components/HighlightableText';
@@ -110,11 +111,76 @@ function PontoItem({ index, total, value, onChange, onRemove, onMove }: {
   );
 }
 
+interface FloatingLetter {
+  char: string;
+  top: string;
+  left?: string;
+  right?: string;
+  color: string;
+  shadow: string;
+  name: string;
+  meaning: string;
+  lang: string;
+  animClass: string;
+}
+
+const DEUS_NAMES_LETTERS: FloatingLetter[] = [
+  // ELOHIM (Hebrew)
+  { char: 'E', top: '7%', left: '4%', color: '#00f5ff', shadow: '#00f5ff88', name: 'ELOHIM', meaning: 'Deus Criador Supremo', lang: 'Hebraico', animClass: 'animate-short-circuit-1' },
+  { char: 'L', top: '15%', left: '8%', color: '#00f5ff', shadow: '#00f5ff88', name: 'ELOHIM', meaning: 'Deus Criador Supremo', lang: 'Hebraico', animClass: 'animate-short-circuit-2' },
+  { char: 'O', top: '23%', left: '3%', color: '#00f5ff', shadow: '#00f5ff88', name: 'ELOHIM', meaning: 'Deus Criador Supremo', lang: 'Hebraico', animClass: 'animate-short-circuit-3' },
+  { char: 'H', top: '31%', left: '9%', color: '#00f5ff', shadow: '#00f5ff88', name: 'ELOHIM', meaning: 'Deus Criador Supremo', lang: 'Hebraico', animClass: 'animate-short-circuit-1' },
+  { char: 'I', top: '39%', left: '5%', color: '#00f5ff', shadow: '#00f5ff88', name: 'ELOHIM', meaning: 'Deus Criador Supremo', lang: 'Hebraico', animClass: 'animate-short-circuit-2' },
+  { char: 'M', top: '47%', left: '11%', color: '#00f5ff', shadow: '#00f5ff88', name: 'ELOHIM', meaning: 'Deus Criador Supremo', lang: 'Hebraico', animClass: 'animate-short-circuit-3' },
+
+  // YAHWEH (Hebrew)
+  { char: 'Y', top: '10%', left: '26%', color: '#ff00aa', shadow: '#ff00aa88', name: 'YAHWEH', meaning: 'O Senhor Autoexistente (Eu Sou)', lang: 'Hebraico', animClass: 'animate-short-circuit-2' },
+  { char: 'A', top: '20%', left: '30%', color: '#ff00aa', shadow: '#ff00aa88', name: 'YAHWEH', meaning: 'O Senhor Autoexistente (Eu Sou)', lang: 'Hebraico', animClass: 'animate-short-circuit-3' },
+  { char: 'H', top: '30%', left: '25%', color: '#ff00aa', shadow: '#ff00aa88', name: 'YAHWEH', meaning: 'O Senhor Autoexistente (Eu Sou)', lang: 'Hebraico', animClass: 'animate-short-circuit-1' },
+  { char: 'W', top: '40%', left: '32%', color: '#ff00aa', shadow: '#ff00aa88', name: 'YAHWEH', meaning: 'O Senhor Autoexistente (Eu Sou)', lang: 'Hebraico', animClass: 'animate-short-circuit-2' },
+  { char: 'E', top: '50%', left: '27%', color: '#ff00aa', shadow: '#ff00aa88', name: 'YAHWEH', meaning: 'O Senhor Autoexistente (Eu Sou)', lang: 'Hebraico', animClass: 'animate-short-circuit-3' },
+  { char: 'H', top: '60%', left: '33%', color: '#ff00aa', shadow: '#ff00aa88', name: 'YAHWEH', meaning: 'O Senhor Autoexistente (Eu Sou)', lang: 'Hebraico', animClass: 'animate-short-circuit-1' },
+
+  // ADONAI (Hebrew)
+  { char: 'A', top: '55%', left: '6%', color: '#ffee00', shadow: '#ffee0088', name: 'ADONAI', meaning: 'Meu Senhor Soberano', lang: 'Hebraico', animClass: 'animate-short-circuit-3' },
+  { char: 'D', top: '63%', left: '12%', color: '#ffee00', shadow: '#ffee0088', name: 'ADONAI', meaning: 'Meu Senhor Soberano', lang: 'Hebraico', animClass: 'animate-short-circuit-1' },
+  { char: 'O', top: '71%', left: '3%', color: '#ffee00', shadow: '#ffee0088', name: 'ADONAI', meaning: 'Meu Senhor Soberano', lang: 'Hebraico', animClass: 'animate-short-circuit-2' },
+  { char: 'N', top: '79%', left: '10%', color: '#ffee00', shadow: '#ffee0088', name: 'ADONAI', meaning: 'Meu Senhor Soberano', lang: 'Hebraico', animClass: 'animate-short-circuit-3' },
+  { char: 'A', top: '87%', left: '5%', color: '#ffee00', shadow: '#ffee0088', name: 'ADONAI', meaning: 'Meu Senhor Soberano', lang: 'Hebraico', animClass: 'animate-short-circuit-1' },
+  { char: 'I', top: '95%', left: '11%', color: '#ffee00', shadow: '#ffee0088', name: 'ADONAI', meaning: 'Meu Senhor Soberano', lang: 'Hebraico', animClass: 'animate-short-circuit-2' },
+
+  // THEOS (Greek)
+  { char: 'T', top: '8%', right: '5%', color: '#00ff88', shadow: '#00ff8888', name: 'THEOS', meaning: 'O Deus Único e Verdadeiro', lang: 'Grego', animClass: 'animate-short-circuit-1' },
+  { char: 'H', top: '16%', right: '11%', color: '#00ff88', shadow: '#00ff8888', name: 'THEOS', meaning: 'O Deus Único e Verdadeiro', lang: 'Grego', animClass: 'animate-short-circuit-2' },
+  { char: 'E', top: '24%', right: '4%', color: '#00ff88', shadow: '#00ff8888', name: 'THEOS', meaning: 'O Deus Único e Verdadeiro', lang: 'Grego', animClass: 'animate-short-circuit-3' },
+  { char: 'O', top: '32%', right: '10%', color: '#00ff88', shadow: '#00ff8888', name: 'THEOS', meaning: 'O Deus Único e Verdadeiro', lang: 'Grego', animClass: 'animate-short-circuit-1' },
+  { char: 'S', top: '40%', right: '6%', color: '#00ff88', shadow: '#00ff8888', name: 'THEOS', meaning: 'O Deus Único e Verdadeiro', lang: 'Grego', animClass: 'animate-short-circuit-2' },
+
+  // KURIOS (Greek)
+  { char: 'K', top: '12%', right: '28%', color: '#00f5ff', shadow: '#00f5ff88', name: 'KURIOS', meaning: 'O Senhor Supremo da Vida', lang: 'Grego', animClass: 'animate-short-circuit-3' },
+  { char: 'U', top: '22%', right: '23%', color: '#00f5ff', shadow: '#00f5ff88', name: 'KURIOS', meaning: 'O Senhor Supremo da Vida', lang: 'Grego', animClass: 'animate-short-circuit-1' },
+  { char: 'R', top: '32%', right: '29%', color: '#00f5ff', shadow: '#00f5ff88', name: 'KURIOS', meaning: 'O Senhor Supremo da Vida', lang: 'Grego', animClass: 'animate-short-circuit-2' },
+  { char: 'I', top: '42%', right: '24%', color: '#00f5ff', shadow: '#00f5ff88', name: 'KURIOS', meaning: 'O Senhor Supremo da Vida', lang: 'Grego', animClass: 'animate-short-circuit-3' },
+  { char: 'O', top: '52%', right: '30%', color: '#00f5ff', shadow: '#00f5ff88', name: 'KURIOS', meaning: 'O Senhor Supremo da Vida', lang: 'Grego', animClass: 'animate-short-circuit-1' },
+  { char: 'S', top: '62%', right: '25%', color: '#00f5ff', shadow: '#00f5ff88', name: 'KURIOS', meaning: 'O Senhor Supremo da Vida', lang: 'Grego', animClass: 'animate-short-circuit-2' },
+
+  // LOGOS (Greek)
+  { char: 'L', top: '50%', right: '7%', color: '#ff00aa', shadow: '#ff00aa88', name: 'LOGOS', meaning: 'A Palavra Viva e Eterna', lang: 'Grego', animClass: 'animate-short-circuit-1' },
+  { char: 'O', top: '59%', right: '3%', color: '#ff00aa', shadow: '#ff00aa88', name: 'LOGOS', meaning: 'A Palavra Viva e Eterna', lang: 'Grego', animClass: 'animate-short-circuit-2' },
+  { char: 'G', top: '68%', right: '9%', color: '#ff00aa', shadow: '#ff00aa88', name: 'LOGOS', meaning: 'A Palavra Viva e Eterna', lang: 'Grego', animClass: 'animate-short-circuit-3' },
+  { char: 'O', top: '77%', right: '4%', color: '#ff00aa', shadow: '#ff00aa88', name: 'LOGOS', meaning: 'A Palavra Viva e Eterna', lang: 'Grego', animClass: 'animate-short-circuit-1' },
+  { char: 'S', top: '86%', right: '10%', color: '#ff00aa', shadow: '#ff00aa88', name: 'LOGOS', meaning: 'A Palavra Viva e Eterna', lang: 'Grego', animClass: 'animate-short-circuit-2' },
+
+  // ALPHA & OMEGA (Greek)
+  { char: 'A', top: '4%', left: '44%', color: '#ffee00', shadow: '#ffee0088', name: 'ALPHA_OMEGA', meaning: 'O Alfa e o Ômega (Princípio e Fim)', lang: 'Grego', animClass: 'animate-short-circuit-1' },
+  { char: 'Ω', top: '4%', right: '44%', color: '#ffee00', shadow: '#ffee0088', name: 'ALPHA_OMEGA', meaning: 'O Alfa e o Ômega (Princípio e Fim)', lang: 'Grego', animClass: 'animate-short-circuit-3' },
+];
+
 export default function App() {
   const [authorized, setAuthorized] = useState(() => localStorage.getItem('system_auth') === 'true');
   const [passInput, setPassInput] = useState('');
   const [passError, setPassError] = useState(false);
-  const [user, setUser] = useState<any>(authorized ? { uid: 'admin', displayName: 'Pastor' } : null);
+  const [user, setUser] = useState<any>(authorized ? { uid: 'admin', displayName: 'Conferencista' } : null);
   const [loading, setLoading] = useState(false);
   const [sermoes, setSermoes] = useState<Sermon[]>([]);
   const [busca, setBusca] = useState('');
@@ -127,6 +193,7 @@ export default function App() {
   // New State for Calendar & Sidebar
   const [moonMode, setMoonMode] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false);
+  const [showRightSidebar, setShowRightSidebar] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [blockedDates, setBlockedDates] = useState<string[]>([]);
   const [systemFields, setSystemFields] = useState<Record<string, string>>({
@@ -145,6 +212,19 @@ export default function App() {
   const [waChurch, setWaChurch] = useState('');
 
   const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+  
+  const [hoveredName, setHoveredName] = useState<string | null>(null);
+  const [flightProgress, setFlightProgress] = useState(() => Number(localStorage.getItem('flight_progress') || '70'));
+
+  const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const width = rect.width;
+    const newProgress = Math.max(2, Math.min(98, Math.round((clickX / width) * 100)));
+    setFlightProgress(newProgress);
+    localStorage.setItem('flight_progress', String(newProgress));
+  };
+
   
   const selectedSermon = sermoes.find(s => s.id === selectedSermonId) || null;
   
@@ -423,8 +503,10 @@ export default function App() {
     e.preventDefault();
     if (passInput === '3434') {
       setAuthorized(true);
-      setUser({ uid: 'admin', displayName: 'Pastor' });
+      setUser({ uid: 'admin', displayName: 'Conferencista' });
       localStorage.setItem('system_auth', 'true');
+      setMoonMode(false);
+      setShowSidebar(false);
       setPassError(false);
     } else {
       setPassError(true);
@@ -470,6 +552,55 @@ export default function App() {
           <div className="absolute bottom-0 left-[62%] w-[2px] h-[2px] bg-pink-300 rounded-full animate-particle-float-4" />
           <div className="absolute bottom-0 left-[78%] w-[3px] h-[3px] bg-white rounded-full animate-particle-float-5 animate-pulse" />
           <div className="absolute bottom-0 left-[88%] w-[2px] h-[2px] bg-cyan-200 rounded-full animate-particle-float-6" />
+        </div>
+
+        {/* Ambient Grid of Hebrew & Greek Names of God Letters (Luxurious, Interactive & Flickering) */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden z-[3] select-none">
+          {DEUS_NAMES_LETTERS.map((letter, idx) => {
+            const isHovered = hoveredName === letter.name;
+            const isAnyHovered = hoveredName !== null;
+            const style = {
+              top: letter.top,
+              left: letter.left,
+              right: letter.right,
+              '--glow-color': letter.color,
+              color: letter.color,
+            } as React.CSSProperties;
+
+            return (
+              <div
+                key={`deus-l-${idx}`}
+                onMouseEnter={() => setHoveredName(letter.name)}
+                onMouseLeave={() => setHoveredName(null)}
+                style={style}
+                className={cn(
+                  "absolute pointer-events-auto cursor-help transition-all duration-500 font-orbitron font-extrabold text-[15px] sm:text-[18px] tracking-wider select-none flex flex-col items-center justify-center group",
+                  letter.animClass,
+                  isHovered ? "scale-[1.25] brightness-[1.5] z-[30]" : isAnyHovered ? "opacity-20 scale-[0.85] saturate-[0.3]" : "opacity-65"
+                )}
+              >
+                {/* Visual Glow Aura behind individual letter */}
+                <span 
+                  className="absolute w-8 h-8 rounded-full blur-[14px] opacity-25 group-hover:opacity-80 transition-all duration-500"
+                  style={{ backgroundColor: letter.color }} 
+                />
+                
+                {/* The Letter Itself */}
+                <span className="relative z-[10] transition-transform duration-300">
+                  {letter.char}
+                </span>
+
+                {/* Secret Meaning Popup Tooltip on Hover */}
+                <div 
+                  className="absolute bottom-full mb-2 bg-black/90 text-white font-rajdhani border border-white/20 px-3 py-1.5 rounded-lg text-[9px] uppercase tracking-[2px] opacity-0 group-hover:opacity-100 scale-75 group-hover:scale-100 transition-all duration-300 z-[50] pointer-events-none whitespace-nowrap shadow-[0_4px_12px_rgba(0,0,0,0.5)]"
+                >
+                  <p className="font-bold text-neon-cyan leading-tight">{letter.name === 'ALPHA_OMEGA' ? 'Alfa e Ômega' : letter.name}</p>
+                  <p className="text-white/60 text-[8px] mt-0.5 font-sans lowercase">{letter.meaning}</p>
+                  <p className="text-white/40 text-[7px] mt-1 tracking-widest leading-none font-mono">[{letter.lang}]</p>
+                </div>
+              </div>
+            );
+          })}
         </div>
 
         <div className={cn("fixed inset-0 transition-all duration-1000 pointer-events-none z-[3]", moonMode ? "bg-black/85" : "bg-transparent")} />
@@ -594,34 +725,165 @@ export default function App() {
                   </div>
                 </div>
 
-                <div className="w-full h-3.5 bg-[#222] rounded-full relative mt-5">
-                  <div className="w-[70%] h-full bg-gradient-to-r from-[#a2ff00] to-[#00ffcc] rounded-full relative">
-                    <div className="absolute -right-2.5 -top-2.5 bg-[#00bfff] w-[30px] h-[30px] rounded-full flex items-center justify-center text-[14px]">
-                      ✈
+                {/* Luxury Interactive Flight Progress Track */}
+                <div className="mt-6 space-y-2">
+                  <div className="flex justify-between items-center text-[10px] font-orbitron tracking-[2px]">
+                    <span className="text-[#a2ff00] flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-current animate-ping" />
+                      VOO EM CURSO
+                    </span>
+                    <span className="text-white/80 font-mono font-bold">{flightProgress}%</span>
+                  </div>
+
+                  <div 
+                    onClick={handleProgressClick}
+                    className="w-full h-2.5 bg-[#141414] rounded-full relative cursor-pointer border border-white/10 shadow-inner group/track"
+                    title="Clique para ajustar o progresso do voo"
+                  >
+                    {/* Glowing active path track with luxury multi-color letters flow */}
+                    <div 
+                      style={{ width: `${flightProgress}%` }} 
+                      className="h-full luxury-progress-track rounded-full relative transition-all duration-700 ease-out shadow-[0_0_12px_rgba(0,245,255,0.4)]"
+                    >
+                      {/* Sub-trail particle mist */}
+                      <span className="absolute right-2 top-0 bottom-0 w-8 bg-gradient-to-l from-white/40 to-transparent blur-[2px]" />
+                    </div>
+
+                    {/* Luxurious Interactive Airplane Node */}
+                    <div 
+                      style={{ left: `${flightProgress}%` }}
+                      className="absolute -top-3.5 -translate-x-1/2 transition-all duration-700 ease-out z-20 pointer-events-none"
+                    >
+                      {/* Multi-layered luxury reactive halos */}
+                      <span className="absolute -inset-1 rounded-full bg-gradient-to-r from-[#00f5ff] to-[#ff00aa] opacity-40 blur-[8px] animate-pulse" />
+                      <span className="absolute -inset-2.5 rounded-full bg-[#00f5ff]/20 opacity-30 blur-[12px] animate-engine-glow" />
+
+                      {/* Floating Airplane Sphere */}
+                      <div 
+                        className="w-[34px] h-[34px] rounded-full bg-black/90 border-[2px] border-white/90 flex items-center justify-center text-[15px] text-white shadow-[0_0_15px_var(--glow-color,#00f5ff)] relative transform animate-airplane-fly select-none"
+                        style={{ '--glow-color': flightProgress < 25 ? '#00f5ff' : flightProgress < 50 ? '#ff00aa' : flightProgress < 75 ? '#ffee00' : '#00ff88' } as React.CSSProperties}
+                      >
+                        {/* Glow indicator corresponding to background color of letters */}
+                        <span 
+                          className="absolute inset-[2px] rounded-full opacity-10 transition-colors duration-500" 
+                          style={{ backgroundColor: flightProgress < 25 ? '#00f5ff' : flightProgress < 50 ? '#ff00aa' : flightProgress < 75 ? '#ffee00' : '#00ff88' }}
+                        />
+                        <span className="relative z-10 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">✈</span>
+                      </div>
                     </div>
                   </div>
+                  
+                  <div className="flex justify-between text-[8px] text-white/45 tracking-widest font-mono uppercase">
+                    <span>PARTIDA ({systemFields.id1})</span>
+                    <span>CHEGADA ({systemFields.id2})</span>
+                  </div>
                 </div>
+
               </motion.div>
             )}
           </AnimatePresence>
         </div>
 
-        {/* WhatsApp Toggle */}
+        {/* Elegant Menu Drawer Toggle in place of 'Minha Agenda' */}
         <button 
-          onClick={() => setShowWhatsAppForm(true)}
+          onClick={() => setShowRightSidebar(!showRightSidebar)}
           className={cn(
-            "fixed top-5 right-[180px] group flex items-center gap-3 px-4 py-2 rounded-full bg-black/40 backdrop-blur-md border border-white/20 z-[1001] transition-all duration-500 hover:scale-105 active:scale-95 cursor-pointer outline-none",
-            "shadow-[0_0_15px_rgba(37,211,102,0.2)] hover:shadow-[0_0_25px_rgba(37,211,102,0.4)] border-green-500/30"
+            "fixed top-5 right-5 group flex items-center gap-2 px-3 py-1.5 rounded-xl bg-black/60 backdrop-blur-xl border border-white/10 z-[1001] transition-all duration-500 hover:scale-[1.03] active:scale-95 cursor-pointer outline-none select-none text-left shadow-[0_0_15px_rgba(0,245,255,0.15)] hover:shadow-[0_0_20px_rgba(0,245,255,0.25)]",
+            showRightSidebar ? "border-[#00f5ff]/50 shadow-[0_0_25px_rgba(0,245,255,0.3)] bg-black/85" : "hover:border-[#00f5ff]/40"
           )}
         >
-          <div className="w-8 h-8 rounded-full flex items-center justify-center bg-green-500 text-white shadow-[0_0_15px_rgba(37,211,102,0.5)] text-xl">
-            <MessageCircle className="w-5 h-5 fill-current" />
+          <div className="w-5 h-5 rounded-full flex items-center justify-center transition-transform duration-500 text-xs bg-white/5 border border-white/10">
+            {showRightSidebar ? (
+              <X className="w-3 h-3 text-[#00f5ff]" />
+            ) : (
+              <Menu className="w-3 h-3 text-[#00f5ff]" />
+            )}
           </div>
-          <div className="flex flex-col items-start mr-1 select-none text-left">
-            <span className="text-[9px] text-green-400 font-black uppercase tracking-[0.2em] leading-none mb-0.5 animate-pulse">Online</span>
-            <span className="text-white text-[12px] font-orbitron font-bold uppercase tracking-wide leading-none">WhatsApp</span>
+          <div className="flex flex-col select-none">
+            <span className="text-[7px] text-[#00f5ff] font-extrabold uppercase tracking-[0.15em] leading-none mb-0.5 animate-pulse">Minha</span>
+            <span className="text-white text-[9px] font-orbitron font-extrabold uppercase tracking-[1.5px] leading-none">Agenda</span>
           </div>
+          {/* Glowing cursor ring helper on hover */}
+          <span className="absolute -inset-0.5 rounded-xl bg-gradient-to-r from-[#00f5ff]/20 to-[#ff00aa]/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
         </button>
+
+        {/* Right Discrete Thin Drawer (Gaveta) */}
+        <AnimatePresence>
+          {showRightSidebar && (
+            <>
+              {/* Invisible Click-Outside Overlay */}
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setShowRightSidebar(false)}
+                className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[1000]"
+              />
+
+              {/* Fina Gaveta Discreta */}
+              <motion.div 
+                initial={{ x: '100%', opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                exit={{ x: '100%', opacity: 0 }}
+                transition={{ type: 'spring', damping: 28, stiffness: 260 }}
+                className="fixed right-0 top-0 bottom-0 w-[185px] bg-[#0c0c0e]/90 backdrop-blur-2xl border-l border-white/10 p-4 pt-20 z-[1000] flex flex-col gap-4 shadow-2xl overflow-y-auto"
+              >
+                <div className="border-b border-white/5 pb-2 mb-1">
+                  <span className="text-[8px] text-white/40 block font-mono tracking-[0.25em] uppercase font-bold text-center">// ACESSO</span>
+                </div>
+
+                <div className="flex flex-col gap-3">
+                  {/* WhatsApp Button inside Drawer */}
+                  <button 
+                    onClick={() => {
+                      setShowWhatsAppForm(true);
+                      setShowRightSidebar(false);
+                    }}
+                    className={cn(
+                      "w-full group flex items-center gap-2 px-3 py-2 rounded-xl bg-black/60 border border-green-500/30 transition-all duration-300 hover:scale-[1.02] active:scale-95 cursor-pointer outline-none select-none text-left shadow-[0_0_12px_rgba(34,197,94,0.1)] hover:shadow-[0_0_18px_rgba(34,197,94,0.25)] hover:border-green-400/50"
+                    )}
+                  >
+                    <div className="relative w-4 h-4 rounded-full flex items-center justify-center bg-green-500/10 text-green-400 shrink-0">
+                      <span className="absolute inset-0 rounded-full bg-green-400 opacity-20 blur-[2px] animate-pulse" />
+                      <MessageCircle className="w-2.5 h-2.5 fill-current relative z-10" />
+                    </div>
+                    <div className="flex flex-col select-none">
+                      <span className="text-[6px] text-green-300 font-extrabold uppercase tracking-[0.1em] leading-none mb-0.5">Online</span>
+                      <span className="text-white text-[8px] font-orbitron font-extrabold uppercase tracking-[1px] leading-none">WhatsApp</span>
+                    </div>
+                  </button>
+
+                  {/* Minha Agenda (Moon/Calendar Mode) Button inside Drawer */}
+                  <button 
+                    onClick={() => {
+                      toggleMoonMode();
+                      setShowRightSidebar(false);
+                    }}
+                    className={cn(
+                      "w-full group flex items-center gap-2 px-3 py-2 rounded-xl bg-black/60 border border-white/10 transition-all duration-300 hover:scale-[1.02] active:scale-95 cursor-pointer outline-none select-none text-left shadow-[0_0_12px_rgba(0,245,255,0.05)] hover:shadow-[0_0_18px_rgba(0,245,255,0.2)]",
+                      moonMode ? "border-[#00f5ff]/50 shadow-[0_0_18px_rgba(0,245,255,0.3)] bg-cyan-950/25" : "hover:border-[#00f5ff]/40"
+                    )}
+                  >
+                    <div className={cn(
+                      "w-4 h-4 rounded-full flex items-center justify-center transition-transform duration-700 text-[10px] bg-white/5 border border-white/10 shrink-0",
+                      moonMode && "rotate-[360deg] bg-cyan-500/10 border-[#00f5ff]/30"
+                    )}>
+                      <span className="relative z-10">{moonMode ? '🌕' : '🌙'}</span>
+                    </div>
+                    <div className="flex flex-col select-none">
+                      <span className="text-[6px] text-[#00f5ff] font-extrabold uppercase tracking-[0.15em] leading-none mb-0.5">Consultar</span>
+                      <span className="text-white text-[8px] font-orbitron font-extrabold uppercase tracking-[1px] leading-none">Agenda</span>
+                    </div>
+                  </button>
+                </div>
+
+                <div className="mt-auto pt-4 text-center">
+                  <span className="text-[7px] font-mono tracking-widest text-white/20 uppercase">DEUS É FIEL</span>
+                </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
 
         {/* WhatsApp Backdrop */}
         <AnimatePresence>
@@ -705,91 +967,117 @@ export default function App() {
           )}
         </AnimatePresence>
 
-        {/* Moon Toggle - Consultar Agenda */}
-        <button 
-          onClick={toggleMoonMode}
-          className={cn(
-            "fixed top-5 right-5 group flex items-center gap-3 px-4 py-2 rounded-full bg-black/40 backdrop-blur-md border border-white/20 z-[1001] transition-all duration-500 hover:scale-105 active:scale-95 cursor-pointer outline-none",
-            "shadow-[0_0_15px_rgba(0,255,204,0.2)] hover:shadow-[0_0_25px_rgba(0,255,204,0.4)]",
-            moonMode ? "border-neon-cyan/50 shadow-[0_0_30px_rgba(0,255,204,0.6)]" : ""
-          )}
-        >
-          <div className={cn(
-            "w-8 h-8 rounded-full flex items-center justify-center transition-transform duration-700 text-xl",
-            moonMode && "rotate-[360deg]"
-          )}>
-            {moonMode ? '🌕' : '🌙'}
-          </div>
-          <div className="flex flex-col items-start mr-1 select-none">
-            <span className="text-[9px] text-neon-cyan font-black uppercase tracking-[0.2em] leading-none mb-0.5 animate-pulse">Minha</span>
-            <span className="text-white text-[12px] font-orbitron font-bold uppercase tracking-wide leading-none">Agenda</span>
-          </div>
-        </button>
-
         {/* Calendar */}
         <AnimatePresence>
           {moonMode && (
-            <motion.div 
-              initial={{ opacity: 0, x: '-50%', y: '-60%' }}
-              animate={{ opacity: 1, x: '-50%', y: '-50%' }}
-              exit={{ opacity: 0, x: '-50%', y: '-60%' }}
-              className="fixed top-1/2 left-1/2 z-[500] p-4 md:p-5 rounded-[24px] w-[90%] max-w-[340px] bg-[#0f0f0f]/95 border border-white/10 shadow-2xl backdrop-blur-xl"
-            >
-              <div className="flex justify-between items-center mb-4 text-white text-lg px-1">
-                <span className="font-orbitron tracking-widest uppercase text-sm md:text-base">{monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}</span>
-                <div className="text-[10px] text-neon-cyan select-none whitespace-nowrap">● VAGO</div>
-              </div>
-              <div className="grid grid-cols-7 gap-1 md:gap-2 text-center">
-                {["D", "S", "T", "Q", "Q", "S", "S"].map((d, i) => (
-                  <div key={`${d}-${i}`} className="text-neon-yellow text-[11px] md:text-[12px] font-bold uppercase pb-1 flex justify-center items-center">{d}</div>
-                ))}
-                {renderCalendarDays()}
-              </div>
-            </motion.div>
+            <>
+              {/* Backdrop for outside click detection */}
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setMoonMode(false)}
+                className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[499]"
+              />
+
+              <motion.div 
+                initial={{ opacity: 0, x: '-50%', y: '-60%' }}
+                animate={{ opacity: 1, x: '-50%', y: '-50%' }}
+                exit={{ opacity: 0, x: '-50%', y: '-60%' }}
+                className="fixed top-1/2 left-1/2 z-[500] p-4 md:p-5 rounded-[24px] w-[90%] max-w-[340px] bg-[#0f0f0f]/95 border border-white/10 shadow-2xl backdrop-blur-xl"
+              >
+                <div className="flex justify-between items-center mb-4 text-white text-lg px-1">
+                  <span className="font-orbitron tracking-widest uppercase text-sm md:text-base">{monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}</span>
+                  <div className="text-[10px] text-neon-cyan select-none whitespace-nowrap">● VAGO</div>
+                </div>
+                <div className="grid grid-cols-7 gap-1 md:gap-2 text-center">
+                  {["D", "S", "T", "Q", "Q", "S", "S"].map((d, i) => (
+                    <div key={`${d}-${i}`} className="text-neon-yellow text-[11px] md:text-[12px] font-bold uppercase pb-1 flex justify-center items-center">{d}</div>
+                  ))}
+                  {renderCalendarDays()}
+                </div>
+              </motion.div>
+            </>
           )}
         </AnimatePresence>
 
-        <div className="flex items-end justify-center min-h-screen pb-10 px-4">
+        <div className="flex items-end justify-center min-h-screen pb-14 px-4 z-10">
           <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="w-[280px] p-6 rounded-[25px] bg-white/10 backdrop-blur-[20px] border border-white/20 shadow-2xl text-white text-center z-10"
+            initial={{ opacity: 0, scale: 0.95, y: 30 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            className={cn(
+              "w-full max-w-[265px] pt-3.5 pb-5 px-5 rounded-[24px] backdrop-blur-[24px] border transition-all duration-500 shadow-2xl text-white text-center z-10",
+              passError 
+                ? "animate-card-shake border-red-500/80 bg-red-950/20 shadow-[0_0_35px_rgba(239,68,68,0.4)]" 
+                : "luxury-card-glow bg-black/45 border-white/20"
+            )}
           >
-            <h2 className="text-xl font-bold mb-2">Bem-vindo(a)!</h2>
-            <div className="mb-5">
-              <input 
-                type="password"
-                value={passInput}
-                onChange={(e) => setPassInput(e.target.value)}
-                placeholder="Palavra-passe"
-                className="w-full p-3 rounded-lg border-none bg-white/90 text-[#222] font-rajdahni outline-none text-center"
-              />
-            </div>
-            <div className="flex flex-col items-center gap-2">
-              <label className="relative inline-block w-[70px] h-[35px] cursor-pointer">
+            <h2 className="text-lg font-bold font-orbitron tracking-[3px] uppercase bg-gradient-to-r from-white via-cyan-300 to-white bg-clip-text text-transparent">
+              {passError ? "Acesso Negado" : "Conferencista Jimmy"}
+            </h2>
+            
+            <p className="text-[8px] font-mono tracking-[0.25em] text-white/50 uppercase mb-4 mt-0.5">
+              {passError ? "// Senha incorreta" : "// Credenciais do Portal"}
+            </p>
+
+            <form onSubmit={handleLogin} className="space-y-3.5">
+              <div className="relative group/input">
                 <input 
-                  type="checkbox" 
-                  className="sr-only peer"
-                  onChange={(e) => {
-                    if (e.target.checked) {
-                      if (passInput === '3434') {
-                        setAuthorized(true);
-                        setUser({ uid: 'admin', displayName: 'Pastor' });
-                        localStorage.setItem('system_auth', 'true');
-                        setMoonMode(false);
-                        setShowSidebar(false);
-                      } else {
-                        alert("Senha Incorreta.");
-                        setTimeout(() => { e.target.checked = false; }, 500);
-                      }
-                    }
-                  }}
+                  type="password"
+                  value={passInput}
+                  onChange={(e) => setPassInput(e.target.value)}
+                  placeholder="DIGITE A SENHA..."
+                  className={cn(
+                    "w-full p-3 rounded-lg border bg-black/60 text-white font-rajdhani outline-none text-center text-xs tracking-[4px] uppercase transition-all duration-300",
+                    passError 
+                      ? "border-red-500/30 focus:border-red-500 text-red-300 placeholder-red-500/50" 
+                      : "border-white/10 focus:border-[#00f5ff]/70 focus:shadow-[0_0_15px_rgba(0,245,255,0.30)]"
+                  )}
                 />
-                <div className="w-full h-full bg-[#1a1a1a] rounded-full transition-all peer-checked:bg-neon-pink">
-                  <div className="absolute top-1 left-1 w-[27px] h-[27px] bg-gradient-to-b from-[#555] to-[#222] rounded-full transition-all peer-checked:translate-x-[34px] peer-checked:bg-neon-pink peer-checked:shadow-[0_0_15px_#ff0080]" />
-                </div>
-              </label>
-              <span className="text-[10px] uppercase tracking-widest">Entrar</span>
+                
+                {/* Visual feedback glow bar beneath input */}
+                <div 
+                  className={cn(
+                    "absolute bottom-0 left-1/2 -translate-x-1/2 h-[2px] transition-all duration-500 rounded-full",
+                    passInput.length > 0 ? "w-[80%] bg-[#00f5ff]" : "w-0 bg-transparent"
+                  )} 
+                />
+              </div>
+
+              <div className="pt-1">
+                <button 
+                  type="submit"
+                  disabled={!passInput}
+                  className={cn(
+                    "w-full py-3 px-5 rounded-lg relative overflow-hidden font-orbitron font-extrabold text-[10px] uppercase tracking-[3px] transition-all duration-300 active:scale-[0.96] active:brightness-90 select-none group/btn shadow-lg",
+                    passInput
+                      ? "text-black bg-white hover:text-white cursor-pointer"
+                      : "text-white/30 bg-white/5 border border-white/10 pointer-events-none"
+                  )}
+                >
+                  {/* Dynamic sliding gradient layer visible only on hover */}
+                  {passInput && (
+                    <span 
+                      className="absolute inset-x-0 top-0 bottom-0 luxury-progress-track opacity-0 group-hover/btn:opacity-100 transition-opacity duration-500" 
+                    />
+                  )}
+
+                  <span className="relative z-10 flex items-center justify-center gap-2">
+                    <span>ENTRAR</span>
+                    <span className="text-[11px] opacity-80 group-hover/btn:translate-x-1 transition-transform duration-300">➜</span>
+                  </span>
+
+                  {/* Reactive halo glow for hover cursor feedback */}
+                  {passInput && (
+                    <span className="absolute -inset-1 rounded-lg bg-gradient-to-r from-[#00f5ff] via-[#ff00aa] to-[#ffee00] opacity-0 group-hover/btn:opacity-40 blur-[10px] transition-all duration-500 -z-10" />
+                  )}
+                </button>
+              </div>
+            </form>
+
+            <div className="mt-4 text-[7px] font-mono tracking-widest text-white/30 uppercase">
+              SEGURO & CRIPTOGRAFADO
             </div>
           </motion.div>
         </div>
