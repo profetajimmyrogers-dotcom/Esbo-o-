@@ -452,7 +452,7 @@ export default function App() {
         {/* Cinematic Animated Background Image (Ken Burns Zoom/Pan Movement) */}
         <div 
           className="absolute inset-0 bg-cover bg-center pointer-events-none select-none z-0 transform will-change-transform scale-[1.01] animate-ken-burns" 
-          style={{ backgroundImage: 'url("https://i.postimg.cc/DygNnfLG/file-000000000e1871fbb4f8be5449287cdd.png")' }}
+          style={{ backgroundImage: 'url("https://i.postimg.cc/nLPMStSW/file-000000004dfc720ea8c064164c28632e.png")' }}
         />
 
         {/* Ambient Drifting Clouds (Multi-layered moving foggy blurs to animate clouds) */}
