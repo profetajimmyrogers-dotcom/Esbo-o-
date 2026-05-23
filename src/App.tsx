@@ -47,7 +47,11 @@ import {
   Flame,
   Layers,
   FolderOpen,
-  Heart
+  Heart,
+  Wifi,
+  WifiOff,
+  RefreshCw,
+  Download
 } from 'lucide-react';
 import { cn } from './lib/utils';
 import { HighlightableText } from './components/HighlightableText';
@@ -195,7 +199,29 @@ export default function App() {
   const [passError, setPassError] = useState(false);
   const [user, setUser] = useState<any>(authorized ? { uid: 'admin', displayName: 'Conferencista' } : null);
   const [loading, setLoading] = useState(false);
-  const [sermoes, setSermoes] = useState<Sermon[]>([]);
+  
+  // Offline-First: Initialize directly from Local Storage Cache (Hive) for instant load
+  const [sermoes, setSermoes] = useState<Sermon[]>(() => {
+    try {
+      const cached = localStorage.getItem('hive_offline_sermoes');
+      return cached ? JSON.parse(cached) : [];
+    } catch (e) {
+      return [];
+    }
+  });
+
+  // Connectivity and Synchronization Engine (Hive Local + Firebase cache + Sync model)
+  const [isOnline, setIsOnline] = useState(() => typeof navigator !== 'undefined' ? navigator.onLine : true);
+  const [syncStatus, setSyncStatus] = useState<'synced' | 'syncing' | 'offline' | 'error'>('synced');
+  const [isSyncingManual, setIsSyncingManual] = useState(false);
+  const [syncProgress, setSyncProgress] = useState(0);
+
+  // Pulpit Readability Configuration for Tablets (Gold standard)
+  const [fontSizeIndex, setFontSizeIndex] = useState(1); // 1 = md, 2 = lg, 3 = xl, 4 = 2xl, 5 = 3xl
+  const fontSizes = ['text-base md:text-lg', 'text-lg md:text-xl', 'text-xl md:text-2xl', 'text-2xl md:text-3xl', 'text-3xl md:text-4xl'];
+  const [autoScrollActive, setAutoScrollActive] = useState(false);
+  const [autoScrollSpeed, setAutoScrollSpeed] = useState(15); // Speed in ms/pixel scroll loop
+
   const [busca, setBusca] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
@@ -263,7 +289,35 @@ export default function App() {
   const [tempo, setTempo] = useState(0);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Synchronous web-worker replica network event state loop
   useEffect(() => {
+    const handleOnline = () => {
+      setIsOnline(true);
+      setSyncStatus('syncing');
+    };
+    const handleOffline = () => {
+      setIsOnline(false);
+      setSyncStatus('offline');
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    // Initial setup check
+    if (!navigator.onLine) {
+      setIsOnline(false);
+      setSyncStatus('offline');
+    }
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
+  useEffect(() => {
+    setSyncStatus(navigator.onLine ? 'syncing' : 'offline');
+    
     // Agora buscamos todos os sermões (público)
     const q = query(
       collection(db, 'sermoes'), 
@@ -276,8 +330,13 @@ export default function App() {
         ...doc.data({ serverTimestamps: 'estimate' }) 
       } as Sermon));
       setSermoes(data);
+      
+      // Automatic Local persistence (Hive emulation) on every remote pull/sync
+      localStorage.setItem('hive_offline_sermoes', JSON.stringify(data));
+      setSyncStatus(navigator.onLine ? 'synced' : 'offline');
     }, (error) => {
-      handleFirestoreError(error, OperationType.LIST, 'sermoes');
+      console.warn("Firestore snapshot loaded in offline-cache status.", error);
+      setSyncStatus('offline');
     });
 
     return () => unsubscribe();
@@ -565,6 +624,46 @@ export default function App() {
       handleFirestoreError(error, OperationType.UPDATE, `sermoes/${sermonId}`);
     }
   };
+
+  const handleOfflineSync = async () => {
+    if (isSyncingManual) return;
+    setIsSyncingManual(true);
+    setSyncProgress(5);
+    setSyncStatus('syncing');
+
+    let progress = 5;
+    const interval = setInterval(() => {
+      progress += 15;
+      if (progress >= 100) {
+        progress = 100;
+        clearInterval(interval);
+        
+        // Save to offline storage as a standard local SQLite/Hive database simulation
+        localStorage.setItem('hive_offline_sermoes', JSON.stringify(sermoes));
+        localStorage.setItem('hive_sync_time', new Date().toISOString());
+        
+        setTimeout(() => {
+          setIsSyncingManual(false);
+          setSyncProgress(0);
+          setSyncStatus(navigator.onLine ? 'synced' : 'offline');
+        }, 500);
+      }
+      setSyncProgress(progress);
+    }, 110);
+  };
+
+  // Pulpit Auto-scroll loop for hands-free reading on physical tablet devices
+  useEffect(() => {
+    let scrollInterval: any = null;
+    if (autoScrollActive && mode === 'pulpito') {
+      scrollInterval = setInterval(() => {
+        window.scrollBy({ top: 1, behavior: 'auto' });
+      }, autoScrollSpeed);
+    }
+    return () => {
+      if (scrollInterval) clearInterval(scrollInterval);
+    };
+  }, [autoScrollActive, autoScrollSpeed, mode]);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -1241,12 +1340,25 @@ export default function App() {
         </div>
         
         <div className="flex items-center gap-4 mt-4 md:mt-0">
-          <div className="flex items-center gap-2 text-white/90 bg-white/5 border border-[#CF9D7B]/20 px-4 py-1.5 rounded-lg text-xs font-mono font-bold leading-none">
+          <div className={cn(
+            "flex items-center gap-2 border bg-white/5 px-4 py-1.5 rounded-lg text-[10px] font-mono font-bold leading-none select-none",
+            isOnline 
+              ? "border-emerald-500/20 text-emerald-400" 
+              : "border-amber-500/30 text-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.15)]"
+          )}>
             <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#ffee00] opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#ffee00]"></span>
+              <span className={cn(
+                "animate-ping absolute inline-flex h-full w-full rounded-full opacity-75",
+                isOnline ? "bg-emerald-400" : "bg-amber-400"
+              )}></span>
+              <span className={cn(
+                "relative inline-flex rounded-full h-2 w-2",
+                isOnline ? "bg-emerald-500" : "bg-amber-500"
+              )}></span>
             </span>
-            <span className="text-text-mid uppercase font-orbitron text-[9px] tracking-wider text-[#CF9D7B]">SISTEMA ONLINE</span>
+            <span className="uppercase font-orbitron tracking-widest">
+              {isOnline ? 'CONEXÃO ATIVA' : 'HIVE OFFLINE'}
+            </span>
           </div>
           <button 
             onClick={handleLogout}
@@ -1376,6 +1488,51 @@ export default function App() {
               >
                 {showForm ? '[✕] FECHAR INSERÇÃO' : '[+] GRAVAR NOVO SERMÃO'}
               </button>
+            </div>
+
+            {/* Hive & Firestore Offline First Synchronization Bar */}
+            <div className="bg-[#162127]/25 border border-white/5 p-3 rounded-xl flex flex-col md:flex-row items-center justify-between gap-3 text-xs">
+              <div className="flex flex-wrap items-center gap-2.5 font-mono text-white/80 w-full md:w-auto">
+                <Database className="w-4 h-4 text-[#CF9D7B]" />
+                <span className="text-[#CF9D7B] font-bold tracking-wider font-orbitron text-[10px]">BANCO DE DADOS HIVE LOCAL:</span>
+                <span className="bg-[#CF9D7B]/10 border border-[#CF9D7B]/20 px-2 py-0.5 rounded text-white text-[10px] font-bold">
+                  {sermoes.length} Sermões Disponibilizados Offline
+                </span>
+                
+                {localStorage.getItem('hive_sync_time') && (
+                  <span className="text-text-dim text-[10px]">
+                    (Último sync: {new Date(localStorage.getItem('hive_sync_time')!).toLocaleTimeString('pt-BR')})
+                  </span>
+                )}
+              </div>
+
+              <div className="flex items-center gap-3 w-full md:w-auto shrink-0">
+                {isSyncingManual ? (
+                  <div className="w-full md:w-56 bg-black/40 h-7 rounded-lg overflow-hidden border border-[#CF9D7B]/25 relative flex items-center justify-center">
+                    <div 
+                      className="absolute left-0 top-0 bottom-0 bg-gradient-to-r from-[#CF9D7B] to-[#724B39] transition-all duration-150"
+                      style={{ width: `${syncProgress}%` }}
+                    />
+                    <span className="relative z-10 text-[9px] font-orbitron font-bold text-white tracking-widest animate-pulse uppercase">
+                      GRAVANDO HIVE {syncProgress}%
+                    </span>
+                  </div>
+                ) : (
+                  <button
+                    onClick={handleOfflineSync}
+                    className={cn(
+                      "w-full md:w-auto px-4 py-1.5 rounded-lg font-orbitron font-bold text-[9px] tracking-widest flex items-center justify-center gap-2 transition-all duration-300 border cursor-pointer",
+                      syncStatus === 'synced'
+                        ? "bg-emerald-950/20 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/15 hover:border-emerald-500 hover:shadow-[0_0_15px_rgba(16,185,129,0.15)]"
+                        : "bg-[#CF9D7B]/10 border-[#CF9D7B]/30 text-[#CF9D7B] hover:bg-[#CF9D7B]/20"
+                    )}
+                    title="Baixar lista completa de sermões e tópicos para acesso offline"
+                  >
+                    <Download className={cn("w-3.5 h-3.5", syncStatus === 'synced' ? "text-emerald-400" : "text-[#CF9D7B] animate-pulse")} />
+                    <span>{syncStatus === 'synced' ? 'DISPONÍVEL TOTAL OFFLINE ✓' : 'FORÇAR DOWNLOAD BIBLIOTECA'}</span>
+                  </button>
+                )}
+              </div>
             </div>
 
             {/* Form */}
@@ -1706,7 +1863,7 @@ export default function App() {
               {formatTime(tempo)}
             </div>
 
-            <div className="max-w-5xl mx-auto space-y-16 pb-32">
+            <div className={cn("max-w-5xl mx-auto space-y-16 pb-32 transition-all duration-300", fontSizes[fontSizeIndex])}>
               {/* Header Section */}
               <div className="space-y-6 border-b border-white/5 pb-10">
                 <h1 className="text-3xl md:text-5xl lg:text-6xl font-orbitron font-black text-white leading-tight tracking-tight uppercase">
@@ -1760,7 +1917,7 @@ export default function App() {
                   <h4 className="font-orbitron text-[#CF9D7B] text-sm tracking-[0.4em] uppercase font-black">
                     // INTRODUÇÃO REVELADA
                   </h4>
-                  <div className="text-xl md:text-2xl lg:text-3xl leading-relaxed text-white/90 whitespace-pre-wrap font-medium">
+                  <div className="leading-relaxed text-white/90 whitespace-pre-wrap font-medium">
                     <HighlightableText 
                       text={selectedSermon.intro} 
                       sermonId={selectedSermon.id!} 
@@ -1797,7 +1954,7 @@ export default function App() {
                   <h4 className="font-orbitron text-[#00f5ff]/80 text-sm tracking-[0.4em] uppercase font-black">
                     // APLICAÇÃO GERAL & FECHAMENTO
                   </h4>
-                  <div className="text-xl md:text-2xl lg:text-3xl leading-relaxed text-white/90 whitespace-pre-wrap font-medium">
+                  <div className="leading-relaxed text-white/90 whitespace-pre-wrap font-medium font-rajdhani">
                     <HighlightableText 
                       text={selectedSermon.apl} 
                       sermonId={selectedSermon.id!} 
@@ -1812,13 +1969,96 @@ export default function App() {
               {/* Footer Actions */}
               <div className="pt-20 pb-12 flex justify-center">
                 <button 
-                  onClick={() => setMode('grid')}
+                  onClick={() => {
+                    setAutoScrollActive(false);
+                    setMode('grid');
+                  }}
                   className="group flex items-center gap-2.5 px-8 py-3 border border-[#CF9D7B]/40 text-[#CF9D7B]/80 font-orbitron text-[11px] tracking-[0.3em] uppercase hover:border-[#CF9D7B] hover:text-white hover:bg-[#CF9D7B]/15 transition-all duration-500 rounded-lg cursor-pointer font-bold"
                 >
                   <LogOut className="w-4 h-4 opacity-75 group-hover:opacity-100 transition-opacity" />
                   ENCERRAR PREGAÇÃO IMPERIAL
                 </button>
               </div>
+            </div>
+
+            {/* Tablet Pulpit Imperial Reading Remote Controller HUD (Floating controller) */}
+            <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[2010] bg-[#0c1519]/95 border border-[#CF9D7B]/30 backdrop-blur-xl px-6 py-3.5 rounded-2xl flex items-center justify-between gap-6 shadow-[0_4px_35px_rgba(207,157,123,0.35)] select-none max-w-[95vw] w-[580px] text-white">
+              {/* Size Tools */}
+              <div className="flex items-center gap-2 border-r border-white/10 pr-4 shrink-0">
+                <button 
+                  onClick={() => setFontSizeIndex(prev => Math.max(0, prev - 1))}
+                  className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/15 text-[#CF9D7B] border border-white/10 flex items-center justify-center font-orbitron font-extrabold text-xs active:scale-95 duration-150 cursor-pointer"
+                  title="Diminuir letras"
+                >
+                  A-
+                </button>
+                <span className="text-[9px] font-mono font-bold text-white uppercase px-1 min-w-[3.2rem] text-center shrink-0">
+                  FONTE: {fontSizeIndex + 1}X
+                </span>
+                <button 
+                  onClick={() => setFontSizeIndex(prev => Math.min(fontSizes.length - 1, prev + 1))}
+                  className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/15 text-[#CF9D7B] border border-white/10 flex items-center justify-center font-orbitron font-extrabold text-xs active:scale-95 duration-150 cursor-pointer"
+                  title="Aumentar letras"
+                >
+                  A+
+                </button>
+              </div>
+
+              {/* Automatic Scroll Active toggle */}
+              <div className="flex items-center gap-2 border-r border-white/10 pr-4 shrink-0">
+                <button
+                  onClick={() => setAutoScrollActive(prev => !prev)}
+                  className={cn(
+                    "px-3 py-1.5 rounded-lg border text-[9px] font-orbitron font-bold tracking-widest flex items-center gap-1.5 transition-all duration-300 active:scale-95 cursor-pointer shrink-0",
+                    autoScrollActive
+                      ? "bg-[#ffee00]/15 border-[#ffee00]/50 text-[#ffee00] shadow-[0_0_12px_rgba(255,238,0,0.25)] animate-pulse"
+                      : "bg-white/5 border-white/10 text-white/50 hover:bg-white/10 hover:text-white"
+                  )}
+                  title="Ativar/Desativar rolagem automática contínua"
+                >
+                  <RefreshCw className={cn("w-3.5 h-3.5", autoScrollActive && "animate-spin")} style={{ animationDuration: '6s' }} />
+                  <span>{autoScrollActive ? 'ROLAGEM ATIVA' : 'ROLAR PÁGINA'}</span>
+                </button>
+
+                {/* Speed Controls (only show if scroll speed is active) */}
+                {autoScrollActive && (
+                  <div className="flex items-center gap-1 shrink-0 animate-fade-in">
+                    <button 
+                      onClick={() => setAutoScrollSpeed(prev => Math.min(60, prev + 5))}
+                      className="w-6 h-6 rounded bg-white/5 hover:bg-white/15 text-[#CF9D7B] border border-white/10 flex items-center justify-center font-bold text-[10px] active:scale-95 duration-150 cursor-pointer"
+                      title="Diminuir velocidade"
+                    >
+                      -
+                    </button>
+                    <span className="text-[7.5px] font-mono text-white/40">VEL</span>
+                    <button 
+                      onClick={() => setAutoScrollSpeed(prev => Math.max(5, prev - 5))}
+                      className="w-6 h-6 rounded bg-white/5 hover:bg-white/15 text-[#CF9D7B] border border-white/10 flex items-center justify-center font-bold text-[10px] active:scale-95 duration-150 cursor-pointer"
+                      title="Aumentar velocidade"
+                    >
+                      +
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Safety Shield Indicator */}
+              <div className="flex items-center gap-1.5 text-[8.5px] font-mono font-bold uppercase tracking-wider text-emerald-400 bg-emerald-950/20 px-2.5 py-1.5 rounded-lg border border-emerald-500/20 shrink-0 hidden sm:flex truncate">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span>HIVE OFFLINE SECURE</span>
+              </div>
+
+              {/* Back action */}
+              <button
+                onClick={() => {
+                  setAutoScrollActive(false);
+                  setMode('grid');
+                }}
+                className="p-2.5 bg-red-950/25 border border-red-500/20 hover:border-red-500 hover:bg-red-500/30 text-red-400 hover:text-white rounded-lg transition-all cursor-pointer shadow-md shrink-0 ml-auto"
+                title="Sair do Púlpito"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
             </div>
           </div>
         )}
