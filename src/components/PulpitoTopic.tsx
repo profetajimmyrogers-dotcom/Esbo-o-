@@ -23,8 +23,8 @@ export const PulpitoTopic = ({
   return (
     <div 
       className={cn(
-        "flex gap-4 items-start p-5 border border-neon-cyan/10 transition-all duration-300 rounded-xl",
-        isChecked ? "bg-black/40 opacity-40 grayscale" : "bg-neon-cyan/[0.05] border-l-4 border-l-neon-cyan shadow-[0_0_15px_rgba(0,245,255,0.05)]"
+        "flex gap-4 items-start p-5 border border-white/5 transition-all duration-300 rounded-xl",
+        isChecked ? "bg-black/40 opacity-40 grayscale" : "bg-[#162127]/60 border-l-4 border-l-[#CF9D7B] shadow-[0_0_20px_rgba(207,157,123,0.08)]"
       )}
     >
       <div className="relative flex items-center justify-center mt-1 shrink-0">
@@ -32,11 +32,11 @@ export const PulpitoTopic = ({
           type="checkbox" 
           checked={isChecked}
           onChange={() => setIsChecked(!isChecked)}
-          className="w-8 h-8 accent-neon-pink cursor-pointer opacity-0 absolute inset-0 z-10" 
+          className="w-8 h-8 accent-[#CF9D7B] cursor-pointer opacity-0 absolute inset-0 z-10" 
         />
         <div className={cn(
           "w-8 h-8 border-2 flex items-center justify-center transition-all rounded-md",
-          isChecked ? "bg-neon-pink border-neon-pink" : "border-neon-cyan/40 bg-dark-bg"
+          isChecked ? "bg-[#CF9D7B] border-[#CF9D7B]" : "border-[#CF9D7B]/40 bg-[#0C1519]"
         )}>
           {isChecked && <Play className="w-4 h-4 text-white fill-current" />}
         </div>

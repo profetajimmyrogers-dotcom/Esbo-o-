@@ -37,7 +37,17 @@ import {
   MessageCircle,
   Menu,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Database,
+  Clock,
+  Sparkles,
+  Radio,
+  Tag,
+  Activity,
+  Flame,
+  Layers,
+  FolderOpen,
+  Heart
 } from 'lucide-react';
 import { cn } from './lib/utils';
 import { HighlightableText } from './components/HighlightableText';
@@ -209,6 +219,13 @@ export default function App() {
   };
   const [systemFields, setSystemFields] = useState<Record<string, string>>(defaultFields);
   const [currentDate, setCurrentDate] = useState(new Date());
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentDate(new Date());
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   // WhatsApp Lead State
   const [showWhatsAppForm, setShowWhatsAppForm] = useState(false);
@@ -521,6 +538,29 @@ export default function App() {
 
     try {
       await updateDoc(doc(db, 'sermoes', sermonId), { highlights: newHighlights });
+    } catch (error) {
+      handleFirestoreError(error, OperationType.UPDATE, `sermoes/${sermonId}`);
+    }
+  };
+
+  const handleToggleFavorite = async (sermonId: string) => {
+    try {
+      const clickedSermon = sermoes.find(s => s.id === sermonId);
+      if (!clickedSermon) return;
+      
+      const newStatus = !clickedSermon.isFavorite;
+      
+      // Update this sermon's favorite status
+      await updateDoc(doc(db, 'sermoes', sermonId), { isFavorite: newStatus });
+      
+      // If we made this one favorite, unset all other sermons' favorite status to ensure only one "Sermão Do Dia"
+      if (newStatus) {
+        const otherFavorites = sermoes.filter(s => s.isFavorite && s.id !== sermonId);
+        const resetPromises = otherFavorites.map(s => 
+          updateDoc(doc(db, 'sermoes', s.id!), { isFavorite: false })
+        );
+        await Promise.all(resetPromises);
+      }
     } catch (error) {
       handleFirestoreError(error, OperationType.UPDATE, `sermoes/${sermonId}`);
     }
@@ -1169,53 +1209,172 @@ export default function App() {
   const filteredSermoes = sermoes.filter(s => s.tema.toLowerCase().includes(busca.toLowerCase()));
 
   return (
-    <div className="min-h-screen relative z-10 pb-20 transition-all duration-1000 bg-[#0b0b0b]" translate="no">
-      {/* Header */}
-      <header className="header flex flex-col md:flex-row justify-between items-center p-4 md:p-8 border-b border-neon-cyan/20 bg-gradient-to-b from-neon-cyan/5 to-transparent mb-8 relative">
-        <div className="text-center md:text-left">
-          <h1 className="text-2xl md:text-4xl font-orbitron font-black bg-gradient-to-br from-neon-cyan to-neon-pink bg-clip-text text-transparent animate-logo-flicker">
-            SYSTEMA SERMÕES
-          </h1>
-          <p className="font-rajdhani tracking-[0.3em] text-text-dim text-xs">
-            // GERENCIADOR DE PREGAÇÕES v3.0 //
-          </p>
+    <div className="min-h-screen relative z-10 pb-20 transition-all duration-1000 bg-[#0C1519]" translate="no">
+      {/* Immersive Dark Jungle Luxury Background Overlay */}
+      <div className="absolute inset-0 bg-radial from-[#121c22]/40 via-transparent to-transparent pointer-events-none -z-10" />
+
+      {/* Modern Luxury Navigation Header */}
+      <header className="header flex flex-col md:flex-row justify-between items-center p-4 md:p-6 border-b border-white/5 bg-gradient-to-b from-black/80 to-[#0C1519]/20 backdrop-blur-md mb-8 relative z-50">
+        <div className="text-center md:text-left flex flex-col md:flex-row items-center gap-4">
+          <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-[#CF9D7B] via-[#724B39] to-transparent p-[1px] flex items-center justify-center shadow-[0_0_20px_rgba(207,157,123,0.15)]">
+            <div className="w-full h-full bg-[#0C1519] rounded-xl flex items-center justify-center">
+              <Sparkles className="w-5 h-5 text-[#CF9D7B] animate-pulse" />
+            </div>
+          </div>
+          <div>
+            <h1 className="text-xl md:text-2xl font-orbitron font-black text-white hover:text-[#CF9D7B] transition-colors tracking-widest uppercase">
+              PLENITUDE PÚLPITO
+            </h1>
+            <p className="font-rajdhani tracking-[0.4em] text-[#CF9D7B] text-[9px] font-bold">
+              ✥ MASTER CONFERÊNCIA DATABASE v4.0
+            </p>
+          </div>
+        </div>
+
+        {/* Dynamic Center Real-time Clock */}
+        <div className="hidden lg:flex items-center gap-3 bg-white/5 border border-white/10 px-4 py-1.5 rounded-full text-xs font-mono text-[#CF9D7B]">
+          <Clock size={12} className="text-[#CF9D7B] animate-spin-slow" />
+          <span className="opacity-80 font-bold">HORÁRIO:</span>
+          <span className="text-white font-bold font-orbitron">{currentDate.toLocaleTimeString('pt-BR')}</span>
+          <span className="text-white/40">|</span>
+          <span className="opacity-80 font-bold">{currentDate.toLocaleDateString('pt-BR')}</span>
         </div>
         
         <div className="flex items-center gap-4 mt-4 md:mt-0">
-          <div className="flex items-center gap-2 text-text-mid font-rajdhani">
-            <UserIcon className="w-4 h-4" />
-            <span className="text-sm">{user?.displayName}</span>
+          <div className="flex items-center gap-2 text-white/90 bg-white/5 border border-[#CF9D7B]/20 px-4 py-1.5 rounded-lg text-xs font-mono font-bold leading-none">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#ffee00] opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#ffee00]"></span>
+            </span>
+            <span className="text-text-mid uppercase font-orbitron text-[9px] tracking-wider text-[#CF9D7B]">SISTEMA ONLINE</span>
           </div>
           <button 
             onClick={handleLogout}
-            className="p-2 border border-neon-pink/30 text-neon-pink/60 hover:text-neon-pink hover:border-neon-pink transition-all"
-            title="Sair"
+            className="p-2.5 bg-red-950/20 border border-red-500/30 text-red-400 hover:text-white hover:bg-red-500/30 hover:border-red-500/80 rounded-lg transition-all cursor-pointer shadow-lg"
+            title="Sair do Sistema"
           >
-            <LogOut className="w-5 h-5" />
+            <LogOut className="w-4 h-4" />
           </button>
         </div>
-        <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-neon-cyan to-transparent animate-border-flow" />
       </header>
 
-      <main className="max-w-7xl mx-auto px-4">
+      <main className="max-w-7xl mx-auto px-4 md:px-6 space-y-10">
         {mode === 'grid' ? (
           <>
-            {/* Controls */}
-            <div className="flex flex-wrap gap-4 mb-8">
-              <div className="flex-1 min-w-[280px] relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-dim" />
+
+
+            {/* Cinematic Featured Highlight Showcase Banner (Bloodhound/Zeus-X inspire) */}
+            {sermoes.length > 0 && (
+              (() => {
+                const featured = sermoes.find(s => s.isFavorite) || sermoes[0];
+                return (
+                  <div className="relative bg-[#162127]/40 border border-[#CF9D7B]/20 rounded-2xl p-6 md:p-8 overflow-hidden shadow-2xl group/hero hover:border-[#CF9D7B]/40 duration-500">
+                    {/* Atmospheric Ambient Cover Tint */}
+                    {featured.img && (
+                      <div 
+                        className="absolute inset-0 opacity-[0.06] bg-cover bg-center blur-sm scale-105 pointer-events-none select-none duration-1000 group-hover/hero:scale-100"
+                        style={{ backgroundImage: `url(${featured.img})` }}
+                      />
+                    )}
+                    
+                    <div className="flex flex-col lg:flex-row gap-8 items-center relative z-10">
+                      {/* Left Block - Title Content */}
+                      <div className="flex-1 space-y-4 text-center lg:text-left">
+                        <div className="inline-flex items-center gap-2 bg-[#CF9D7B]/10 border border-[#CF9D7B]/35 px-4 py-1.5 rounded-full text-[10px] font-orbitron font-bold text-[#CF9D7B] tracking-widest uppercase">
+                          <Heart size={12} className={cn("text-[#ff2a5f] animate-pulse fill-[#ff2a5f]", !featured.isFavorite && "opacity-60")} />
+                          <span>{featured.isFavorite ? 'SERMÃO DO DIA (SELECIONADO)' : 'SERMÃO DO DIA (PADRÃO)'}</span>
+                        </div>
+
+                        <h2 className="text-3xl md:text-5xl lg:text-6xl font-orbitron font-black text-white leading-tight uppercase tracking-tight group-hover/hero:text-[#CF9D7B] duration-500" translate="no">
+                          {featured.tema}
+                        </h2>
+
+                        <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3">
+                          <div className="bg-white/5 border border-white/10 text-[#ffee00] text-xs font-mono font-bold px-3 py-1 rounded flex items-center gap-2 shadow-sm">
+                            <BookOpen size={13} />
+                            <span>{featured.texto || '// REGISTRO SEM BASE'}</span>
+                          </div>
+                          
+                          {featured.setores && featured.setores.map((setor, idx) => (
+                            <span key={idx} className="bg-[#0C1519]/60 border border-white/10 text-[#CF9D7B] text-[9.5px] font-mono px-2.5 py-0.5 rounded-md uppercase font-bold tracking-wider">
+                              {setor}
+                            </span>
+                          ))}
+                        </div>
+
+                        {featured.intro && (
+                          <p className="text-text-mid text-sm font-rajdhani line-clamp-2 max-w-2xl leading-relaxed mx-auto lg:mx-0">
+                            {featured.intro}
+                          </p>
+                        )}
+
+                        {/* Grand Luxury Preach Button */}
+                        <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 pt-3">
+                          <button
+                            onClick={() => {
+                              setSelectedSermonId(featured.id!);
+                              setMode('pulpito');
+                            }}
+                            className="bg-gradient-to-r from-[#CF9D7B] to-[#724B39] text-white px-7 py-3 rounded-lg font-orbitron font-black text-[11px] tracking-[0.2em] hover:shadow-[0_0_30px_rgba(207,157,123,0.45)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 pointer-events-auto cursor-pointer"
+                          >
+                            ✦ INICIAR NO PÚLPITO IMPERIAL
+                          </button>
+                          
+                          <button
+                            onClick={() => setSelectedSermonId(featured.id!)}
+                            className="bg-white/5 hover:bg-white/10 border border-white/10 text-white/90 px-6 py-3 rounded-lg font-orbitron font-bold text-[10px] tracking-widest hover:border-white/30 transition-all cursor-pointer"
+                          >
+                            DETALHES COMPLETOS
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Right Block - Art Mockup with Perspective Glass */}
+                      <div className="w-full lg:w-auto shrink-0 relative flex justify-center">
+                        <div className="relative w-64 h-40 bg-[#0C1519] border border-[#CF9D7B]/20 rounded-2xl shadow-2xl overflow-hidden group-hover/hero:scale-[1.03] transition-all duration-500">
+                          {featured.img ? (
+                            <img 
+                              src={featured.img} 
+                              className="w-full h-full object-cover transition-transform duration-700 group-hover/hero:scale-110" 
+                              alt="Poster"
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-gradient-to-br from-[#162127] to-[#0C1519] flex items-center justify-center p-4">
+                              <Sparkles className="w-12 h-12 text-white/20 animate-pulse" />
+                            </div>
+                          )}
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-transparent flex flex-col justify-end p-4">
+                            <span className="text-[9px] font-mono text-[#CF9D7B] tracking-widest font-bold uppercase">SESSÃO DE DESTAQUE</span>
+                            <span className="text-xs font-orbitron font-bold text-white truncate max-w-full">{featured.tema}</span>
+                          </div>
+                        </div>
+
+                        {/* Tech design frame lines */}
+                        <div className="absolute -inset-2.5 border border-[#CF9D7B]/10 rounded-3xl pointer-events-none -z-10 animate-pulse" />
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()
+            )}
+
+            {/* Contemporary Central Search & Action Center */}
+            <div className="flex flex-col md:flex-row items-center gap-4 bg-[#162127]/30 border border-white/5 p-4 rounded-xl overflow-hidden">
+              <div className="flex-1 w-full relative">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#CF9D7B]" />
                 <input 
                   value={busca}
                   onChange={(e) => setBusca(e.target.value)}
-                  className="w-full bg-neon-cyan/5 border border-neon-cyan/20 text-neon-cyan p-3 pl-12 outline-none focus:border-neon-cyan focus:shadow-[0_0_15px_rgba(0,245,255,0.2)] transition-all font-mono"
-                  placeholder="[🔍] BUSCAR SERMÃO PELO TEMA..."
+                  className="w-full bg-[#0C1519]/70 border border-white/5 text-white placeholder-white/30 p-3.5 pl-12 rounded-lg outline-none focus:border-[#CF9D7B] focus:shadow-[0_0_15px_rgba(207,157,123,0.15)] transition-all font-mono text-xs uppercase"
+                  placeholder="DIGITAR PALAVRA-CHAVE PARA FILTRAR PREGAÇÕES..."
                 />
               </div>
+              
               <button 
                 onClick={() => setShowForm(!showForm)}
-                className="bg-gradient-to-br from-neon-cyan/15 to-neon-pink/10 border border-neon-cyan text-neon-cyan px-6 py-3 font-orbitron font-bold tracking-widest hover:shadow-[0_0_20px_rgba(0,245,255,0.3)] transition-all"
+                className="w-full md:w-auto bg-[#0C1519]/90 border border-[#CF9D7B]/30 hover:border-[#CF9D7B] hover:text-white text-[#CF9D7B] px-6 py-3.5 rounded-lg font-orbitron font-extrabold tracking-[0.2em] text-[10px] hover:shadow-[0_0_20px_rgba(207,157,123,0.2)] hover:bg-[#CF9D7B]/5 transition-all cursor-pointer whitespace-nowrap uppercase text-center"
               >
-                {showForm ? '[✕] FECHAR' : '[+] NOVO SERMÃO'}
+                {showForm ? '[✕] FECHAR INSERÇÃO' : '[+] GRAVAR NOVO SERMÃO'}
               </button>
             </div>
 
@@ -1226,88 +1385,108 @@ export default function App() {
                   initial={{ height: 0, opacity: 0 }}
                   animate={{ height: 'auto', opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
-                  className="overflow-hidden mb-12 bg-neon-cyan/[0.02] border border-neon-cyan/15 p-6 space-y-4"
+                  className="overflow-hidden mb-8 bg-[#162127]/35 border border-[#CF9D7B]/20 rounded-2xl p-6 md:p-8 space-y-6"
                 >
-                  <span className="text-[0.7rem] tracking-[0.3em] text-neon-yellow uppercase">
-                    // {editId ? `EDITANDO: ${tema}` : 'INSERIR DADOS DO SISTEMA'}
-                  </span>
+                  <div className="flex items-center gap-2 border-b border-[#CF9D7B]/15 pb-4">
+                    <Sparkles className="w-5 h-5 text-[#CF9D7B]" />
+                    <span className="text-[10px] tracking-[0.25em] text-[#CF9D7B] uppercase font-orbitron font-bold">
+                      // {editId ? `EDITANDO FICHA: ${tema}` : 'CONECTAR NOVO REGISTRO DO CULTO'}
+                    </span>
+                  </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-orbitron text-text-dim uppercase tracking-wider">TEMA PRINCIPAL DA PREGAÇÃO</label>
+                      <input 
+                        value={tema}
+                        onChange={(e) => setTema(e.target.value)}
+                        className="w-full bg-[#0C1519]/70 border border-white/5 rounded-lg text-white p-3 text-sm outline-none focus:border-[#CF9D7B]"
+                        placeholder="Ex: A Parábola do Semeador"
+                        translate="no"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-orbitron text-text-dim uppercase tracking-wider">TEXTO BÍBLICO BASE</label>
+                      <input 
+                        value={texto}
+                        onChange={(e) => setTexto(e.target.value)}
+                        className="w-full bg-[#0C1519]/70 border border-white/5 rounded-lg text-white p-3 text-sm outline-none focus:border-[#CF9D7B]"
+                        placeholder="Ex: Mateus 13:1-23"
+                        translate="no"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-orbitron text-text-dim uppercase tracking-wider">AGRADECIMENTOS OU DECLARAÇÕES INICIAIS</label>
                     <input 
-                      value={tema}
-                      onChange={(e) => setTema(e.target.value)}
-                      className="w-full bg-neon-cyan/5 border border-neon-cyan/20 text-neon-cyan p-3 outline-none focus:border-neon-cyan"
-                      placeholder="TEMA PRINCIPAL"
-                      translate="no"
-                    />
-                    <input 
-                      value={texto}
-                      onChange={(e) => setTexto(e.target.value)}
-                      className="w-full bg-neon-cyan/5 border border-neon-cyan/20 text-neon-cyan p-3 outline-none focus:border-neon-cyan"
-                      placeholder="TEXTO BÍBLICO BASE"
+                      value={agr}
+                      onChange={(e) => setAgr(e.target.value)}
+                      className="w-full bg-[#0C1519]/70 border border-white/5 rounded-lg text-white p-3 text-sm outline-none focus:border-[#CF9D7B]"
+                      placeholder="Declarações rápidas de acolhimento aos irmãos..."
                       translate="no"
                     />
                   </div>
-
-                  <input 
-                    value={agr}
-                    onChange={(e) => setAgr(e.target.value)}
-                    className="w-full bg-neon-cyan/5 border border-neon-cyan/20 text-neon-cyan p-3 outline-none focus:border-neon-cyan"
-                    placeholder="AGRADECIMENTOS INICIAIS"
-                    translate="no"
-                  />
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <div className="flex gap-2">
-                        <input 
-                          type="text" 
-                          value={img}
-                          onChange={(e) => setImg(e.target.value)}
-                          className="flex-1 bg-neon-cyan/5 border border-neon-cyan/20 text-neon-cyan p-3 outline-none focus:border-neon-cyan"
-                          placeholder="LINK DA IMAGEM (URL)"
-                          translate="no"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setImg('https://i.postimg.cc/vHqHW2J5/Firefly.jpg')}
-                          className="px-3 text-[11px] bg-neon-cyan/10 border border-neon-cyan/40 text-neon-cyan font-bold hover:bg-neon-cyan/20 transition-all font-orbitron select-none shrink-0 tracking-widest"
-                          title="Carregar imagem pré-programada automaticamente"
-                        >
-                          AUTO
-                        </button>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-orbitron text-text-dim uppercase tracking-wider">LINK/URL DO CARTAZ DO SERMÃO</label>
+                        <div className="flex gap-2">
+                          <input 
+                            type="text" 
+                            value={img}
+                            onChange={(e) => setImg(e.target.value)}
+                            className="flex-1 bg-[#0C1519]/70 border border-white/5 rounded-lg text-white p-3 text-sm outline-none focus:border-[#CF9D7B]"
+                            placeholder="https://..."
+                            translate="no"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setImg('https://i.postimg.cc/vHqHW2J5/Firefly.jpg')}
+                            className="bg-[#CF9D7B]/10 hover:bg-[#CF9D7B]/20 border border-[#CF9D7B]/30 px-4 rounded-lg text-[10px] text-[#CF9D7B] font-orbitron tracking-widest font-bold select-none shrink-0"
+                            title="Preencher com poster padrão decorado"
+                          >
+                            PADRÃO
+                          </button>
+                        </div>
                       </div>
-                      <div className="h-40 bg-black/50 border border-dashed border-neon-cyan/30 flex items-center justify-center overflow-hidden text-text-dim">
+                      <div className="h-40 bg-black/40 border border-dashed border-white/10 rounded-xl flex items-center justify-center overflow-hidden">
                         {img ? (
                           <img 
                             src={img} 
-                            className="w-full h-full object-cover opacity-80" 
+                            className="w-full h-full object-cover opacity-60" 
                             onError={(e) => {
                               (e.target as HTMLImageElement).src = ''; 
-                              console.error('Erro ao carregar link da imagem');
+                              console.error('Imagem link quebrada');
                             }}
                           />
-                        ) : '// COLE O LINK DA IMAGEM ACIMA //'}
+                        ) : (
+                          <span className="text-[10px] text-text-dim">// PRÉ-VISUALIZAÇÃO DA FICHA ILUSTRATIVA //</span>
+                        )}
                       </div>
                     </div>
-                    <textarea 
-                      value={intro}
-                      onChange={(e) => setIntro(e.target.value)}
-                      className="w-full bg-neon-cyan/5 border border-neon-cyan/20 text-neon-cyan p-3 outline-none focus:border-neon-cyan h-full min-h-[160px]"
-                      placeholder="INTRODUÇÃO"
-                      translate="no"
-                    />
+
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-orbitron text-text-dim uppercase tracking-wider">TEXTO DA INTRODUÇÃO</label>
+                      <textarea 
+                        value={intro}
+                        onChange={(e) => setIntro(e.target.value)}
+                        className="w-full bg-[#0C1519]/70 border border-white/5 rounded-lg text-white p-3 text-sm outline-none focus:border-[#CF9D7B] h-[216px] resize-none"
+                        placeholder="Escreva a introdução inicial de impacto..."
+                        translate="no"
+                      />
+                    </div>
                   </div>
 
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <h3 className="font-orbitron text-neon-cyan text-sm tracking-widest uppercase font-bold">// TÓPICOS DO DESENVOLVIMENTO</h3>
+                    <div className="flex items-center justify-between border-b border-white/5 pb-2">
+                      <h3 className="font-orbitron text-white text-xs tracking-widest uppercase font-black">// TÓPICOS DECLARADOS</h3>
                       <button 
                         onClick={() => setPontos([...pontos, { id: Math.random().toString(36).substring(7), text: '' }])}
-                        className="p-1 px-3 border border-neon-cyan/40 text-neon-cyan/60 hover:border-neon-cyan hover:text-neon-cyan transition-all flex items-center gap-2 font-orbitron text-[10px]"
+                        className="p-1 px-3 border border-[#CF9D7B]/30 text-[#CF9D7B] hover:border-[#CF9D7B] rounded font-orbitron text-[10px] transition-all"
                       >
-                        <Plus className="w-3 h-3" />
-                        ADICIONAR
+                        [+] INSERIR NOVO TÓPICO
                       </button>
                     </div>
                     
@@ -1329,32 +1508,35 @@ export default function App() {
                       ))}
                       
                       {pontos.length === 0 && (
-                        <div className="py-8 border border-dashed border-neon-cyan/20 flex flex-col items-center justify-center gap-2 text-neon-cyan/30 bg-neon-cyan/5">
-                          <Plus className="w-6 h-6 opacity-20" />
-                          <span className="font-orbitron text-[10px] tracking-widest uppercase">Nenhum tópico adicionado</span>
+                        <div className="py-8 border border-dashed border-white/5 rounded-xl flex flex-col items-center justify-center gap-2 text-text-dim bg-[#0C1519]/30">
+                          <Plus className="w-5 h-5 opacity-40 text-[#CF9D7B]" />
+                          <span className="font-orbitron text-[9px] tracking-wider uppercase opacity-60">Nenhum ponto chave cadastrado</span>
                         </div>
                       )}
                     </div>
                   </div>
 
-                  <textarea 
-                    value={apl}
-                    onChange={(e) => setApl(e.target.value)}
-                    className="w-full bg-neon-cyan/5 border border-neon-cyan/20 text-neon-cyan p-3 outline-none focus:border-neon-cyan min-h-[100px]"
-                    placeholder="APLICAÇÃO E CONCLUSÃO"
-                    translate="no"
-                  />
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-orbitron text-text-dim uppercase tracking-wider">APLICAÇÃO PRÁTICA DA PALAVRA & CONCLUSÃO</label>
+                    <textarea 
+                      value={apl}
+                      onChange={(e) => setApl(e.target.value)}
+                      className="w-full bg-[#0C1519]/70 border border-white/5 rounded-lg text-white p-3 text-sm outline-none focus:border-[#CF9D7B] min-h-[100px]"
+                      placeholder="Mensagem final de apelo e ensinamento..."
+                      translate="no"
+                    />
+                  </div>
 
                   <div className="space-y-2">
-                    <label className="text-xs font-orbitron text-neon-cyan/60 uppercase tracking-widest">Setores Pregados (Ex: 55, 48-s, 48-v)</label>
+                    <label className="text-[10px] font-orbitron text-text-dim uppercase tracking-wider">Setores Pregados (Canais, Setores, Cidades etc)</label>
                     <div className="flex flex-wrap gap-2">
                       {setores.map((setor, i) => (
-                        <div key={i} className="flex items-center bg-neon-yellow/10 border border-neon-yellow/30 px-2 py-1 rounded">
-                          <span className="text-neon-yellow font-bold text-sm">{setor}</span>
+                        <div key={i} className="flex items-center bg-[#CF9D7B]/10 border border-[#CF9D7B]/30 px-2.5 py-1 rounded-lg">
+                          <span className="text-[#CF9D7B] font-bold text-xs font-mono">{setor}</span>
                           <button 
                             type="button"
                             onClick={() => setSetores(setores.filter((_, idx) => idx !== i))}
-                            className="ml-2 text-neon-pink hover:text-white"
+                            className="ml-2 text-red-500 hover:text-white"
                           >
                             <X className="w-3 h-3" />
                           </button>
@@ -1362,8 +1544,8 @@ export default function App() {
                       ))}
                       <input 
                         type="text"
-                        className="bg-neon-cyan/5 border border-neon-cyan/20 text-neon-cyan px-2 py-1 text-sm outline-none w-20"
-                        placeholder="+"
+                        className="bg-[#0C1519]/70 border border-white/5 text-white px-3 py-1.5 rounded-lg text-xs outline-none w-24 focus:border-[#CF9D7B]"
+                        placeholder="+ Setor"
                         onKeyDown={(e) => {
                           if (e.key === 'Enter') {
                             e.preventDefault();
@@ -1378,82 +1560,162 @@ export default function App() {
                     </div>
                   </div>
 
-                  <div className="flex justify-end gap-4 pt-4">
-                    <button onClick={resetForm} className="px-6 py-2 border border-neon-pink/30 text-neon-pink/60 hover:text-neon-pink">CANCELAR</button>
-                    <button onClick={handleSave} className="px-8 py-2 bg-neon-cyan/10 border border-neon-cyan text-neon-cyan font-bold hover:shadow-[0_0_15px_rgba(0,245,255,0.3)]">
-                      {editId ? 'ATUALIZAR REGISTRO' : 'SALVAR REGISTRO'}
+                  <div className="flex justify-end gap-3 pt-4 border-t border-white/5">
+                    <button onClick={resetForm} className="px-6 py-2.5 border border-white/10 text-white/60 hover:text-white rounded-lg transition-all text-xs cursor-pointer">CANCELAR</button>
+                    <button onClick={handleSave} className="px-8 py-2.5 bg-gradient-to-r from-[#CF9D7B] to-[#724B39] text-white font-orbitron font-bold rounded-lg hover:shadow-[0_0_20px_rgba(207,157,123,0.3)] text-xs transition-all cursor-pointer">
+                      {editId ? 'ATUALIZAR REGISTRO' : 'GRAVAR DISCURSO'}
                     </button>
                   </div>
                 </motion.div>
               )}
             </AnimatePresence>
 
-            {/* Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {filteredSermoes.map((s) => (
-                <motion.div 
-                  layout
-                  key={s.id}
-                  onClick={() => setSelectedSermonId(s.id!)}
-                  className="group relative bg-card-bg border border-neon-cyan/15 p-4 cursor-pointer hover:bg-neon-cyan/5 hover:border-neon-cyan transition-all"
-                >
-                  <button 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setShowDeleteConfirm(s.id!);
-                    }}
-                    className="absolute top-2 right-2 z-20 w-8 h-8 flex items-center justify-center bg-dark-bg border border-neon-pink/50 text-neon-pink/80 hover:bg-neon-pink/20 hover:text-neon-pink transition-all opacity-0 group-hover:opacity-100"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                  
-                  {s.img ? (
-                    <img src={s.img} className="w-full h-32 object-cover border-b-2 border-neon-pink opacity-80 group-hover:opacity-100 transition-opacity mb-4" />
-                  ) : (
-                    <div className="w-full h-32 bg-mid-bg flex items-center justify-center text-text-dim mb-4">
-                      <BookOpen className="w-8 h-8" />
-                    </div>
-                  )}
+            {/* Contemporary Elegant Sermon Catalog Grid Gallery */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-orbitron font-bold tracking-[0.25em] text-[#CF9D7B] uppercase">// EXPEDIENTE DE PREGAÇÕES ({filteredSermoes.length})</span>
+                <span className="text-[9px] font-sans text-text-dim text-right">Toque em qualquer ficha de sermão para abrir a mesa de controle</span>
+              </div>
 
-                  {/* Sectors Badge */}
-                  {s.setores && s.setores.length > 0 && (
-                    <div className="absolute top-2 left-2 flex flex-wrap gap-1 max-w-[80%]">
-                      {s.setores.map((setor, idx) => (
-                        <span key={idx} className="bg-dark-bg/80 border border-neon-yellow text-neon-yellow text-[9px] font-mono font-bold px-1.5 py-0.5 rounded-sm shadow-[0_0_5px_rgba(255,238,0,0.3)]">
-                          {setor}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                  
-                  <h3 className="font-rajdhani font-bold text-xl text-[#c8e8f5] group-hover:text-neon-cyan transition-colors" translate="no">
-                    {s.tema}
-                  </h3>
-                  <p className="text-xs text-text-dim mt-2 font-mono truncate" translate="no">
-                    {s.texto || '// SEM TEXTO BASE'}
-                  </p>
-                </motion.div>
-              ))}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {filteredSermoes.map((s, index) => {
+                  const hasImage = !!s.img;
+                  const pointsCount = s.pontos?.length || 0;
+                  const randomID = (s.id || '').substring(0, 5).toUpperCase();
+                  return (
+                    <motion.div 
+                      layout
+                      key={s.id}
+                      onClick={() => setSelectedSermonId(s.id!)}
+                      className="group relative bg-[#162127]/30 border border-white/5 hover:border-[#CF9D7B]/40 rounded-xl overflow-hidden cursor-pointer hover:shadow-[0_0_30px_rgba(207,157,123,0.15)] flex flex-col h-96 justify-between transition-all duration-300"
+                    >
+                      {/* Favorite trigger (Sermão do Dia heart icon) */}
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleToggleFavorite(s.id!);
+                        }}
+                        className={cn(
+                          "absolute top-3 left-3 z-20 w-8 h-8 flex items-center justify-center rounded-lg bg-black/75 border transition-all shadow-md transform active:scale-95 duration-200 cursor-pointer",
+                          s.isFavorite 
+                            ? "border-[#ff2a5f] text-[#ff144f] bg-[#ff2a5f]/15 opacity-100 shadow-[0_0_15px_rgba(255,42,95,0.4)]" 
+                            : "border-white/10 text-white/30 hover:text-[#ff2a5f] hover:border-[#ff2a5f]/30 hover:bg-black/90 opacity-0 group-hover:opacity-100"
+                        )}
+                        title={s.isFavorite ? "Remover de Sermão do Dia" : "Definir como Sermão do Dia"}
+                      >
+                        <Heart className={cn("w-4 h-4 transition-transform duration-300", s.isFavorite ? "fill-[#ff2a5f] scale-110 text-[#ff2a5f]" : "")} />
+                      </button>
+
+                      {/* Delete trigger */}
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setShowDeleteConfirm(s.id!);
+                        }}
+                        className="absolute top-3 right-3 z-20 w-8 h-8 flex items-center justify-center rounded-lg bg-black/60 border border-red-500/30 text-red-400 hover:bg-red-500 hover:text-white transition-all opacity-0 group-hover:opacity-100 shadow-md transform"
+                        title="Deletar Sermão"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+
+                      {/* Cover Area */}
+                      <div className="relative w-full h-44 bg-[#0C1519] overflow-hidden shrink-0 border-b border-white/5">
+                        {hasImage ? (
+                          <img 
+                            src={s.img} 
+                            className="w-full h-full object-cover opacity-70 group-hover:opacity-90 group-hover:scale-105 transition-all duration-500" 
+                            alt={s.tema}
+                            loading="lazy"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-tr from-[#0C1519]/90 to-[#162127]/90 flex items-center justify-center p-4">
+                            <BookOpen className="w-10 h-10 text-[#CF9D7B]/30 group-hover:scale-110 duration-300" />
+                          </div>
+                        )}
+
+                        {/* Interactive "Start Preaching" Floating Play Tag */}
+                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 duration-300 flex items-center justify-center gap-2">
+                          <div className="w-10 h-10 rounded-full bg-[#CF9D7B] flex items-center justify-center text-white scale-75 group-hover:scale-100 border border-white/20 shadow-lg transform duration-300">
+                            <Play className="w-5 h-5 ml-0.5 fill-current" />
+                          </div>
+                        </div>
+
+                        {/* Badged Sectors */}
+                        {s.setores && s.setores.length > 0 && (
+                          <div className="absolute bottom-2 left-2 flex flex-wrap gap-1 max-w-[85%] z-10">
+                            {s.setores.slice(0, 2).map((setor, idx) => (
+                              <span key={idx} className="bg-black/80 border border-[#CF9D7B]/40 text-[#CF9D7B] text-[8px] font-mono font-bold px-1.5 py-0.5 rounded-sm shadow-[0_0_5px_rgba(207,157,123,0.3)] uppercase">
+                                {setor}
+                              </span>
+                            ))}
+                            {s.setores.length > 2 && (
+                              <span className="bg-black/80 text-[#CF9D7B] text-[8px] font-mono font-bold px-1.5 py-0.5 rounded-sm">
+                                +{s.setores.length - 2}
+                              </span>
+                            )}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Card Content & Meta */}
+                      <div className="flex-1 p-4 flex flex-col justify-between">
+                        <div>
+                          {/* Code Serial / Visual Grid Detail */}
+                          <div className="flex justify-between items-center text-[9px] font-mono tracking-widest text-text-dim mb-1">
+                            <span>REG_KEY: #{randomID}</span>
+                            <span>ORD: {(index+1).toString().padStart(2, '0')}</span>
+                          </div>
+
+                          <h3 className="font-orbitron font-bold text-base text-white/95 group-hover:text-[#CF9D7B] transition-colors leading-snug line-clamp-2" translate="no">
+                            {s.tema}
+                          </h3>
+                        </div>
+
+                        {/* Card Footer Bible and point statistics */}
+                        <div className="border-t border-white/5 pt-3">
+                          <p className="text-[10px] text-[#CF9D7B] font-mono uppercase truncate mb-1" translate="no">
+                            📖 {s.texto || '// SEM BASE CADASTRADA'}
+                          </p>
+
+                          <div className="flex justify-between items-center text-[10px] text-text-dim font-mono">
+                            <span className="flex items-center gap-1">
+                              <Layers size={10} />
+                              {pointsCount} {pointsCount === 1 ? 'tópico' : 'tópicos'}
+                            </span>
+                            <span className="text-[9px] opacity-75">
+                              {s.createdAt ? new Date(s.createdAt.seconds * 1000).toLocaleDateString('pt-BR') : 'Recente'}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
             </div>
           </>
         ) : (
           /* Pulpito Mode */
-          <div className="fixed inset-0 z-[2000] bg-dark-bg overflow-y-auto p-6 md:p-12 font-rajdhani" translate="no">
+          <div className="fixed inset-0 z-[2000] bg-[#0C1519] overflow-y-auto p-6 md:p-12 font-rajdhani" translate="no">
+            {/* Immersive Dark Background Overlay */}
+            <div className="absolute inset-0 bg-radial from-[#121c22]/50 via-transparent to-transparent pointer-events-none -z-10" />
+
             {/* Floating Timer */}
-            <div className="fixed top-4 right-4 bg-black/90 border border-neon-green text-neon-green px-4 py-2 font-orbitron text-xl md:text-2xl font-bold shadow-[0_0_15px_rgba(0,255,136,0.2)] z-[2001] rounded-md">
+            <div className="fixed top-4 right-4 bg-black/95 border border-[#CF9D7B] text-[#CF9D7B] px-5 py-3 font-orbitron text-xl md:text-3xl font-black shadow-[0_0_20px_rgba(207,157,123,0.3)] z-[2001] rounded-xl flex items-center gap-3">
+              <span className="w-3.5 h-3.5 rounded-full bg-red-600 animate-pulse" />
               {formatTime(tempo)}
             </div>
 
             <div className="max-w-5xl mx-auto space-y-16 pb-32">
               {/* Header Section */}
-              <div className="space-y-6 border-b border-neon-cyan/20 pb-10">
-                <h1 className="text-4xl md:text-6xl lg:text-7xl font-orbitron font-black text-neon-cyan leading-tight tracking-tight drop-shadow-[0_0_15px_rgba(0,245,255,0.4)]">
+              <div className="space-y-6 border-b border-white/5 pb-10">
+                <h1 className="text-3xl md:text-5xl lg:text-6xl font-orbitron font-black text-white leading-tight tracking-tight uppercase">
                   {selectedSermon?.tema}
                 </h1>
                 
-                <div className="flex flex-wrap items-center gap-6 text-2xl md:text-3xl">
-                  <div className="flex items-center gap-3 text-neon-yellow bg-neon-yellow/10 px-4 py-2 border border-neon-yellow/20 rounded-md">
-                    <BookOpen className="w-8 h-8" />
+                <div className="flex flex-wrap items-center gap-6 text-xl md:text-2xl">
+                  <div className="flex items-center gap-3 text-[#ffee00] bg-[#CF9D7B]/10 px-4 py-2 border border-[#CF9D7B]/20 rounded-xl">
+                    <BookOpen className="w-6 h-6 text-[#CF9D7B]" />
                     <span className="font-bold">
                       <HighlightableText 
                         text={selectedSermon?.texto || ''} 
@@ -1466,8 +1728,8 @@ export default function App() {
                   </div>
                   
                   {selectedSermon?.agr && (
-                    <div className="text-neon-green/90 italic flex items-center gap-2">
-                      <span className="text-neon-green font-bold">[🙌]</span>
+                    <div className="text-white/80 italic flex items-center gap-2 bg-white/5 border border-white/10 px-4 py-2 rounded-xl">
+                      <span className="text-[#CF9D7B] font-bold font-orbitron select-none">🙌 AGRADECIMENTOS:</span>
                       <span>{selectedSermon.agr}</span>
                     </div>
                   )}
@@ -1494,11 +1756,11 @@ export default function App() {
 
               {/* Intro Section */}
               {selectedSermon?.intro && (
-                <section className="space-y-6 bg-neon-cyan/[0.03] p-8 border-l-4 border-neon-cyan/40">
-                  <h4 className="font-orbitron text-neon-cyan/60 text-sm tracking-[0.4em] uppercase font-bold">
-                    // INTRODUÇÃO
+                <section className="space-y-6 bg-[#162127]/20 p-8 border-l-4 border-[#CF9D7B]/60 rounded-r-xl">
+                  <h4 className="font-orbitron text-[#CF9D7B] text-sm tracking-[0.4em] uppercase font-black">
+                    // INTRODUÇÃO REVELADA
                   </h4>
-                  <div className="text-xl md:text-2xl lg:text-3xl leading-relaxed text-text-mid whitespace-pre-wrap font-medium">
+                  <div className="text-xl md:text-2xl lg:text-3xl leading-relaxed text-white/90 whitespace-pre-wrap font-medium">
                     <HighlightableText 
                       text={selectedSermon.intro} 
                       sermonId={selectedSermon.id!} 
@@ -1512,8 +1774,8 @@ export default function App() {
 
               {/* Development Section */}
               <section className="space-y-10">
-                <h4 className="font-orbitron text-neon-yellow/60 text-sm tracking-[0.4em] uppercase font-bold">
-                  // DESENVOLVIMENTO
+                <h4 className="font-orbitron text-[#ffee00]/80 text-sm tracking-[0.4em] uppercase font-black">
+                  // DESENVOLVIMENTO DO TEMA
                 </h4>
                 <div className="space-y-8">
                   {selectedSermon?.pontos.map((p, i) => (
@@ -1531,11 +1793,11 @@ export default function App() {
 
               {/* Application Section */}
               {selectedSermon?.apl && (
-                <section className="space-y-6 bg-neon-pink/[0.03] p-8 border-l-4 border-neon-pink/40">
-                  <h4 className="font-orbitron text-neon-pink/60 text-sm tracking-[0.4em] uppercase font-bold">
-                    // APLICAÇÃO & CONCLUSÃO
+                <section className="space-y-6 bg-[#162127]/20 p-8 border-l-4 border-[#00f5ff]/60 rounded-r-xl">
+                  <h4 className="font-orbitron text-[#00f5ff]/80 text-sm tracking-[0.4em] uppercase font-black">
+                    // APLICAÇÃO GERAL & FECHAMENTO
                   </h4>
-                  <div className="text-xl md:text-2xl lg:text-3xl leading-relaxed text-text-mid whitespace-pre-wrap font-medium">
+                  <div className="text-xl md:text-2xl lg:text-3xl leading-relaxed text-white/90 whitespace-pre-wrap font-medium">
                     <HighlightableText 
                       text={selectedSermon.apl} 
                       sermonId={selectedSermon.id!} 
@@ -1551,10 +1813,10 @@ export default function App() {
               <div className="pt-20 pb-12 flex justify-center">
                 <button 
                   onClick={() => setMode('grid')}
-                  className="group flex items-center gap-2 px-6 py-2 border border-neon-pink/40 text-neon-pink/60 font-orbitron text-[10px] tracking-[0.3em] uppercase hover:border-neon-pink hover:text-neon-pink hover:bg-neon-pink/5 transition-all duration-500 rounded-sm"
+                  className="group flex items-center gap-2.5 px-8 py-3 border border-[#CF9D7B]/40 text-[#CF9D7B]/80 font-orbitron text-[11px] tracking-[0.3em] uppercase hover:border-[#CF9D7B] hover:text-white hover:bg-[#CF9D7B]/15 transition-all duration-500 rounded-lg cursor-pointer font-bold"
                 >
-                  <LogOut className="w-3 h-3 opacity-50 group-hover:opacity-100 transition-opacity" />
-                  ENCERRAR SESSÃO
+                  <LogOut className="w-4 h-4 opacity-75 group-hover:opacity-100 transition-opacity" />
+                  ENCERRAR PREGAÇÃO IMPERIAL
                 </button>
               </div>
             </div>
@@ -1565,114 +1827,136 @@ export default function App() {
       {/* Modal Details */}
       <AnimatePresence>
         {selectedSermonId && selectedSermon && mode === 'grid' && (
-          <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm">
+          <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md">
             <motion.div 
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-card-bg border border-neon-cyan w-full max-w-4xl max-h-[90vh] overflow-y-auto p-8 relative shadow-[0_0_50px_rgba(0,245,255,0.1)]"
+              initial={{ scale: 0.95, opacity: 0, y: 15 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 15 }}
+              transition={{ duration: 0.3, ease: 'easeOut' }}
+              className="bg-[#162127] border border-[#CF9D7B]/30 rounded-2xl w-full max-w-4xl max-h-[85vh] overflow-y-auto p-6 md:p-8 relative shadow-[0_0_50px_rgba(207,157,123,0.15)]"
             >
               <button 
                 onClick={() => setSelectedSermonId(null)}
-                className="absolute top-4 right-4 text-text-dim hover:text-neon-pink transition-colors"
+                className="absolute top-4 right-4 text-text-dim hover:text-[#CF9D7B] transition-colors p-2 cursor-pointer"
+                title="Fechar Detalhes"
               >
-                <X className="w-8 h-8" />
+                <X className="w-6 h-6" />
               </button>
 
-              <div className="space-y-6">
-                <h2 className="text-3xl md:text-4xl font-orbitron font-black text-neon-cyan" translate="no">
-                  {selectedSermon.tema}
-                </h2>
-                <div className="text-lg md:text-xl text-neon-yellow font-rajdhani flex items-center gap-2">
-                  <BookOpen className="w-5 h-5 flex-shrink-0" />
-                  <HighlightableText 
-                    text={selectedSermon.texto || ''} 
-                    sermonId={selectedSermon.id!} 
-                    sectionKey="texto" 
-                    highlights={selectedSermon.highlights}
-                    onHighlight={(key, color) => handleHighlight(selectedSermon.id!, key, color)}
-                  />
+              <div className="space-y-8">
+                <div>
+                  <div className="inline-flex items-center gap-2 bg-[#CF9D7B]/10 border border-[#CF9D7B]/35 px-3 py-1 rounded-full text-[10px] font-orbitron font-bold text-[#CF9D7B] tracking-widest uppercase mb-4">
+                    <span>✦ CONTROLE DO SERMÃO</span>
+                  </div>
+
+                  <h2 className="text-2xl md:text-3xl font-orbitron font-black text-white leading-tight uppercase" translate="no">
+                    {selectedSermon.tema}
+                  </h2>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-b border-white/5 pb-6">
+                  <div className="text-base text-[#ffee00] font-mono flex items-center gap-3">
+                    <BookOpen className="w-5 h-5 flex-shrink-0 text-[#CF9D7B]" />
+                    <HighlightableText 
+                      text={selectedSermon.texto || ''} 
+                      sermonId={selectedSermon.id!} 
+                      sectionKey="texto" 
+                      highlights={selectedSermon.highlights}
+                      onHighlight={(key, color) => handleHighlight(selectedSermon.id!, key, color)}
+                    />
+                  </div>
+                  
+                  {selectedSermon.agr && (
+                    <div className="text-xs text-text-mid font-rajdhani flex items-center gap-2">
+                      <span className="font-extrabold text-[#CF9D7B] font-orbitron tracking-widest">🙌 AGRADECIMENTOS:</span> 
+                      <p className="text-white/80 shrink">{selectedSermon.agr}</p>
+                    </div>
+                  )}
                 </div>
                 
-                {selectedSermon.agr && (
-                  <p className="text-text-mid">
-                    <span className="font-bold text-neon-green">[🙌] AGRADECIMENTOS:</span> {selectedSermon.agr}
-                  </p>
+                {selectedSermon.intro && (
+                  <div className="space-y-3">
+                    <h4 className="font-orbitron font-bold text-xs text-[#CF9D7B] uppercase tracking-[0.25em]">// INTRODUÇÃO REVELADA</h4>
+                    <div className="whitespace-pre-wrap text-text-mid leading-relaxed text-base bg-[#0C1519]/70 border border-white/5 p-5 rounded-xl">
+                      <HighlightableText 
+                        text={selectedSermon.intro} 
+                        sermonId={selectedSermon.id!} 
+                        sectionKey="intro" 
+                        highlights={selectedSermon.highlights}
+                        onHighlight={(key, color) => handleHighlight(selectedSermon.id!, key, color)}
+                      />
+                    </div>
+                  </div>
                 )}
 
-                <div className="space-y-4">
-                  <h4 className="font-rajdhani text-neon-yellow text-lg border-b border-neon-cyan/20 pb-2 uppercase tracking-widest">// INTRODUÇÃO</h4>
-                  <div className="whitespace-pre-wrap text-text-mid leading-relaxed text-lg">
-                    <HighlightableText 
-                      text={selectedSermon.intro} 
-                      sermonId={selectedSermon.id!} 
-                      sectionKey="intro" 
-                      highlights={selectedSermon.highlights}
-                      onHighlight={(key, color) => handleHighlight(selectedSermon.id!, key, color)}
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <h4 className="font-rajdhani text-neon-yellow text-lg border-b border-neon-cyan/20 pb-2 uppercase tracking-widest">// DESENVOLVIMENTO</h4>
-                  <div className="space-y-3">
-                    {selectedSermon.pontos.map((p, i) => (
-                      <div key={i} className="flex gap-4 items-start bg-neon-cyan/5 p-4 border-l-2 border-neon-cyan">
-                        <input type="checkbox" className="mt-1 accent-neon-pink w-5 h-5" />
-                        <div className="whitespace-pre-wrap text-text-mid">
-                          <HighlightableText 
-                            text={p} 
-                            sermonId={selectedSermon.id!} 
-                            sectionKey={`ponto_${i}`} 
-                            highlights={selectedSermon.highlights}
-                            onHighlight={(key, color) => handleHighlight(selectedSermon.id!, key, color)}
-                          />
+                {selectedSermon.pontos && selectedSermon.pontos.length > 0 && (
+                  <div className="space-y-4">
+                    <h4 className="font-orbitron font-bold text-xs text-[#ffee00] uppercase tracking-[0.25em]">// DESENVOLVIMENTO DO TEMA</h4>
+                    <div className="space-y-3">
+                      {selectedSermon.pontos.map((p, i) => (
+                        <div key={i} className="flex gap-4 items-start bg-[#0C1519]/50 p-4 border border-white/5 border-l-2 border-l-[#CF9D7B] rounded-xl">
+                          <input type="checkbox" className="mt-1 accent-[#CF9D7B] w-4 h-4 cursor-pointer" />
+                          <div className="whitespace-pre-wrap text-text-mid text-base leading-relaxed font-rajdhani">
+                            <HighlightableText 
+                              text={p} 
+                              sermonId={selectedSermon.id!} 
+                              sectionKey={`ponto_${i}`} 
+                              highlights={selectedSermon.highlights}
+                              onHighlight={(key, color) => handleHighlight(selectedSermon.id!, key, color)}
+                            />
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
 
-                <div className="space-y-4">
-                  <h4 className="font-rajdhani text-neon-yellow text-lg border-b border-neon-cyan/20 pb-2 uppercase tracking-widest">// APLICAÇÃO</h4>
-                  <div className="whitespace-pre-wrap text-text-mid leading-relaxed text-lg">
-                    <HighlightableText 
-                      text={selectedSermon.apl} 
-                      sermonId={selectedSermon.id!} 
-                      sectionKey="apl" 
-                      highlights={selectedSermon.highlights}
-                      onHighlight={(key, color) => handleHighlight(selectedSermon.id!, key, color)}
-                    />
+                {selectedSermon.apl && (
+                  <div className="space-y-3">
+                    <h4 className="font-orbitron font-bold text-xs text-[#00f5ff] uppercase tracking-[0.25em]">// APLICAÇÃO GERAL & FECHAMENTO</h4>
+                    <div className="whitespace-pre-wrap text-text-mid leading-relaxed text-base bg-[#0C1519]/70 border border-white/5 p-5 rounded-xl">
+                      <HighlightableText 
+                        text={selectedSermon.apl} 
+                        sermonId={selectedSermon.id!} 
+                        sectionKey="apl" 
+                        highlights={selectedSermon.highlights}
+                        onHighlight={(key, color) => handleHighlight(selectedSermon.id!, key, color)}
+                      />
+                    </div>
                   </div>
-                </div>
+                )}
 
-                <div className="flex flex-wrap gap-4 pt-8 border-t border-neon-cyan/20">
-                  <button 
-                    onClick={() => setShowDeleteConfirm(selectedSermon.id!)}
-                    className="px-6 py-2 border border-neon-pink/30 text-neon-pink/60 hover:text-neon-pink hover:bg-neon-pink/10"
-                  >
-                    DELETAR
-                  </button>
-                  <button 
-                    onClick={() => handleEdit(selectedSermon)}
-                    className="px-6 py-2 border border-neon-yellow/30 text-neon-yellow/60 hover:text-neon-yellow hover:bg-neon-yellow/10"
-                  >
-                    EDITAR
-                  </button>
-                  <button 
-                    onClick={() => setSelectedSermonId(null)}
-                    className="px-6 py-2 border border-neon-cyan/30 text-neon-cyan/60 hover:text-neon-cyan"
-                  >
-                    VOLTAR
-                  </button>
+                <div className="flex flex-wrap gap-4 pt-6 border-t border-white/5">
                   <button 
                     onClick={() => {
                       setMode('pulpito');
+                      setSelectedSermonId(selectedSermon.id!);
                     }}
-                    className="px-8 py-2 bg-neon-green/10 border border-neon-green text-neon-green font-bold hover:shadow-[0_0_15px_rgba(0,255,136,0.3)] flex items-center gap-2"
+                    className="px-8 py-3 bg-gradient-to-r from-[#CF9D7B] to-[#724B39] text-white font-orbitron font-black text-[11px] tracking-widest rounded-lg hover:shadow-[0_0_20px_rgba(207,157,123,0.35)] flex items-center gap-2 transform active:scale-95 duration-200 cursor-pointer"
                   >
-                    <Play className="w-4 h-4" />
-                    INICIAR PÚLPITO
+                    <Play className="w-4 h-4 fill-current text-white/90" />
+                    INICIAR NO PÚLPITO IMPERIAL
+                  </button>
+
+                  <button 
+                    onClick={() => handleEdit(selectedSermon)}
+                    className="px-6 py-3 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-[#CF9D7B]/50 hover:text-[#CF9D7B] rounded-lg text-xs font-bold transition-all cursor-pointer"
+                  >
+                    EDITAR FICHA
+                  </button>
+
+                  <button 
+                    onClick={() => setShowDeleteConfirm(selectedSermon.id!)}
+                    className="px-6 py-3 bg-red-950/20 border border-red-500/20 text-red-400 hover:bg-red-500 hover:text-white rounded-lg text-xs font-bold transition-all cursor-pointer"
+                  >
+                    EXCLUIR REGISTRO
+                  </button>
+
+                  <button 
+                    onClick={() => setSelectedSermonId(null)}
+                    className="px-6 py-3 border border-white/10 text-white/60 hover:text-white rounded-lg text-xs cursor-pointer ml-auto"
+                  >
+                    FECHAR
                   </button>
                 </div>
               </div>

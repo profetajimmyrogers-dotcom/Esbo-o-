@@ -10,6 +10,7 @@ export interface Sermon {
   setores?: string[];
   apl: string;
   highlights?: Record<string, string>;
+  isFavorite?: boolean;
   createdAt?: any;
   updatedAt?: any;
 }
