@@ -10,6 +10,8 @@
   --color-neon-pink: #ffffff;
   --color-neon-yellow: #ffee00;
   --color-neon-green: #00ff88;
+  --color-neon-green-fluo: #39ff14;
+  --color-neon-crimson: #dc143c;
   --color-dark-bg: #020810;
   --color-mid-bg: #040d1a;
   --color-card-bg: #050f20;
@@ -91,6 +93,16 @@
 .highlight-pink {
   @apply bg-neon-pink text-dark-bg px-0.5 rounded-xs font-bold ring-1 ring-neon-pink/30;
   box-shadow: 0 0 8px rgba(255, 255, 255, 0.8), 0 0 15px rgba(255, 255, 255, 0.4);
+}
+
+.highlight-green-fluo {
+  @apply bg-neon-green-fluo text-dark-bg px-0.5 rounded-xs font-bold ring-1 ring-neon-green-fluo/30;
+  box-shadow: 0 0 8px rgba(57, 255, 20, 0.6);
+}
+
+.highlight-crimson {
+  @apply bg-neon-crimson text-white px-0.5 rounded-xs font-bold ring-1 ring-neon-crimson/30;
+  box-shadow: 0 0 8px rgba(220, 20, 60, 0.6);
 }
 
 /* Background Effects, Cinematic Zoom & Drifting Divine Clouds */

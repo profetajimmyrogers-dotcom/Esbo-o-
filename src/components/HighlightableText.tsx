@@ -17,7 +17,7 @@ export const HighlightableText = ({
 }: HighlightableTextProps) => {
   if (!text) return null;
 
-  const coresMarcador = ['', 'highlight-yellow', 'highlight-cyan', 'highlight-pink'];
+  const coresMarcador = ['', 'highlight-yellow', 'highlight-cyan', 'highlight-pink', 'highlight-green-fluo', 'highlight-crimson'];
 
   // Dividimos o texto mantendo os espaços e quebras de linha como elementos (tokens)
   const tokens = text.split(/(\s+)/);
