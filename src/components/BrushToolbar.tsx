@@ -20,23 +20,7 @@ export const BrushToolbar = () => {
   const brush = useBrush();
 
   if (!brush.isActive) {
-    return (
-      <motion.div
-        drag
-        dragMomentum={false}
-        dragElastic={0.05}
-        className="fixed bottom-12 right-6 z-[3000]"
-      >
-        <button
-          type="button"
-          onClick={() => brush.setBrush({ isActive: true, isEraser: false })}
-          className="flex items-center justify-center w-14 h-14 bg-black/95 border-2 border-neon-cyan text-neon-cyan rounded-full shadow-[0_0_25px_rgba(0,245,255,0.5)] hover:shadow-[0_0_35px_rgba(0,245,255,0.85)] hover:bg-neon-cyan/20 active:scale-95 transition-all select-none cursor-grab active:cursor-grabbing"
-          title="Ativar Marca-Texto Rápido (Segure e arraste para reposicionar)"
-        >
-          <Paintbrush size={22} className="animate-pulse" />
-        </button>
-      </motion.div>
-    );
+    return null;
   }
 
   return (

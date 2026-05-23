@@ -51,12 +51,16 @@ import {
   Wifi,
   WifiOff,
   RefreshCw,
-  Download
+  Download,
+  Paintbrush,
+  Eraser,
+  Check
 } from 'lucide-react';
 import { cn } from './lib/utils';
 import { HighlightableText } from './components/HighlightableText';
 import { PulpitoTopic } from './components/PulpitoTopic';
 import { PulpitoSectors } from './components/PulpitoSectors';
+import { useBrush } from './lib/brushStore';
 import { BrushToolbar } from './components/BrushToolbar';
 
 function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
@@ -210,6 +214,37 @@ export default function App() {
     }
   });
 
+  // Spotify-style Offline Individual Download Engines (HIVE Persistent Local)
+  const [downloadedSermonIds, setDownloadedSermonIds] = useState<string[]>(() => {
+    try {
+      const cached = localStorage.getItem('downloaded_sermon_ids');
+      return cached ? JSON.parse(cached) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [showOnlyDownloaded, setShowOnlyDownloaded] = useState<boolean>(() => {
+    return localStorage.getItem('show_only_downloaded_pref') === 'true';
+  });
+
+  const handleToggleDownloadSermon = (sermonId: string) => {
+    setDownloadedSermonIds(prev => {
+      const next = prev.includes(sermonId)
+        ? prev.filter(id => id !== sermonId)
+        : [...prev, sermonId];
+      localStorage.setItem('downloaded_sermon_ids', JSON.stringify(next));
+      return next;
+    });
+  };
+
+  const handleToggleShowOnlyDownloaded = () => {
+    setShowOnlyDownloaded(prev => {
+      const next = !prev;
+      localStorage.setItem('show_only_downloaded_pref', String(next));
+      return next;
+    });
+  };
+
   // Connectivity and Synchronization Engine (Hive Local + Firebase cache + Sync model)
   const [isOnline, setIsOnline] = useState(() => typeof navigator !== 'undefined' ? navigator.onLine : true);
   const [syncStatus, setSyncStatus] = useState<'synced' | 'syncing' | 'offline' | 'error'>('synced');
@@ -228,6 +263,7 @@ export default function App() {
   const [selectedSermonId, setSelectedSermonId] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
   const [mode, setMode] = useState<'grid' | 'pulpito'>('grid');
+  const brush = useBrush();
   
   // New State for Calendar & Sidebar
   const [moonMode, setMoonMode] = useState(false);
@@ -641,6 +677,11 @@ export default function App() {
         // Save to offline storage as a standard local SQLite/Hive database simulation
         localStorage.setItem('hive_offline_sermoes', JSON.stringify(sermoes));
         localStorage.setItem('hive_sync_time', new Date().toISOString());
+        
+        // Spotify style: automatically mark all pre-existing sermons as downloaded offline
+        const allIds = sermoes.map(s => s.id!).filter(Boolean);
+        setDownloadedSermonIds(allIds);
+        localStorage.setItem('downloaded_sermon_ids', JSON.stringify(allIds));
         
         setTimeout(() => {
           setIsSyncingManual(false);
@@ -1305,7 +1346,13 @@ export default function App() {
     );
   }
 
-  const filteredSermoes = sermoes.filter(s => s.tema.toLowerCase().includes(busca.toLowerCase()));
+  const filteredSermoes = sermoes.filter(s => {
+    const matchesSearch = s.tema.toLowerCase().includes(busca.toLowerCase());
+    if (showOnlyDownloaded) {
+      return matchesSearch && s.id && downloadedSermonIds.includes(s.id);
+    }
+    return matchesSearch;
+  });
 
   return (
     <div className="min-h-screen relative z-10 pb-20 transition-all duration-1000 bg-[#0C1519]" translate="no">
@@ -1506,7 +1553,22 @@ export default function App() {
                 )}
               </div>
 
-              <div className="flex items-center gap-3 w-full md:w-auto shrink-0">
+              <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto shrink-0">
+                {/* Spotify Offline Mode filter */}
+                <button
+                  onClick={handleToggleShowOnlyDownloaded}
+                  className={cn(
+                    "w-full sm:w-auto px-4 py-1.5 rounded-lg border text-[9px] font-orbitron font-bold tracking-widest flex items-center justify-center gap-2 transition-all duration-300 active:scale-95 cursor-pointer",
+                    showOnlyDownloaded
+                      ? "bg-emerald-950/20 border-emerald-500/50 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.25)]"
+                      : "bg-white/5 border-white/10 text-white/55 hover:bg-white/10 hover:text-white"
+                  )}
+                  title="Filtrar para exibir apenas sermões marcados como baixados"
+                >
+                  <Check className={cn("w-3.5 h-3.5", showOnlyDownloaded ? "text-emerald-400" : "text-white/40")} />
+                  <span>{showOnlyDownloaded ? `SÓ BAIXADOS:¹ ATIVO (${downloadedSermonIds.length})` : 'EXIBIR TODOS OS CACHED'}</span>
+                </button>
+
                 {isSyncingManual ? (
                   <div className="w-full md:w-56 bg-black/40 h-7 rounded-lg overflow-hidden border border-[#CF9D7B]/25 relative flex items-center justify-center">
                     <div 
@@ -1763,6 +1825,23 @@ export default function App() {
                         <Heart className={cn("w-4 h-4 transition-transform duration-300", s.isFavorite ? "fill-[#ff2a5f] scale-110 text-[#ff2a5f]" : "")} />
                       </button>
 
+                      {/* Download offline trigger (Spotify style) */}
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleToggleDownloadSermon(s.id!);
+                        }}
+                        className={cn(
+                          "absolute top-3 left-12 z-20 w-8 h-8 flex items-center justify-center rounded-lg bg-black/75 border transition-all shadow-md transform active:scale-95 duration-200 cursor-pointer",
+                          downloadedSermonIds.includes(s.id!) 
+                            ? "border-emerald-500 text-emerald-400 bg-emerald-500/15 opacity-100 shadow-[0_0_15px_rgba(16,185,129,0.4)]" 
+                            : "border-white/10 text-white/30 hover:text-emerald-400 hover:border-emerald-500/30 hover:bg-black/90 opacity-0 group-hover:opacity-100"
+                        )}
+                        title={downloadedSermonIds.includes(s.id!) ? "Remover dos Baixados (Offline)" : "Baixar Sermão para Offline"}
+                      >
+                        <Download className={cn("w-4 h-4 transition-transform duration-300", downloadedSermonIds.includes(s.id!) ? "scale-110 text-emerald-400" : "")} />
+                      </button>
+
                       {/* Delete trigger */}
                       <button 
                         onClick={(e) => {
@@ -1982,70 +2061,43 @@ export default function App() {
             </div>
 
             {/* Tablet Pulpit Imperial Reading Remote Controller HUD (Floating controller) */}
-            <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[2010] bg-[#0c1519]/95 border border-[#CF9D7B]/30 backdrop-blur-xl px-6 py-3.5 rounded-2xl flex items-center justify-between gap-6 shadow-[0_4px_35px_rgba(207,157,123,0.35)] select-none max-w-[95vw] w-[580px] text-white">
+            <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[2010] bg-[#0c1519]/95 border border-[#CF9D7B]/30 backdrop-blur-xl px-4 py-2 rounded-2xl flex items-center gap-4 shadow-[0_4px_30px_rgba(207,157,123,0.3)] select-none max-w-[95vw] w-fit text-white">
               {/* Size Tools */}
-              <div className="flex items-center gap-2 border-r border-white/10 pr-4 shrink-0">
+              <div className="flex items-center gap-2 border-r border-[#CF9D7B]/20 pr-3 shrink-0">
                 <button 
                   onClick={() => setFontSizeIndex(prev => Math.max(0, prev - 1))}
-                  className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/15 text-[#CF9D7B] border border-white/10 flex items-center justify-center font-orbitron font-extrabold text-xs active:scale-95 duration-150 cursor-pointer"
+                  className="w-7 h-7 rounded-lg bg-white/5 hover:bg-white/15 text-[#CF9D7B] border border-white/10 flex items-center justify-center font-orbitron font-extrabold text-[10px] active:scale-95 duration-150 cursor-pointer"
                   title="Diminuir letras"
                 >
                   A-
                 </button>
-                <span className="text-[9px] font-mono font-bold text-white uppercase px-1 min-w-[3.2rem] text-center shrink-0">
+                <span className="text-[9px] font-mono font-bold text-white uppercase px-1 min-w-[3rem] text-center shrink-0">
                   FONTE: {fontSizeIndex + 1}X
                 </span>
                 <button 
                   onClick={() => setFontSizeIndex(prev => Math.min(fontSizes.length - 1, prev + 1))}
-                  className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/15 text-[#CF9D7B] border border-white/10 flex items-center justify-center font-orbitron font-extrabold text-xs active:scale-95 duration-150 cursor-pointer"
+                  className="w-7 h-7 rounded-lg bg-white/5 hover:bg-white/15 text-[#CF9D7B] border border-white/10 flex items-center justify-center font-orbitron font-extrabold text-[10px] active:scale-95 duration-150 cursor-pointer"
                   title="Aumentar letras"
                 >
                   A+
                 </button>
               </div>
 
-              {/* Automatic Scroll Active toggle */}
-              <div className="flex items-center gap-2 border-r border-white/10 pr-4 shrink-0">
+              {/* Integrated Brush/Pincel Tools */}
+              <div className="flex items-center gap-2.5 shrink-0">
                 <button
-                  onClick={() => setAutoScrollActive(prev => !prev)}
+                  onClick={() => brush.setBrush({ isActive: !brush.isActive })}
                   className={cn(
                     "px-3 py-1.5 rounded-lg border text-[9px] font-orbitron font-bold tracking-widest flex items-center gap-1.5 transition-all duration-300 active:scale-95 cursor-pointer shrink-0",
-                    autoScrollActive
-                      ? "bg-[#ffee00]/15 border-[#ffee00]/50 text-[#ffee00] shadow-[0_0_12px_rgba(255,238,0,0.25)] animate-pulse"
-                      : "bg-white/5 border-white/10 text-white/50 hover:bg-white/10 hover:text-white"
+                    brush.isActive
+                      ? "bg-[#00f5ff]/15 border-[#00f5ff]/50 text-[#00f5ff] shadow-[0_0_12px_rgba(0,245,255,0.25)]"
+                      : "bg-white/5 border-white/10 text-white/55 hover:bg-white/10 hover:text-white"
                   )}
-                  title="Ativar/Desativar rolagem automática contínua"
+                  title="Ativar/Desativar Marcador Rápido"
                 >
-                  <RefreshCw className={cn("w-3.5 h-3.5", autoScrollActive && "animate-spin")} style={{ animationDuration: '6s' }} />
-                  <span>{autoScrollActive ? 'ROLAGEM ATIVA' : 'ROLAR PÁGINA'}</span>
+                  <Paintbrush className={cn("w-3.5 h-3.5", brush.isActive && "animate-pulse")} />
+                  <span>PINCEL</span>
                 </button>
-
-                {/* Speed Controls (only show if scroll speed is active) */}
-                {autoScrollActive && (
-                  <div className="flex items-center gap-1 shrink-0 animate-fade-in">
-                    <button 
-                      onClick={() => setAutoScrollSpeed(prev => Math.min(60, prev + 5))}
-                      className="w-6 h-6 rounded bg-white/5 hover:bg-white/15 text-[#CF9D7B] border border-white/10 flex items-center justify-center font-bold text-[10px] active:scale-95 duration-150 cursor-pointer"
-                      title="Diminuir velocidade"
-                    >
-                      -
-                    </button>
-                    <span className="text-[7.5px] font-mono text-white/40">VEL</span>
-                    <button 
-                      onClick={() => setAutoScrollSpeed(prev => Math.max(5, prev - 5))}
-                      className="w-6 h-6 rounded bg-white/5 hover:bg-white/15 text-[#CF9D7B] border border-white/10 flex items-center justify-center font-bold text-[10px] active:scale-95 duration-150 cursor-pointer"
-                      title="Aumentar velocidade"
-                    >
-                      +
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              {/* Safety Shield Indicator */}
-              <div className="flex items-center gap-1.5 text-[8.5px] font-mono font-bold uppercase tracking-wider text-emerald-400 bg-emerald-950/20 px-2.5 py-1.5 rounded-lg border border-emerald-500/20 shrink-0 hidden sm:flex truncate">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                <span>HIVE OFFLINE SECURE</span>
               </div>
 
               {/* Back action */}
@@ -2054,7 +2106,7 @@ export default function App() {
                   setAutoScrollActive(false);
                   setMode('grid');
                 }}
-                className="p-2.5 bg-red-950/25 border border-red-500/20 hover:border-red-500 hover:bg-red-500/30 text-red-400 hover:text-white rounded-lg transition-all cursor-pointer shadow-md shrink-0 ml-auto"
+                className="p-1.5 bg-red-950/25 border border-red-500/20 hover:border-red-500 hover:bg-red-500/30 text-red-400 hover:text-white rounded-lg transition-all cursor-pointer shadow-md shrink-0 ml-auto"
                 title="Sair do Púlpito"
               >
                 <X className="w-3.5 h-3.5" />
@@ -2175,7 +2227,21 @@ export default function App() {
                     className="px-8 py-3 bg-gradient-to-r from-[#CF9D7B] to-[#724B39] text-white font-orbitron font-black text-[11px] tracking-widest rounded-lg hover:shadow-[0_0_20px_rgba(207,157,123,0.35)] flex items-center gap-2 transform active:scale-95 duration-200 cursor-pointer"
                   >
                     <Play className="w-4 h-4 fill-current text-white/90" />
-                    INICIAR NO PÚLPITO IMPERIAL
+                    <span>INICIAR NO PÚLPITO IMPERIAL</span>
+                  </button>
+
+                  <button 
+                    onClick={() => handleToggleDownloadSermon(selectedSermon.id!)}
+                    className={cn(
+                      "px-6 py-3 border rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-2",
+                      downloadedSermonIds.includes(selectedSermon.id!)
+                        ? "bg-emerald-950/20 border-emerald-500/50 text-emerald-400 hover:bg-emerald-500/15"
+                        : "bg-white/5 hover:bg-white/10 border-white/10 hover:border-emerald-500/50 hover:text-emerald-400"
+                    )}
+                    title={downloadedSermonIds.includes(selectedSermon.id!) ? "Remover dos Baixados Offline" : "Baixar para Acesso Offline"}
+                  >
+                    <Download className={cn("w-3.5 h-3.5", downloadedSermonIds.includes(selectedSermon.id!) ? "text-emerald-400 fill-emerald-400/20" : "")} />
+                    <span>{downloadedSermonIds.includes(selectedSermon.id!) ? "BAIXADO OFFLINE ✓" : "BAIXAR OFFLINE"}</span>
                   </button>
 
                   <button 
