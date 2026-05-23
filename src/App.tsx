@@ -1345,7 +1345,7 @@ export default function App() {
                   />
 
                   <div className="space-y-2">
-                    <label className="text-xs font-orbitron text-neon-cyan/60 uppercase tracking-widest">Setores Pregados (Ex: 55, 66)</label>
+                    <label className="text-xs font-orbitron text-neon-cyan/60 uppercase tracking-widest">Setores Pregados (Ex: 55, 48-s, 48-v)</label>
                     <div className="flex flex-wrap gap-2">
                       {setores.map((setor, i) => (
                         <div key={i} className="flex items-center bg-neon-yellow/10 border border-neon-yellow/30 px-2 py-1 rounded">

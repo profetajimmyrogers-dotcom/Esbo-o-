@@ -28,7 +28,7 @@ export const PulpitoSectors = ({ setores, onAdd }: PulpitoSectorsProps) => {
             <input 
               autoFocus
               value={newSetor}
-              onChange={(e) => setNewSetor(e.target.value.slice(0, 3))}
+              onChange={(e) => setNewSetor(e.target.value.slice(0, 10))}
               onBlur={() => {
                 if (!newSetor.trim()) setIsAdding(false);
               }}
@@ -40,8 +40,8 @@ export const PulpitoSectors = ({ setores, onAdd }: PulpitoSectorsProps) => {
                 }
                 if (e.key === 'Escape') setIsAdding(false);
               }}
-              className="w-14 bg-neon-yellow/10 border border-neon-yellow text-neon-yellow text-center text-xs outline-none py-0.5 font-mono"
-              placeholder="00"
+              className="w-20 bg-neon-yellow/10 border border-neon-yellow text-neon-yellow text-center text-xs outline-none py-0.5 font-mono"
+              placeholder="48-s"
             />
           </div>
         ) : (
