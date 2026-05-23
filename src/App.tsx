@@ -136,12 +136,12 @@ const DEUS_NAMES_LETTERS: FloatingLetter[] = [
   { char: 'M', top: '47%', left: '11%', color: '#00f5ff', shadow: '#00f5ff88', name: 'ELOHIM', meaning: 'Deus Criador Supremo', lang: 'Hebraico', animClass: 'animate-short-circuit-3' },
 
   // YAHWEH (Hebrew)
-  { char: 'Y', top: '10%', left: '26%', color: '#ff00aa', shadow: '#ff00aa88', name: 'YAHWEH', meaning: 'O Senhor Autoexistente (Eu Sou)', lang: 'Hebraico', animClass: 'animate-short-circuit-2' },
-  { char: 'A', top: '20%', left: '30%', color: '#ff00aa', shadow: '#ff00aa88', name: 'YAHWEH', meaning: 'O Senhor Autoexistente (Eu Sou)', lang: 'Hebraico', animClass: 'animate-short-circuit-3' },
-  { char: 'H', top: '30%', left: '25%', color: '#ff00aa', shadow: '#ff00aa88', name: 'YAHWEH', meaning: 'O Senhor Autoexistente (Eu Sou)', lang: 'Hebraico', animClass: 'animate-short-circuit-1' },
-  { char: 'W', top: '40%', left: '32%', color: '#ff00aa', shadow: '#ff00aa88', name: 'YAHWEH', meaning: 'O Senhor Autoexistente (Eu Sou)', lang: 'Hebraico', animClass: 'animate-short-circuit-2' },
-  { char: 'E', top: '50%', left: '27%', color: '#ff00aa', shadow: '#ff00aa88', name: 'YAHWEH', meaning: 'O Senhor Autoexistente (Eu Sou)', lang: 'Hebraico', animClass: 'animate-short-circuit-3' },
-  { char: 'H', top: '60%', left: '33%', color: '#ff00aa', shadow: '#ff00aa88', name: 'YAHWEH', meaning: 'O Senhor Autoexistente (Eu Sou)', lang: 'Hebraico', animClass: 'animate-short-circuit-1' },
+  { char: 'Y', top: '10%', left: '26%', color: '#ffffff', shadow: '#ffffff88', name: 'YAHWEH', meaning: 'O Senhor Autoexistente (Eu Sou)', lang: 'Hebraico', animClass: 'animate-short-circuit-2' },
+  { char: 'A', top: '20%', left: '30%', color: '#ffffff', shadow: '#ffffff88', name: 'YAHWEH', meaning: 'O Senhor Autoexistente (Eu Sou)', lang: 'Hebraico', animClass: 'animate-short-circuit-3' },
+  { char: 'H', top: '30%', left: '25%', color: '#ffffff', shadow: '#ffffff88', name: 'YAHWEH', meaning: 'O Senhor Autoexistente (Eu Sou)', lang: 'Hebraico', animClass: 'animate-short-circuit-1' },
+  { char: 'W', top: '40%', left: '32%', color: '#ffffff', shadow: '#ffffff88', name: 'YAHWEH', meaning: 'O Senhor Autoexistente (Eu Sou)', lang: 'Hebraico', animClass: 'animate-short-circuit-2' },
+  { char: 'E', top: '50%', left: '27%', color: '#ffffff', shadow: '#ffffff88', name: 'YAHWEH', meaning: 'O Senhor Autoexistente (Eu Sou)', lang: 'Hebraico', animClass: 'animate-short-circuit-3' },
+  { char: 'H', top: '60%', left: '33%', color: '#ffffff', shadow: '#ffffff88', name: 'YAHWEH', meaning: 'O Senhor Autoexistente (Eu Sou)', lang: 'Hebraico', animClass: 'animate-short-circuit-1' },
 
   // ADONAI (Hebrew)
   { char: 'A', top: '55%', left: '6%', color: '#ffee00', shadow: '#ffee0088', name: 'ADONAI', meaning: 'Meu Senhor Soberano', lang: 'Hebraico', animClass: 'animate-short-circuit-3' },
@@ -167,11 +167,11 @@ const DEUS_NAMES_LETTERS: FloatingLetter[] = [
   { char: 'S', top: '62%', right: '25%', color: '#00f5ff', shadow: '#00f5ff88', name: 'KURIOS', meaning: 'O Senhor Supremo da Vida', lang: 'Grego', animClass: 'animate-short-circuit-2' },
 
   // LOGOS (Greek)
-  { char: 'L', top: '50%', right: '7%', color: '#ff00aa', shadow: '#ff00aa88', name: 'LOGOS', meaning: 'A Palavra Viva e Eterna', lang: 'Grego', animClass: 'animate-short-circuit-1' },
-  { char: 'O', top: '59%', right: '3%', color: '#ff00aa', shadow: '#ff00aa88', name: 'LOGOS', meaning: 'A Palavra Viva e Eterna', lang: 'Grego', animClass: 'animate-short-circuit-2' },
-  { char: 'G', top: '68%', right: '9%', color: '#ff00aa', shadow: '#ff00aa88', name: 'LOGOS', meaning: 'A Palavra Viva e Eterna', lang: 'Grego', animClass: 'animate-short-circuit-3' },
-  { char: 'O', top: '77%', right: '4%', color: '#ff00aa', shadow: '#ff00aa88', name: 'LOGOS', meaning: 'A Palavra Viva e Eterna', lang: 'Grego', animClass: 'animate-short-circuit-1' },
-  { char: 'S', top: '86%', right: '10%', color: '#ff00aa', shadow: '#ff00aa88', name: 'LOGOS', meaning: 'A Palavra Viva e Eterna', lang: 'Grego', animClass: 'animate-short-circuit-2' },
+  { char: 'L', top: '50%', right: '7%', color: '#ffffff', shadow: '#ffffff88', name: 'LOGOS', meaning: 'A Palavra Viva e Eterna', lang: 'Grego', animClass: 'animate-short-circuit-1' },
+  { char: 'O', top: '59%', right: '3%', color: '#ffffff', shadow: '#ffffff88', name: 'LOGOS', meaning: 'A Palavra Viva e Eterna', lang: 'Grego', animClass: 'animate-short-circuit-2' },
+  { char: 'G', top: '68%', right: '9%', color: '#ffffff', shadow: '#ffffff88', name: 'LOGOS', meaning: 'A Palavra Viva e Eterna', lang: 'Grego', animClass: 'animate-short-circuit-3' },
+  { char: 'O', top: '77%', right: '4%', color: '#ffffff', shadow: '#ffffff88', name: 'LOGOS', meaning: 'A Palavra Viva e Eterna', lang: 'Grego', animClass: 'animate-short-circuit-1' },
+  { char: 'S', top: '86%', right: '10%', color: '#ffffff', shadow: '#ffffff88', name: 'LOGOS', meaning: 'A Palavra Viva e Eterna', lang: 'Grego', animClass: 'animate-short-circuit-2' },
 
   // ALPHA & OMEGA (Greek)
   { char: 'A', top: '4%', left: '44%', color: '#ffee00', shadow: '#ffee0088', name: 'ALPHA_OMEGA', meaning: 'O Alfa e o Ômega (Princípio e Fim)', lang: 'Grego', animClass: 'animate-short-circuit-1' },
@@ -567,7 +567,7 @@ export default function App() {
         <div className="absolute inset-0 pointer-events-none overflow-hidden z-[1] mix-blend-screen opacity-20">
           <div className="absolute -top-[10%] -left-[20%] w-[60%] h-[50%] bg-white rounded-full blur-[140px] animate-fog-drift-slow" />
           <div className="absolute top-[30%] -right-[15%] w-[55%] h-[60%] bg-cyan-400 rounded-full blur-[160px] animate-fog-drift-medium" />
-          <div className="absolute -bottom-[15%] left-[10%] w-[70%] h-[45%] bg-pink-400 rounded-full blur-[180px] animate-fog-drift-fast" />
+          <div className="absolute -bottom-[15%] left-[10%] w-[70%] h-[45%] bg-white rounded-full blur-[180px] animate-fog-drift-fast" />
         </div>
 
         {/* Divine Sparkles & Floating Light Particles rising through the clouds */}
@@ -575,7 +575,7 @@ export default function App() {
           <div className="absolute bottom-0 left-[12%] w-[2px] h-[2px] bg-white rounded-full animate-particle-float-1" />
           <div className="absolute bottom-0 left-[28%] w-[2.5px] h-[2.5px] bg-cyan-300 rounded-full animate-particle-float-2 animate-pulse" />
           <div className="absolute bottom-0 left-[47%] w-[1.5px] h-[1.5px] bg-white rounded-full animate-particle-float-3" />
-          <div className="absolute bottom-0 left-[62%] w-[2px] h-[2px] bg-pink-300 rounded-full animate-particle-float-4" />
+          <div className="absolute bottom-0 left-[62%] w-[2px] h-[2px] bg-white rounded-full animate-particle-float-4" />
           <div className="absolute bottom-0 left-[78%] w-[3px] h-[3px] bg-white rounded-full animate-particle-float-5 animate-pulse" />
           <div className="absolute bottom-0 left-[88%] w-[2px] h-[2px] bg-cyan-200 rounded-full animate-particle-float-6" />
         </div>
@@ -781,18 +781,18 @@ export default function App() {
                       className="absolute -top-3.5 -translate-x-1/2 transition-all duration-700 ease-out z-20 pointer-events-none"
                     >
                       {/* Multi-layered luxury reactive halos */}
-                      <span className="absolute -inset-1 rounded-full bg-gradient-to-r from-[#00f5ff] to-[#ff00aa] opacity-40 blur-[8px] animate-pulse" />
+                      <span className="absolute -inset-1 rounded-full bg-gradient-to-r from-[#00f5ff] to-[#ffffff] opacity-40 blur-[8px] animate-pulse" />
                       <span className="absolute -inset-2.5 rounded-full bg-[#00f5ff]/20 opacity-30 blur-[12px] animate-engine-glow" />
 
                       {/* Floating Airplane Sphere */}
                       <div 
                         className="w-[34px] h-[34px] rounded-full bg-black/90 border-[2px] border-white/90 flex items-center justify-center text-[15px] text-white shadow-[0_0_15px_var(--glow-color,#00f5ff)] relative transform animate-airplane-fly select-none"
-                        style={{ '--glow-color': flightProgress < 25 ? '#00f5ff' : flightProgress < 50 ? '#ff00aa' : flightProgress < 75 ? '#ffee00' : '#00ff88' } as React.CSSProperties}
+                        style={{ '--glow-color': flightProgress < 25 ? '#00f5ff' : flightProgress < 50 ? '#ffffff' : flightProgress < 75 ? '#ffee00' : '#00ff88' } as React.CSSProperties}
                       >
                         {/* Glow indicator corresponding to background color of letters */}
                         <span 
                           className="absolute inset-[2px] rounded-full opacity-10 transition-colors duration-500" 
-                          style={{ backgroundColor: flightProgress < 25 ? '#00f5ff' : flightProgress < 50 ? '#ff00aa' : flightProgress < 75 ? '#ffee00' : '#00ff88' }}
+                          style={{ backgroundColor: flightProgress < 25 ? '#00f5ff' : flightProgress < 50 ? '#ffffff' : flightProgress < 75 ? '#ffee00' : '#00ff88' }}
                         />
                         <span className="relative z-10 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">✈</span>
                       </div>
@@ -830,7 +830,7 @@ export default function App() {
             <span className="text-white text-[9px] font-orbitron font-extrabold uppercase tracking-[1.5px] leading-none">Agenda</span>
           </div>
           {/* Glowing cursor ring helper on hover */}
-          <span className="absolute -inset-0.5 rounded-xl bg-gradient-to-r from-[#00f5ff]/20 to-[#ff00aa]/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
+          <span className="absolute -inset-0.5 rounded-xl bg-gradient-to-r from-[#00f5ff]/20 to-[#ffffff]/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
         </button>
 
         {/* Right Discrete Thin Drawer (Gaveta) */}
@@ -1150,7 +1150,7 @@ export default function App() {
 
                   {/* Reactive halo glow for hover cursor feedback */}
                   {passInput && (
-                    <span className="absolute -inset-1 rounded-lg bg-gradient-to-r from-[#00f5ff] via-[#ff00aa] to-[#ffee00] opacity-0 group-hover/btn:opacity-40 blur-[10px] transition-all duration-500 -z-10" />
+                    <span className="absolute -inset-1 rounded-lg bg-gradient-to-r from-[#00f5ff] via-[#ffffff] to-[#ffee00] opacity-0 group-hover/btn:opacity-40 blur-[10px] transition-all duration-500 -z-10" />
                   )}
                 </button>
               </div>
@@ -1677,7 +1677,7 @@ export default function App() {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-card-bg border border-neon-pink p-8 max-w-md w-full space-y-6 text-center shadow-[0_0_30px_rgba(255,0,170,0.2)]"
+              className="bg-card-bg border border-neon-pink p-8 max-w-md w-full space-y-6 text-center shadow-[0_0_30px_rgba(255,255,255,0.25)]"
             >
               <h3 className="text-2xl font-orbitron font-bold text-neon-pink">CONFIRMAR EXCLUSÃO?</h3>
               <p className="text-text-mid font-mono">Esta ação não pode ser desfeita. O registro será removido permanentemente do sistema.</p>
@@ -1690,7 +1690,7 @@ export default function App() {
                 </button>
                 <button 
                   onClick={() => handleDelete(showDeleteConfirm)}
-                  className="px-6 py-2 bg-neon-pink/10 border border-neon-pink text-neon-pink font-bold hover:shadow-[0_0_15px_rgba(255,0,170,0.3)]"
+                  className="px-6 py-2 bg-neon-pink/10 border border-neon-pink text-neon-pink font-bold hover:shadow-[0_0_15px_rgba(255,255,255,0.4)]"
                 >
                   DELETAR AGORA
                 </button>

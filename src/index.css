@@ -7,7 +7,7 @@
   --font-rajdhani: "Rajdhani", sans-serif;
 
   --color-neon-cyan: #00f5ff;
-  --color-neon-pink: #ff00aa;
+  --color-neon-pink: #ffffff;
   --color-neon-yellow: #ffee00;
   --color-neon-green: #00ff88;
   --color-dark-bg: #020810;
@@ -90,7 +90,7 @@
 
 .highlight-pink {
   @apply bg-neon-pink text-dark-bg px-0.5 rounded-xs font-bold ring-1 ring-neon-pink/30;
-  box-shadow: 0 0 5px rgba(255, 0, 170, 0.4);
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.8), 0 0 15px rgba(255, 255, 255, 0.4);
 }
 
 /* Background Effects, Cinematic Zoom & Drifting Divine Clouds */
@@ -218,7 +218,7 @@
 }
 
 .luxury-progress-track {
-  background: linear-gradient(270deg, #00f5ff, #ff00aa, #ffee00, #00ff88, #00f5ff);
+  background: linear-gradient(270deg, #00f5ff, #ffffff, #ffee00, #00ff88, #00f5ff);
   background-size: 400% 400%;
   animation: luxuryGradientFlow 8s ease infinite;
 }
@@ -236,7 +236,7 @@
 /* Sparkle / thruster fire engine glow */
 @keyframes engineGlow {
   0%, 100% { box-shadow: 0 0 8px #00f5ff, 0 0 20px #00f5ff, inset 0 0 4px #fff; }
-  50% { box-shadow: 0 0 16px #ff00aa, 0 0 35px #ff00aa, inset 0 0 6px #fff; }
+  50% { box-shadow: 0 0 16px #ffffff, 0 0 35px #ffffff, inset 0 0 6px #fff; }
 }
 
 .animate-engine-glow {
@@ -255,8 +255,8 @@
 }
 
 @keyframes luxuryPulseAndTilt {
-  0%, 100% { box-shadow: 0 0 15px rgba(0, 245, 255, 0.25), inset 0 0 15px rgba(255, 0, 170, 0.1); border-color: rgba(0, 245, 255, 0.3); }
-  50% { box-shadow: 0 0 32px rgba(255, 0, 170, 0.4), inset 0 0 25px rgba(0, 245, 255, 0.15); border-color: rgba(255, 0, 170, 0.5); }
+  0%, 100% { box-shadow: 0 0 15px rgba(0, 245, 255, 0.25), inset 0 0 15px rgba(255, 255, 255, 0.15); border-color: rgba(0, 245, 255, 0.3); }
+  50% { box-shadow: 0 0 32px rgba(255, 255, 255, 0.6), inset 0 0 25px rgba(0, 245, 255, 0.15); border-color: rgba(255, 255, 255, 0.7); }
 }
 
 .luxury-card-glow {
@@ -265,7 +265,7 @@
 
 /* Shining luxury button border outline flow */
 .glow-button-border {
-  background: linear-gradient(90deg, #00f5ff, #ff00aa, #ffee00, #00ff88, #00f5ff);
+  background: linear-gradient(90deg, #00f5ff, #ffffff, #ffee00, #00ff88, #00f5ff);
   background-size: 300% 300%;
 }
 
