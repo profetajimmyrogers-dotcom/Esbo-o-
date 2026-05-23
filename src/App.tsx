@@ -1270,10 +1270,10 @@ export default function App() {
                         <button
                           type="button"
                           onClick={() => setImg('https://i.postimg.cc/vHqHW2J5/Firefly.jpg')}
-                          className="px-4 bg-neon-cyan/10 border border-neon-cyan text-neon-cyan font-bold hover:bg-neon-cyan/20 transition-all font-orbitron select-none shrink-0"
+                          className="px-3 text-[11px] bg-neon-cyan/10 border border-neon-cyan/40 text-neon-cyan font-bold hover:bg-neon-cyan/20 transition-all font-orbitron select-none shrink-0 tracking-widest"
                           title="Carregar imagem pré-programada automaticamente"
                         >
-                          (AUTO)
+                          AUTO
                         </button>
                       </div>
                       <div className="h-40 bg-black/50 border border-dashed border-neon-cyan/30 flex items-center justify-center overflow-hidden text-text-dim">
