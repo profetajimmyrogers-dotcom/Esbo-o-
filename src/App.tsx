@@ -43,6 +43,7 @@ import { cn } from './lib/utils';
 import { HighlightableText } from './components/HighlightableText';
 import { PulpitoTopic } from './components/PulpitoTopic';
 import { PulpitoSectors } from './components/PulpitoSectors';
+import { BrushToolbar } from './components/BrushToolbar';
 
 function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
   const message = error instanceof Error ? error.message : String(error);
@@ -1709,6 +1710,10 @@ export default function App() {
           </div>
         )}
       </AnimatePresence>
+      
+      {selectedSermonId && selectedSermon && (
+        <BrushToolbar />
+      )}
     </div>
   );
 }

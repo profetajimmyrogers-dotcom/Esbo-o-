@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { cn } from '../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Bold, Underline, Check, Plus, Minus, RotateCcw } from 'lucide-react';
+import { useBrush } from '../lib/brushStore';
 
 interface HighlightableTextProps {
   text: string;
@@ -32,12 +33,35 @@ export const HighlightableText = ({
 
   const [editingWord, setEditingWord] = useState<EditingWordState | null>(null);
   const [popoverStyle, setPopoverStyle] = useState<React.CSSProperties>({});
+  const brush = useBrush();
 
   const tokens = text.split(/(\s+)/);
   let nonWhitespaceCounter = 0;
 
+  // Apply brush styles instantly
+  const applyBrushToWord = (key: string) => {
+    if (brush.isEraser) {
+      onHighlight(key, '');
+    } else {
+      onHighlight(key, JSON.stringify({
+        c: brush.color,
+        fs: brush.fontSize,
+        b: brush.bold,
+        u: brush.underline,
+        uc: brush.uppercase,
+        it: brush.italic
+      }));
+    }
+  };
+
   const handleWordClick = (e: React.MouseEvent<HTMLSpanElement>, key: string, token: string) => {
     e.stopPropagation();
+    
+    // If the Quick Brush is active, we paint instantly instead of showing the popover menu!
+    if (brush.isActive) {
+      applyBrushToWord(key);
+      return;
+    }
     
     const rawValue = highlights?.[key] || '';
     let parsed = { c: '', fs: 100, b: false, u: false, uc: false, it: false };
@@ -73,6 +97,13 @@ export const HighlightableText = ({
       left: `${clampedLeft}px`,
       zIndex: 9999,
     });
+  };
+
+  // Drag over words: if brush is active and mouse is down, paint instantly!
+  const handleWordMouseEnter = (e: React.MouseEvent<HTMLSpanElement>, key: string) => {
+    if (brush.isActive && e.buttons === 1) {
+      applyBrushToWord(key);
+    }
   };
 
   const handleSave = (currentObj: EditingWordState | null = editingWord) => {
@@ -158,15 +189,21 @@ export const HighlightableText = ({
             translate="no"
             style={customStyle}
             className={cn(
-              "palavra-clicavel inline transition-all duration-200", 
+              "palavra-clicavel inline transition-all duration-200 select-none", 
               parsed.c,
               parsed.b && "font-black drop-shadow-[0_0_8px_rgba(0,245,255,0.4)]",
               parsed.u && "underline decoration-neon-cyan/50 decoration-2 underline-offset-4",
               parsed.uc && "uppercase",
               parsed.it && "italic",
-              parsed.fs && parsed.fs > 100 && "inline-block align-middle select-none animate-pulse-slow"
+              parsed.fs && parsed.fs > 100 && "inline-block align-middle animate-pulse-slow",
+              brush.isActive 
+                ? (brush.isEraser 
+                    ? "hover:bg-red-500/20 hover:scale-105 cursor-pointer border border-dashed border-red-500/20" 
+                    : "hover:bg-neon-cyan/20 hover:scale-[1.08] cursor-crosshair border border-dashed border-neon-cyan/20") 
+                : "cursor-pointer"
             )}
             onClick={(e) => handleWordClick(e, key, token)}
+            onMouseEnter={(e) => handleWordMouseEnter(e, key)}
           >
             {token}
           </span>
@@ -181,27 +218,30 @@ export const HighlightableText = ({
         />
       )}
 
-      {/* Menu flutuante inteligente de customização */}
+      {/* Menu flutuante inteligente de customização - Arrastável */}
       <AnimatePresence>
         {editingWord && (
           <motion.div
+            drag
+            dragMomentum={false}
+            dragElastic={0.05}
             initial={{ opacity: 0, scale: 0.95, y: -4 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: -4 }}
             transition={{ duration: 0.12 }}
             style={popoverStyle}
-            className="w-[280px] bg-card-bg border border-neon-cyan/40 rounded-xl p-4 shadow-[0_0_40px_rgba(0,245,255,0.35)] flex flex-col gap-3 text-neon-cyan font-mono"
+            className="w-[280px] bg-card-bg border border-neon-cyan/40 rounded-xl p-4 shadow-[0_0_40px_rgba(0,245,255,0.35)] flex flex-col gap-3 text-neon-cyan font-mono cursor-default"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Header */}
-            <div className="flex justify-between items-center border-b border-neon-cyan/20 pb-2">
-              <span className="text-xs font-bold tracking-widest text-text-mid font-orbitron truncate max-w-[200px]" title={editingWord.originalWord}>
-                EDITAR: "{editingWord.originalWord}"
+            {/* Header com estilo arrastável */}
+            <div className="flex justify-between items-center border-b border-neon-cyan/20 pb-2 cursor-grab active:cursor-grabbing select-none" title="Segure e arraste para mover esta janela">
+              <span className="text-[10px] font-bold tracking-widest text-[#00f5ff] font-orbitron truncate max-w-[200px]" title={editingWord.originalWord}>
+                ✥ REPOSICIONAR: "{editingWord.originalWord}"
               </span>
               <button 
                 type="button"
                 onClick={() => handleSave()}
-                className="p-1 hover:bg-neon-cyan/10 rounded text-neon-cyan transition-colors"
+                className="p-1 hover:bg-neon-cyan/10 rounded text-neon-cyan transition-colors cursor-pointer"
               >
                 <X size={14} />
               </button>
@@ -252,7 +292,7 @@ export const HighlightableText = ({
 
             {/* Cor do Marcador */}
             <div className="space-y-1.5">
-              <span className="text-[10px] text-text-dim block">COR DO MARCADOR:</span>
+              <span className="text-[10px] text-text-dim block border-b border-neon-cyan/10 pb-0.5">COR DO MARCADOR:</span>
               <div className="flex gap-1.5 justify-between">
                 {[
                   { cls: '', name: 'Sem marca', bg: 'bg-dark-bg border border-neon-cyan/30 relative overflow-hidden' },
@@ -286,7 +326,7 @@ export const HighlightableText = ({
 
             {/* Estilos Extra */}
             <div className="space-y-1.5">
-              <span className="text-[10px] text-text-dim block">ESTILOS EXTRAS:</span>
+              <span className="text-[10px] text-text-dim block border-b border-neon-cyan/10 pb-0.5">ESTILOS EXTRAS:</span>
               <div className="flex gap-1.5">
                 {[
                   { key: 'bold', label: 'NEGRITO', icon: <Bold size={11} />, desc: 'Negrito' },
