@@ -280,11 +280,12 @@ export default function App() {
     id6: 'JAN 13, 12:35 PM'
   };
   const [systemFields, setSystemFields] = useState<Record<string, string>>(defaultFields);
-  const [currentDate, setCurrentDate] = useState(new Date());
+  const [currentDate, setCurrentDate] = useState(() => new Date());
+  const [currentTime, setCurrentTime] = useState(() => new Date());
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentDate(new Date());
+      setCurrentTime(new Date());
     }, 1000);
     return () => clearInterval(interval);
   }, []);
@@ -426,6 +427,18 @@ export default function App() {
   const handleDateToggle = async (dateStr: string) => {
     if (!editMode) return;
     try {
+      const parts = dateStr.split('-');
+      if (parts.length === 3) {
+        const year = parseInt(parts[0], 10);
+        const month = parseInt(parts[1], 10);
+        const day = parseInt(parts[2], 10);
+        const dayOfWeek = new Date(year, month, day).getDay();
+        if (dayOfWeek === 3 || dayOfWeek === 4) {
+          alert("Quartas e Quintas-feiras são dias fixos ocupados/reservados e não podem ser alterados.");
+          return;
+        }
+      }
+
       const q = query(collection(db, 'blockedDates'), where('dateStr', '==', dateStr));
       const snapshot = await getDocs(q);
       
@@ -482,17 +495,20 @@ export default function App() {
 
     for (let i = 1; i <= totalDays; i++) {
         const dateStr = `${date.getFullYear()}-${date.getMonth()}-${i}`;
-        const isBlocked = blockedDates.includes(dateStr);
+        const dayOfWeek = new Date(date.getFullYear(), date.getMonth(), i).getDay();
+        const isAlwaysBlocked = dayOfWeek === 3 || dayOfWeek === 4;
+        const isBlocked = blockedDates.includes(dateStr) || isAlwaysBlocked;
         const isToday = i === today.getDate() && date.getMonth() === today.getMonth() && date.getFullYear() === today.getFullYear();
         
         days.push(
           <div 
             key={i} 
             onClick={() => handleDateToggle(dateStr)}
+            title={isBlocked ? (isAlwaysBlocked ? "Ocupado Semanal (Quarta/Quinta)" : "Reservado / Ocupado") : "Disponível"}
             className={cn(
               "aspect-square flex items-center justify-center rounded-xl text-[11px] font-orbitron font-bold transition-all relative border select-none duration-300",
               isBlocked 
-                ? "bg-red-950/20 text-red-500/40 border-red-950/50 hover:bg-red-950/35 hover:border-red-500/30 line-through decoration-red-500/20" 
+                ? "bg-red-950/25 text-red-500/50 border-red-900/60 hover:bg-red-950/40 hover:border-red-500/40 line-through decoration-red-500/30" 
                 : "bg-white/5 text-[#00f5ff] border-transparent hover:border-[#00f5ff]/40 hover:bg-[#00f5ff]/5 hover:shadow-[0_0_8px_rgba(0,245,255,0.2)] vacant cursor-pointer",
               isToday && "bg-[#ff5e00]! text-white! font-black border-transparent shadow-[0_0_15px_rgba(255,94,0,0.6)] ring-1 ring-white/10 scale-[1.03] z-10",
               editMode && "cursor-pointer"
@@ -1014,7 +1030,7 @@ export default function App() {
           <span className="absolute -inset-0.5 rounded-xl bg-gradient-to-r from-[#00f5ff]/20 to-[#ffffff]/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
         </button>
 
-        {/* Right Discrete Thin Drawer (Gaveta) */}
+        {/* Right Discrete Thin Drawer (Gaveta Sanfonada Compacta) */}
         <AnimatePresence>
           {showRightSidebar && (
             <>
@@ -1024,68 +1040,73 @@ export default function App() {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 onClick={() => setShowRightSidebar(false)}
-                className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[1000]"
+                className="fixed inset-0 bg-black/25 backdrop-blur-xs z-[1000]"
               />
 
-              {/* Fina Gaveta Discreta */}
+              {/* Gaveta Sanfonada Curtinha e Compacta */}
               <motion.div 
-                initial={{ x: '100%', opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                exit={{ x: '100%', opacity: 0 }}
-                transition={{ type: 'spring', damping: 28, stiffness: 260 }}
-                className="fixed right-0 top-0 bottom-0 w-[185px] bg-[#0c0c0e]/90 backdrop-blur-2xl border-l border-white/10 p-4 pt-20 z-[1000] flex flex-col gap-4 shadow-2xl overflow-y-auto"
+                initial={{ opacity: 0, height: 0, scaleY: 0.8 }}
+                animate={{ opacity: 1, height: 'auto', scaleY: 1 }}
+                exit={{ opacity: 0, height: 0, scaleY: 0.8 }}
+                transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                style={{ originY: 0 }}
+                className="fixed right-5 top-[59px] w-[175px] bg-[#0c0c0e]/95 backdrop-blur-2xl border border-white/10 p-2.5 rounded-2xl z-[1000] flex flex-col gap-1.5 shadow-[0_15px_35px_rgba(0,0,0,0.85),0_0_15px_rgba(0,245,255,0.08)] overflow-hidden"
               >
-                <div className="border-b border-white/5 pb-2 mb-1">
-                  <span className="text-[8px] text-white/40 block font-mono tracking-[0.25em] uppercase font-bold text-center">// ACESSO</span>
+                {/* Decorative Accordion Bellow Lines */}
+                <div className="flex items-center justify-between px-1 mb-1 border-b border-white/5 pb-1">
+                  <span className="text-[7px] text-white/40 font-mono tracking-[0.2em] uppercase font-bold">// GAVETA AGENDA</span>
+                  <div className="flex gap-[1.5px]">
+                    <span className="w-[1.5px] h-1 bg-[#00f5ff]/30 rounded-full animate-pulse" />
+                    <span className="w-[1.5px] h-1.5 bg-[#00f5ff]/50 rounded-full animate-pulse [animation-delay:0.1s]" />
+                    <span className="w-[1.5px] h-1 bg-[#00f5ff]/30 rounded-full animate-pulse [animation-delay:0.2s]" />
+                  </div>
                 </div>
 
-                <div className="flex flex-col gap-3">
-                  {/* WhatsApp Button inside Drawer */}
+                <div className="flex flex-col gap-2">
+                  {/* WhatsApp Button inside Dropdown */}
                   <button 
                     onClick={() => {
                       setShowWhatsAppForm(true);
                       setShowRightSidebar(false);
                     }}
-                    className={cn(
-                      "w-full group flex items-center gap-2 px-3 py-2 rounded-xl bg-black/60 border border-green-500/30 transition-all duration-300 hover:scale-[1.02] active:scale-95 cursor-pointer outline-none select-none text-left shadow-[0_0_12px_rgba(34,197,94,0.1)] hover:shadow-[0_0_18px_rgba(34,197,94,0.25)] hover:border-green-400/50"
-                    )}
+                    className="w-full group flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-black/40 border border-green-500/20 transition-all duration-200 hover:bg-green-500/5 active:scale-95 cursor-pointer outline-none select-none text-left shadow-[0_0_10px_rgba(34,197,94,0.03)] hover:border-green-400/40"
                   >
-                    <div className="relative w-4 h-4 rounded-full flex items-center justify-center bg-green-500/10 text-green-400 shrink-0">
-                      <span className="absolute inset-0 rounded-full bg-green-400 opacity-20 blur-[2px] animate-pulse" />
+                    <div className="relative w-3.5 h-3.5 rounded-full flex items-center justify-center bg-green-500/10 text-green-400 shrink-0">
+                      <span className="absolute inset-0 rounded-full bg-green-400 opacity-15 blur-[1px] animate-pulse" />
                       <MessageCircle className="w-2.5 h-2.5 fill-current relative z-10" />
                     </div>
                     <div className="flex flex-col select-none">
-                      <span className="text-[6px] text-green-300 font-extrabold uppercase tracking-[0.1em] leading-none mb-0.5">Online</span>
+                      <span className="text-[5.5px] text-green-300 font-extrabold uppercase tracking-[0.1em] leading-none mb-0.5">Falar</span>
                       <span className="text-white text-[8px] font-orbitron font-extrabold uppercase tracking-[1px] leading-none">WhatsApp</span>
                     </div>
                   </button>
 
-                  {/* Minha Agenda (Moon/Calendar Mode) Button inside Drawer */}
+                  {/* Minha Agenda (Moon/Calendar Mode) Button inside Dropdown */}
                   <button 
                     onClick={() => {
                       toggleMoonMode();
                       setShowRightSidebar(false);
                     }}
                     className={cn(
-                      "w-full group flex items-center gap-2 px-3 py-2 rounded-xl bg-black/60 border border-white/10 transition-all duration-300 hover:scale-[1.02] active:scale-95 cursor-pointer outline-none select-none text-left shadow-[0_0_12px_rgba(0,245,255,0.05)] hover:shadow-[0_0_18px_rgba(0,245,255,0.2)]",
-                      moonMode ? "border-[#00f5ff]/50 shadow-[0_0_18px_rgba(0,245,255,0.3)] bg-cyan-950/25" : "hover:border-[#00f5ff]/40"
+                      "w-full group flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-black/40 border border-white/5 transition-all duration-200 hover:bg-white/5 active:scale-95 cursor-pointer outline-none select-none text-left",
+                      moonMode ? "border-[#00f5ff]/45 bg-cyan-950/15" : "hover:border-[#00f5ff]/30"
                     )}
                   >
                     <div className={cn(
-                      "w-4 h-4 rounded-full flex items-center justify-center transition-transform duration-700 text-[10px] bg-white/5 border border-white/10 shrink-0",
-                      moonMode && "rotate-[360deg] bg-cyan-500/10 border-[#00f5ff]/30"
+                      "w-3.5 h-3.5 rounded-full flex items-center justify-center transition-all duration-700 text-[8px] bg-white/5 border border-white/5 shrink-0",
+                      moonMode && "rotate-[360deg] bg-cyan-500/10 border-[#00f5ff]/20"
                     )}>
                       <span className="relative z-10">{moonMode ? '🌕' : '🌙'}</span>
                     </div>
                     <div className="flex flex-col select-none">
-                      <span className="text-[6px] text-[#00f5ff] font-extrabold uppercase tracking-[0.15em] leading-none mb-0.5">Consultar</span>
+                      <span className="text-[5.5px] text-[#00f5ff] font-extrabold uppercase tracking-[0.1em] leading-none mb-0.5">Consultar</span>
                       <span className="text-white text-[8px] font-orbitron font-extrabold uppercase tracking-[1px] leading-none">Agenda</span>
                     </div>
                   </button>
                 </div>
 
-                <div className="mt-auto pt-4 text-center">
-                  <span className="text-[7px] font-mono tracking-widest text-white/20 uppercase">DEUS É FIEL</span>
+                <div className="mt-1 pt-1 border-t border-white/5 text-center">
+                  <span className="text-[6px] font-mono tracking-widest text-white/15 uppercase">DEUS É FIEL</span>
                 </div>
               </motion.div>
             </>
@@ -1381,9 +1402,9 @@ export default function App() {
         <div className="hidden lg:flex items-center gap-3 bg-white/5 border border-white/10 px-4 py-1.5 rounded-full text-xs font-mono text-[#CF9D7B]">
           <Clock size={12} className="text-[#CF9D7B] animate-spin-slow" />
           <span className="opacity-80 font-bold">HORÁRIO:</span>
-          <span className="text-white font-bold font-orbitron">{currentDate.toLocaleTimeString('pt-BR')}</span>
+          <span className="text-white font-bold font-orbitron">{currentTime.toLocaleTimeString('pt-BR')}</span>
           <span className="text-white/40">|</span>
-          <span className="opacity-80 font-bold">{currentDate.toLocaleDateString('pt-BR')}</span>
+          <span className="opacity-80 font-bold">{currentTime.toLocaleDateString('pt-BR')}</span>
         </div>
         
         <div className="flex items-center gap-4 mt-4 md:mt-0">
