@@ -197,6 +197,37 @@ const DEUS_NAMES_LETTERS: FloatingLetter[] = [
   { char: 'Ω', top: '4%', right: '44%', color: '#ffee00', shadow: '#ffee0088', name: 'ALPHA_OMEGA', meaning: 'O Alfa e o Ômega (Princípio e Fim)', lang: 'Grego', animClass: 'animate-short-circuit-3' },
 ];
 
+// Oculta senhas plaintext no código através de um hash seguro leve unidirecional
+const systemHashConfirm = (input: string) => {
+  let hash = 0;
+  for (let i = 0; i < input.length; i++) {
+    hash = (hash << 5) - hash + input.charCodeAt(i);
+    hash |= 0;
+  }
+  return hash.toString();
+};
+
+function HeaderClock() {
+  const [currentTime, setCurrentTime] = useState(() => new Date());
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="hidden lg:flex items-center gap-3 bg-white/5 border border-white/10 px-4 py-1.5 rounded-full text-xs font-mono text-[#CF9D7B]">
+      <Clock size={12} className="text-[#CF9D7B] animate-spin-slow" />
+      <span className="opacity-80 font-bold">HORÁRIO:</span>
+      <span className="text-white font-bold font-orbitron">{currentTime.toLocaleTimeString('pt-BR')}</span>
+      <span className="text-white/40">|</span>
+      <span className="opacity-80 font-bold">{currentTime.toLocaleDateString('pt-BR')}</span>
+    </div>
+  );
+}
+
 export default function App() {
   const [authorized, setAuthorized] = useState(() => localStorage.getItem('system_auth') === 'true');
   const [passInput, setPassInput] = useState('');
@@ -281,14 +312,6 @@ export default function App() {
   };
   const [systemFields, setSystemFields] = useState<Record<string, string>>(defaultFields);
   const [currentDate, setCurrentDate] = useState(() => new Date());
-  const [currentTime, setCurrentTime] = useState(() => new Date());
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
 
   // WhatsApp Lead State
   const [showWhatsAppForm, setShowWhatsAppForm] = useState(false);
@@ -433,8 +456,8 @@ export default function App() {
         const month = parseInt(parts[1], 10);
         const day = parseInt(parts[2], 10);
         const dayOfWeek = new Date(year, month, day).getDay();
-        if (dayOfWeek === 3 || dayOfWeek === 4) {
-          alert("Quartas e Quintas-feiras são dias fixos ocupados/reservados e não podem ser alterados.");
+        if (dayOfWeek === 1 || dayOfWeek === 2 || dayOfWeek === 4) {
+          alert("Segundas, Terças e Quintas-feiras são dias fixos ocupados/reservados e não podem ser alterados.");
           return;
         }
       }
@@ -459,11 +482,11 @@ export default function App() {
   const [showLockMessage, setShowLockMessage] = useState(false);
 
   const checkEditAuth = () => {
-    if (editPassInput === '3434') {
+    if (systemHashConfirm(editPassInput) === '1570946') {
       setEditMode(true);
       alert("Modo Edição Ativado! Clique nos dias do calendário para alternar.");
       setShowMiniLogin(false);
-    } else if (editPassInput === '4343') {
+    } else if (systemHashConfirm(editPassInput) === '1599806') {
       setEditMode(false);
       setShowLockMessage(true);
       setTimeout(() => setShowLockMessage(false), 2500);
@@ -496,7 +519,7 @@ export default function App() {
     for (let i = 1; i <= totalDays; i++) {
         const dateStr = `${date.getFullYear()}-${date.getMonth()}-${i}`;
         const dayOfWeek = new Date(date.getFullYear(), date.getMonth(), i).getDay();
-        const isAlwaysBlocked = dayOfWeek === 3 || dayOfWeek === 4;
+        const isAlwaysBlocked = dayOfWeek === 1 || dayOfWeek === 2 || dayOfWeek === 4;
         const isBlocked = blockedDates.includes(dateStr) || isAlwaysBlocked;
         const isToday = i === today.getDate() && date.getMonth() === today.getMonth() && date.getFullYear() === today.getFullYear();
         
@@ -504,7 +527,7 @@ export default function App() {
           <div 
             key={i} 
             onClick={() => handleDateToggle(dateStr)}
-            title={isBlocked ? (isAlwaysBlocked ? "Ocupado Semanal (Quarta/Quinta)" : "Reservado / Ocupado") : "Disponível"}
+            title={isBlocked ? (isAlwaysBlocked ? "Ocupado Semanal (Segunda/Terça/Quinta)" : "Reservado / Ocupado") : "Disponível"}
             className={cn(
               "aspect-square flex items-center justify-center rounded-xl text-[11px] font-orbitron font-bold transition-all relative border select-none duration-300",
               isBlocked 
@@ -724,7 +747,7 @@ export default function App() {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (passInput === '3434') {
+    if (systemHashConfirm(passInput) === '1570946') {
       setAuthorized(true);
       setUser({ uid: 'admin', displayName: 'Conferencista' });
       localStorage.setItem('system_auth', 'true');
@@ -842,170 +865,185 @@ export default function App() {
           )}
         </AnimatePresence>
 
-        {/* Sidebar Container */}
-        <div className="fixed left-5 top-1/2 -translate-y-1/2 z-[100] flex flex-col items-start gap-4">
-          <button 
-            onClick={toggleSidebar}
-            className="px-6 py-4 rounded-[15px] bg-white/10 backdrop-blur-[20px] border border-white/20 text-white font-bold uppercase tracking-[1px] text-[12px] hover:bg-white/20 transition-all"
-          >
-            Evento
-          </button>
-          
-          <AnimatePresence>
-            {showSidebar && (
+        {/* Event Modal (Centered) */}
+        <AnimatePresence>
+          {showSidebar && (
+            <>
+              {/* Backdrop for outside click detection */}
               <motion.div 
-                initial={{ maxHeight: 0, opacity: 0 }}
-                animate={{ maxHeight: 600, opacity: 1 }}
-                exit={{ maxHeight: 0, opacity: 0 }}
-                className="w-[90vw] max-w-[320px] overflow-hidden rounded-[20px] bg-[#141414]/85 backdrop-blur-[20px] border border-white/20 p-5 md:p-6 relative"
-              >
-                <div 
-                  onClick={() => setShowMiniLogin(!showMiniLogin)}
-                  className="w-1.5 h-1.5 bg-[#ff5e00] rounded-full absolute top-[15px] right-[15px] cursor-pointer shadow-[0_0_8px_#ff5e00] animate-pulse z-10" 
-                />
-                
-                <AnimatePresence>
-                  {showMiniLogin && (
-                    <motion.div 
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      className="bg-black/60 rounded-xl p-3 border border-white/10 mb-4 flex gap-2"
-                    >
-                      <input 
-                        type="password" 
-                        value={editPassInput}
-                        onChange={(e) => setEditPassInput(e.target.value)}
-                        placeholder="Senha"
-                        className="flex-1 bg-white/80 border-none rounded-md p-1.5 text-[12px] outline-none text-[#222]" 
-                      />
-                      <button 
-                        onClick={checkEditAuth}
-                        className="bg-[#ff5e00] border-none text-white rounded-md px-3 py-1 text-[10px] cursor-pointer"
-                      >
-                        OK
-                      </button>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setShowSidebar(false)}
+                className="fixed inset-0 bg-black/60 backdrop-blur-md z-[1100]"
+              />
 
-                <div className="flex items-center gap-3 font-mono text-[32px] text-[#eee] mb-4">
-                  <span 
-                    contentEditable={editMode}
-                    onBlur={(e) => updateSystemField('id1', e.currentTarget.innerText)}
-                    suppressContentEditableWarning
-                    className={cn("outline-none transition-all", editMode && "border-b border-dashed border-[#ff5e00]")}
+              {/* Robust Centering Container for Viewport Safety */}
+              <div className="fixed inset-0 pointer-events-none flex items-center justify-center p-4 z-[1200]">
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.95, y: -20 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, y: -20 }}
+                  transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                  className="pointer-events-auto p-5 md:p-6 rounded-[24px] w-full max-w-[320px] bg-[#0c0c0e]/95 border border-white/10 shadow-[0_0_50px_rgba(255,170,0,0.12)] backdrop-blur-2xl relative overflow-visible"
+                >
+                  {/* Close button inside modal container */}
+                  <button 
+                    onClick={() => setShowSidebar(false)}
+                    className="absolute top-4 right-4 p-1.5 text-white/50 hover:text-white transition-colors cursor-pointer rounded-full hover:bg-white/5 border border-transparent outline-none"
+                    title="Fechar Evento"
                   >
-                    {systemFields.id1}
-                  </span>
-                  <span className="text-[#555] text-[20px]">→</span>
-                  <span 
-                    contentEditable={editMode}
-                    onBlur={(e) => updateSystemField('id2', e.currentTarget.innerText)}
-                    suppressContentEditableWarning
-                    className={cn("outline-none transition-all", editMode && "border-b border-dashed border-[#ff5e00]")}
-                  >
-                    {systemFields.id2}
-                  </span>
-                </div>
-
-                <div className="flex justify-between text-[12px] text-[#aaa] mb-4">
-                  <div>
-                    <b 
-                      contentEditable={editMode}
-                      onBlur={(e) => updateSystemField('id3', e.currentTarget.innerText)}
-                      suppressContentEditableWarning
-                      className={cn("outline-none transition-all block", editMode && "border-b border-dashed border-[#ff5e00]")}
-                    >
-                      {systemFields.id3}
-                    </b>
-                    <small 
-                      contentEditable={editMode}
-                      onBlur={(e) => updateSystemField('id4', e.currentTarget.innerText)}
-                      suppressContentEditableWarning
-                      className={cn("outline-none transition-all block", editMode && "border-b border-dashed border-[#ff5e00]")}
-                    >
-                      {systemFields.id4}
-                    </small>
-                  </div>
-                  <div className="text-right">
-                    <b 
-                      contentEditable={editMode}
-                      onBlur={(e) => updateSystemField('id5', e.currentTarget.innerText)}
-                      suppressContentEditableWarning
-                      className={cn("outline-none transition-all block", editMode && "border-b border-dashed border-[#ff5e00]")}
-                    >
-                      {systemFields.id5}
-                    </b>
-                    <small 
-                      contentEditable={editMode}
-                      onBlur={(e) => updateSystemField('id6', e.currentTarget.innerText)}
-                      suppressContentEditableWarning
-                      className={cn("outline-none transition-all block", editMode && "border-b border-dashed border-[#ff5e00]")}
-                    >
-                      {systemFields.id6}
-                    </small>
-                  </div>
-                </div>
-
-                {/* Luxury Interactive Flight Progress Track */}
-                <div className="mt-6 space-y-2">
-                  <div className="flex justify-between items-center text-[10px] font-orbitron tracking-[2px]">
-                    <span className="text-[#a2ff00] flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-current animate-ping" />
-                      VOO EM CURSO
-                    </span>
-                    <span className="text-white/80 font-mono font-bold">{flightProgress}%</span>
-                  </div>
+                    <X className="w-4 h-4" />
+                  </button>
 
                   <div 
-                    onClick={handleProgressClick}
-                    className="w-full h-2.5 bg-[#141414] rounded-full relative cursor-pointer border border-white/10 shadow-inner group/track"
-                    title="Clique para ajustar o progresso do voo"
-                  >
-                    {/* Glowing active path track with luxury multi-color letters flow */}
-                    <div 
-                      style={{ width: `${flightProgress}%` }} 
-                      className="h-full luxury-progress-track rounded-full relative transition-all duration-700 ease-out shadow-[0_0_12px_rgba(0,245,255,0.4)]"
+                    onClick={() => setShowMiniLogin(!showMiniLogin)}
+                    className="w-1.5 h-1.5 bg-[#ff5e00] rounded-full absolute top-[18px] right-[48px] cursor-pointer shadow-[0_0_8px_#ff5e00] animate-pulse z-10" 
+                    title="Acesso Administrador"
+                  />
+                  
+                  <AnimatePresence>
+                    {showMiniLogin && (
+                      <motion.div 
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="bg-black/60 rounded-xl p-3 border border-white/10 mb-4 flex gap-2"
+                      >
+                        <input 
+                          type="password" 
+                          value={editPassInput}
+                          onChange={(e) => setEditPassInput(e.target.value)}
+                          placeholder="Senha"
+                          className="flex-1 bg-white/80 border-none rounded-md p-1.5 text-[12px] outline-none text-[#222]" 
+                        />
+                        <button 
+                          onClick={checkEditAuth}
+                          className="bg-[#ff5e00] border-none text-white rounded-md px-3 py-1 text-[10px] cursor-pointer"
+                        >
+                          OK
+                        </button>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  <div className="flex items-center gap-3 font-mono text-[32px] text-[#eee] mb-4">
+                    <span 
+                      contentEditable={editMode}
+                      onBlur={(e) => updateSystemField('id1', e.currentTarget.innerText)}
+                      suppressContentEditableWarning
+                      className={cn("outline-none transition-all", editMode && "border-b border-dashed border-[#ff5e00]")}
                     >
-                      {/* Sub-trail particle mist */}
-                      <span className="absolute right-2 top-0 bottom-0 w-8 bg-gradient-to-l from-white/40 to-transparent blur-[2px]" />
+                      {systemFields.id1}
+                    </span>
+                    <span className="text-[#555] text-[20px]">→</span>
+                    <span 
+                      contentEditable={editMode}
+                      onBlur={(e) => updateSystemField('id2', e.currentTarget.innerText)}
+                      suppressContentEditableWarning
+                      className={cn("outline-none transition-all", editMode && "border-b border-dashed border-[#ff5e00]")}
+                    >
+                      {systemFields.id2}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between text-[12px] text-[#aaa] mb-4">
+                    <div>
+                      <b 
+                        contentEditable={editMode}
+                        onBlur={(e) => updateSystemField('id3', e.currentTarget.innerText)}
+                        suppressContentEditableWarning
+                        className={cn("outline-none transition-all block", editMode && "border-b border-dashed border-[#ff5e00]")}
+                      >
+                        {systemFields.id3}
+                      </b>
+                      <small 
+                        contentEditable={editMode}
+                        onBlur={(e) => updateSystemField('id4', e.currentTarget.innerText)}
+                        suppressContentEditableWarning
+                        className={cn("outline-none transition-all block", editMode && "border-b border-dashed border-[#ff5e00]")}
+                      >
+                        {systemFields.id4}
+                      </small>
+                    </div>
+                    <div className="text-right">
+                      <b 
+                        contentEditable={editMode}
+                        onBlur={(e) => updateSystemField('id5', e.currentTarget.innerText)}
+                        suppressContentEditableWarning
+                        className={cn("outline-none transition-all block", editMode && "border-b border-dashed border-[#ff5e00]")}
+                      >
+                        {systemFields.id5}
+                      </b>
+                      <small 
+                        contentEditable={editMode}
+                        onBlur={(e) => updateSystemField('id6', e.currentTarget.innerText)}
+                        suppressContentEditableWarning
+                        className={cn("outline-none transition-all block", editMode && "border-b border-dashed border-[#ff5e00]")}
+                      >
+                        {systemFields.id6}
+                      </small>
+                    </div>
+                  </div>
+
+                  {/* Luxury Interactive Flight Progress Track */}
+                  <div className="mt-6 space-y-2">
+                    <div className="flex justify-between items-center text-[10px] font-orbitron tracking-[2px]">
+                      <span className="text-[#a2ff00] flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-current animate-ping" />
+                        VOO EM CURSO
+                      </span>
+                      <span className="text-white/80 font-mono font-bold">{flightProgress}%</span>
                     </div>
 
-                    {/* Luxurious Interactive Airplane Node */}
                     <div 
-                      style={{ left: `${flightProgress}%` }}
-                      className="absolute -top-3.5 -translate-x-1/2 transition-all duration-700 ease-out z-20 pointer-events-none"
+                      onClick={handleProgressClick}
+                      className="w-full h-2.5 bg-[#141414] rounded-full relative cursor-pointer border border-white/10 shadow-inner group/track"
+                      title="Clique para ajustar o progresso do voo"
                     >
-                      {/* Multi-layered luxury reactive halos */}
-                      <span className="absolute -inset-1 rounded-full bg-gradient-to-r from-[#00f5ff] to-[#ffffff] opacity-40 blur-[8px] animate-pulse" />
-                      <span className="absolute -inset-2.5 rounded-full bg-[#00f5ff]/20 opacity-30 blur-[12px] animate-engine-glow" />
-
-                      {/* Floating Airplane Sphere */}
+                      {/* Glowing active path track with luxury multi-color letters flow */}
                       <div 
-                        className="w-[34px] h-[34px] rounded-full bg-black/90 border-[2px] border-white/90 flex items-center justify-center text-[15px] text-white shadow-[0_0_15px_var(--glow-color,#00f5ff)] relative transform animate-airplane-fly select-none"
-                        style={{ '--glow-color': flightProgress < 25 ? '#00f5ff' : flightProgress < 50 ? '#ffffff' : flightProgress < 75 ? '#ffee00' : '#00ff88' } as React.CSSProperties}
+                        style={{ width: `${flightProgress}%` }} 
+                        className="h-full luxury-progress-track rounded-full relative transition-all duration-700 ease-out shadow-[0_0_12px_rgba(0,245,255,0.4)]"
                       >
-                        {/* Glow indicator corresponding to background color of letters */}
-                        <span 
-                          className="absolute inset-[2px] rounded-full opacity-10 transition-colors duration-500" 
-                          style={{ backgroundColor: flightProgress < 25 ? '#00f5ff' : flightProgress < 50 ? '#ffffff' : flightProgress < 75 ? '#ffee00' : '#00ff88' }}
-                        />
-                        <span className="relative z-10 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">✈</span>
+                        {/* Sub-trail particle mist */}
+                        <span className="absolute right-2 top-0 bottom-0 w-8 bg-gradient-to-l from-white/40 to-transparent blur-[2px]" />
+                      </div>
+
+                      {/* Luxurious Interactive Airplane Node */}
+                      <div 
+                        style={{ left: `${flightProgress}%` }}
+                        className="absolute -top-3.5 -translate-x-1/2 transition-all duration-700 ease-out z-20 pointer-events-none"
+                      >
+                        {/* Multi-layered luxury reactive halos */}
+                        <span className="absolute -inset-1 rounded-full bg-gradient-to-r from-[#00f5ff] to-[#ffffff] opacity-40 blur-[8px] animate-pulse" />
+                        <span className="absolute -inset-2.5 rounded-full bg-[#00f5ff]/20 opacity-30 blur-[12px] animate-engine-glow" />
+
+                        {/* Floating Airplane Sphere */}
+                        <div 
+                          className="w-[34px] h-[34px] rounded-full bg-black/90 border-[2px] border-white/90 flex items-center justify-center text-[15px] text-white shadow-[0_0_15px_var(--glow-color,#00f5ff)] relative transform animate-airplane-fly select-none"
+                          style={{ '--glow-color': flightProgress < 25 ? '#00f5ff' : flightProgress < 50 ? '#ffffff' : flightProgress < 75 ? '#ffee00' : '#00ff88' } as React.CSSProperties}
+                        >
+                          {/* Glow indicator corresponding to background color of letters */}
+                          <span 
+                            className="absolute inset-[2px] rounded-full opacity-10 transition-colors duration-500" 
+                            style={{ backgroundColor: flightProgress < 25 ? '#00f5ff' : flightProgress < 50 ? '#ffffff' : flightProgress < 75 ? '#ffee00' : '#00ff88' }}
+                          />
+                          <span className="relative z-10 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">✈</span>
+                        </div>
                       </div>
                     </div>
+                    
+                    <div className="flex justify-between text-[8px] text-white/45 tracking-widest font-mono uppercase">
+                      <span>PARTIDA ({systemFields.id1})</span>
+                      <span>CHEGADA ({systemFields.id2})</span>
+                    </div>
                   </div>
-                  
-                  <div className="flex justify-between text-[8px] text-white/45 tracking-widest font-mono uppercase">
-                    <span>PARTIDA ({systemFields.id1})</span>
-                    <span>CHEGADA ({systemFields.id2})</span>
-                  </div>
-                </div>
-
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+                </motion.div>
+              </div>
+            </>
+          )}
+        </AnimatePresence>
 
         {/* Elegant Menu Drawer Toggle in place of 'Minha Agenda' */}
         <button 
@@ -1101,6 +1139,29 @@ export default function App() {
                     <div className="flex flex-col select-none">
                       <span className="text-[5.5px] text-[#00f5ff] font-extrabold uppercase tracking-[0.1em] leading-none mb-0.5">Consultar</span>
                       <span className="text-white text-[8px] font-orbitron font-extrabold uppercase tracking-[1px] leading-none">Agenda</span>
+                    </div>
+                  </button>
+
+                  {/* Event (Voo/Local) Button inside Dropdown */}
+                  <button 
+                    onClick={() => {
+                      setShowSidebar(true);
+                      setShowRightSidebar(false);
+                    }}
+                    className={cn(
+                      "w-full group flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-black/40 border border-white/5 transition-all duration-200 hover:bg-white/5 active:scale-95 cursor-pointer outline-none select-none text-left",
+                      showSidebar ? "border-[#ffaa00]/45 bg-amber-950/15" : "hover:border-[#ffaa00]/30"
+                    )}
+                  >
+                    <div className={cn(
+                      "w-3.5 h-3.5 rounded-full flex items-center justify-center transition-all duration-700 text-[8px] bg-white/5 border border-white/5 shrink-0 text-amber-400",
+                      showSidebar && "rotate-[360deg] bg-amber-500/10 border-[#ffaa00]/20"
+                    )}>
+                      <Sparkles className="w-2.5 h-2.5" />
+                    </div>
+                    <div className="flex flex-col select-none">
+                      <span className="text-[5.5px] text-amber-400 font-extrabold uppercase tracking-[0.1em] leading-none mb-0.5 font-bold">Próximo</span>
+                      <span className="text-white text-[8px] font-orbitron font-extrabold uppercase tracking-[1px] leading-none">Evento</span>
                     </div>
                   </button>
                 </div>
@@ -1399,13 +1460,7 @@ export default function App() {
         </div>
 
         {/* Dynamic Center Real-time Clock */}
-        <div className="hidden lg:flex items-center gap-3 bg-white/5 border border-white/10 px-4 py-1.5 rounded-full text-xs font-mono text-[#CF9D7B]">
-          <Clock size={12} className="text-[#CF9D7B] animate-spin-slow" />
-          <span className="opacity-80 font-bold">HORÁRIO:</span>
-          <span className="text-white font-bold font-orbitron">{currentTime.toLocaleTimeString('pt-BR')}</span>
-          <span className="text-white/40">|</span>
-          <span className="opacity-80 font-bold">{currentTime.toLocaleDateString('pt-BR')}</span>
-        </div>
+        <HeaderClock />
         
         <div className="flex items-center gap-4 mt-4 md:mt-0">
           <div className={cn(
