@@ -1273,23 +1273,23 @@ export default function App() {
         <button 
           onClick={() => setShowRightSidebar(!showRightSidebar)}
           className={cn(
-            "fixed top-5 right-5 group flex items-center gap-2 px-3 py-1.5 rounded-xl bg-black/60 backdrop-blur-xl border border-white/10 z-[1001] transition-all duration-500 hover:scale-[1.03] active:scale-95 cursor-pointer outline-none select-none text-left shadow-[0_0_15px_rgba(0,245,255,0.15)] hover:shadow-[0_0_20px_rgba(0,245,255,0.25)]",
+            "fixed top-5 right-5 group flex items-center gap-2.5 pl-2 pr-4.5 py-1.5 rounded-full bg-black/60 backdrop-blur-xl border border-white/10 z-[1001] transition-all duration-150 hover:scale-[1.02] active:scale-95 cursor-pointer outline-none select-none text-left shadow-[0_0_15px_rgba(0,245,255,0.15)] hover:shadow-[0_0_20px_rgba(0,245,255,0.25)]",
             showRightSidebar ? "border-[#00f5ff]/50 shadow-[0_0_25px_rgba(0,245,255,0.3)] bg-black/85" : "hover:border-[#00f5ff]/40"
           )}
         >
-          <div className="w-5 h-5 rounded-full flex items-center justify-center transition-transform duration-500 text-xs bg-white/5 border border-white/10">
+          <div className="w-6 h-6 rounded-full flex items-center justify-center transition-all duration-200 text-xs bg-[#0c0c0e]/80 border border-white/15 shadow-inner group-hover:border-[#00f5ff]/60">
             {showRightSidebar ? (
               <X className="w-3 h-3 text-[#00f5ff]" />
             ) : (
               <Menu className="w-3 h-3 text-[#00f5ff]" />
             )}
           </div>
-          <div className="flex flex-col select-none">
-            <span className="text-[7px] text-[#00f5ff] font-extrabold uppercase tracking-[0.14em] leading-none mb-0.5 animate-pulse">MENU & LOGIN</span>
+          <div className="flex flex-col select-none pr-1">
+            <span className="text-[7.5px] text-[#00f5ff] font-extrabold uppercase tracking-[0.14em] leading-none mb-0.5 animate-pulse">MENU & LOGIN</span>
             <span className="text-white text-[9px] font-orbitron font-extrabold uppercase tracking-[1.3px] leading-none">CONFERENCISTA</span>
           </div>
           {/* Glowing cursor ring helper on hover */}
-          <span className="absolute -inset-0.5 rounded-xl bg-gradient-to-r from-[#00f5ff]/20 to-[#ffffff]/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
+          <span className="absolute -inset-0.5 rounded-full bg-gradient-to-r from-[#00f5ff]/20 to-[#ffffff]/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200 -z-10" />
         </button>
 
         {/* Right Discrete Thin Drawer (Gaveta Sanfonada Compacta) */}
@@ -1302,18 +1302,17 @@ export default function App() {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 onClick={() => setShowRightSidebar(false)}
-                className="fixed inset-0 bg-black/25 backdrop-blur-xs z-[1000]"
+                className="fixed inset-0 bg-black/20 backdrop-blur-[3px] z-[1000]"
               />
 
               {/* Gaveta Sanfonada Modificada: Wider and including integrated Login Section */}
               <motion.div 
-                initial={{ opacity: 0, height: 0, scaleY: 0.8 }}
-                animate={{ opacity: 1, height: 'auto', scaleY: 1 }}
-                exit={{ opacity: 0, height: 0, scaleY: 0.8 }}
-                transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-                style={{ originY: 0 }}
+                initial={{ opacity: 0, y: -10, scale: 0.96 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -10, scale: 0.96 }}
+                transition={{ type: "spring", stiffness: 450, damping: 30 }}
                 className={cn(
-                  "fixed right-5 top-[59px] w-[235px] bg-[#0c0c0e]/95 backdrop-blur-2xl border p-3.5 rounded-2xl z-[1000] flex flex-col gap-3 shadow-[0_15px_35px_rgba(0,0,0,0.85),0_0_20px_rgba(0,245,255,0.12)] overflow-hidden transition-all duration-300",
+                  "fixed right-5 top-[64px] w-[215px] bg-[#0c0c0e]/95 backdrop-blur-2xl border p-3 rounded-[20px] z-[1000] flex flex-col gap-2.5 shadow-[0_20px_50px_rgba(0,0,0,0.95),0_0_20px_rgba(0,245,255,0.08)] overflow-hidden transition-all duration-200",
                   passError 
                     ? "animate-card-shake border-red-500/80 shadow-[0_0_35px_rgba(239,68,68,0.4)] bg-red-950/20" 
                     : "border-white/10"
@@ -1336,7 +1335,7 @@ export default function App() {
                       setShowWhatsAppForm(true);
                       setShowRightSidebar(false);
                     }}
-                    className="group flex flex-col items-center justify-center gap-1.5 p-2 rounded-xl bg-black/40 border border-green-500/20 transition-all duration-200 hover:bg-green-500/5 active:scale-95 cursor-pointer outline-none select-none text-center shadow-[0_0_10px_rgba(34,197,94,0.03)] hover:border-green-400/40"
+                    className="group flex flex-col items-center justify-center gap-1.5 p-2 rounded-xl bg-[#121214]/65 hover:bg-[#151d18]/80 border border-white/[0.04] hover:border-green-500/40 transition-all duration-200 active:scale-95 cursor-pointer outline-none select-none text-center shadow-inner"
                   >
                     <div className="relative w-5 h-5 rounded-full flex items-center justify-center bg-green-500/10 text-green-400 shrink-0">
                       <span className="absolute inset-0 rounded-full bg-green-400 opacity-15 blur-[1px] animate-pulse" />
@@ -1355,8 +1354,10 @@ export default function App() {
                       setShowRightSidebar(false);
                     }}
                     className={cn(
-                      "group flex flex-col items-center justify-center gap-1.5 p-2 rounded-xl bg-black/40 border transition-all duration-200 hover:bg-white/5 active:scale-95 cursor-pointer outline-none select-none text-center",
-                      moonMode ? "border-[#00f5ff]/45 bg-cyan-950/15" : "border-white/5 hover:border-[#00f5ff]/30"
+                      "group flex flex-col items-center justify-center gap-1.5 p-2 rounded-xl transition-all duration-200 active:scale-95 cursor-pointer outline-none select-none text-center bg-[#121214]/65 shadow-inner",
+                      moonMode 
+                        ? "border-[#00f5ff]/50 bg-cyan-950/30" 
+                        : "border-white/[0.04] hover:border-[#00f5ff]/40 hover:bg-[#11181c]/80"
                     )}
                   >
                     <div className={cn(
@@ -1378,8 +1379,10 @@ export default function App() {
                       setShowRightSidebar(false);
                     }}
                     className={cn(
-                      "group flex flex-col items-center justify-center gap-1.5 p-2 rounded-xl bg-black/40 border transition-all duration-200 hover:bg-white/5 active:scale-95 cursor-pointer outline-none select-none text-center",
-                      showSidebar ? "border-[#ffaa00]/45 bg-amber-950/15" : "border-white/5 hover:border-[#ffaa00]/30"
+                      "group flex flex-col items-center justify-center gap-1.5 p-2 rounded-xl transition-all duration-200 active:scale-95 cursor-pointer outline-none select-none text-center bg-[#121214]/65 shadow-inner",
+                      showSidebar 
+                        ? "border-[#ffaa00]/50 bg-amber-950/30" 
+                        : "border-white/[0.04] hover:border-[#ffaa00]/45 hover:bg-[#1c160a]/80"
                     )}
                   >
                     <div className={cn(
@@ -1405,15 +1408,17 @@ export default function App() {
                       setShowRightSidebar(false);
                     }}
                     className={cn(
-                      "group flex flex-col items-center justify-center gap-1.5 p-2 rounded-xl bg-black/40 border transition-all duration-200 hover:bg-white/5 active:scale-95 cursor-pointer outline-none select-none text-center",
-                      authorized ? "border-green-500/30 bg-green-950/10" : "border-[#ffaa00]/15 hover:border-[#ff8c00]/45 bg-black/40"
+                      "group flex flex-col items-center justify-center gap-1.5 p-2 rounded-xl transition-all duration-200 active:scale-95 cursor-pointer outline-none select-none text-center bg-[#121214]/65 shadow-inner",
+                      authorized 
+                        ? "border-green-500/40 bg-green-950/20" 
+                        : "border-white/[0.04] hover:border-amber-500/45 hover:bg-[#1a130c]/80"
                     )}
                   >
                     <div className={cn(
                       "w-5 h-5 rounded-full flex items-center justify-center transition-all duration-700 text-[10px] bg-white/5 border border-white/5 shrink-0",
-                      authorized ? "text-green-400 bg-green-500/10 border-green-500/30" : "text-amber-400 bg-amber-500/5"
+                      authorized ? "text-green-400 bg-green-500/10 border-green-500/30" : "text-amber-500 bg-amber-500/10 border-white/5"
                     )}>
-                      {authorized ? <Unlock className="w-3 h-3 text-green-400" /> : <Lock className="w-3 h-3 text-amber-450" />}
+                      {authorized ? <Unlock className="w-3 h-3 text-green-400" /> : <Lock className="w-3 h-3 text-amber-500" />}
                     </div>
                     <div className="flex flex-col items-center select-none">
                       <span className="text-[5.5px] text-white/50 font-extrabold uppercase tracking-[0.1em] mb-0.5 font-bold">
@@ -1426,19 +1431,19 @@ export default function App() {
                   </button>
                 </div>
 
-                {/* Status indicator and system info */}
-                <div className="border-t border-white/5 pt-3.5 mt-1 flex flex-col gap-2.5">
+                {/* Single clean line at the bottom to stay lightweight */}
+                <div className="border-t border-white/5 pt-2 mt-1 text-center">
                   {authorized ? (
-                    <div className="space-y-2 px-0.5">
-                      <div className="flex items-center gap-1.5 px-1 pb-1">
-                        <div className="w-4 h-4 rounded-full bg-[#00f5ff]/10 border border-[#00f5ff]/30 flex items-center justify-center text-[8px] text-[#00f5ff] font-bold">
+                    <div className="space-y-1.5 px-0.5 text-left pb-0.5">
+                      <div className="flex items-center gap-1.5 px-1 pb-0.5">
+                        <div className="w-3.5 h-3.5 rounded-full bg-[#00f5ff]/10 border border-[#00f5ff]/30 flex items-center justify-center text-[7.5px] text-[#00f5ff] font-bold pb-0.5">
                           ✓
                         </div>
                         <div className="flex flex-col flex-1">
-                          <span className="text-[7px] text-white/40 uppercase font-mono tracking-[0.14em] leading-none">
+                          <span className="text-[6.5px] text-white/40 uppercase font-mono tracking-[0.14em] leading-none">
                             Autenticado
                           </span>
-                          <span className="text-[#00f5ff] text-[9.5px] font-orbitron font-extrabold uppercase tracking-[1.2px] leading-none mt-0.5">
+                          <span className="text-[#00f5ff] text-[8.5px] font-orbitron font-extrabold uppercase tracking-[1.2px] leading-none mt-0.5">
                             MINISTRO ATIVO
                           </span>
                         </div>
@@ -1449,19 +1454,17 @@ export default function App() {
                           handleLogout();
                           setShowRightSidebar(false);
                         }}
-                        className="w-full py-2.5 px-3 rounded-xl relative overflow-hidden font-orbitron font-extrabold text-[9px] uppercase tracking-[2px] transition-all duration-300 active:scale-[0.96] select-none text-white bg-red-950/40 border border-red-500/20 hover:bg-red-500/10 hover:border-red-500/40 cursor-pointer shadow-md"
+                        className="w-full py-1.5 px-2.5 rounded-xl block font-orbitron font-extrabold text-[8px] uppercase tracking-[1.2px] transition-all duration-200 active:scale-[0.96] select-none text-white bg-red-950/40 border border-red-500/20 hover:bg-red-500/10 hover:border-red-500/40 cursor-pointer shadow-md text-center"
                       >
-                        <span className="relative z-10 flex items-center justify-center gap-1.5">
+                        <span className="flex items-center justify-center gap-1">
                           <span>DESCONECTAR</span>
-                          <span className="text-[9px] opacity-80">✖</span>
+                          <span className="text-[8px] opacity-85">✖</span>
                         </span>
                       </button>
                     </div>
-                  ) : null}
-                </div>
-
-                <div className="mt-1 pt-1.5 border-t border-white/5 text-center">
-                  <span className="text-[6px] font-mono tracking-widest text-white/15 uppercase">SISTEMA SEGURO</span>
+                  ) : (
+                    <span className="text-[5.5px] font-mono tracking-widest text-white/15 uppercase block py-0.5">SISTEMA SEGURO</span>
+                  )}
                 </div>
               </motion.div>
             </>
