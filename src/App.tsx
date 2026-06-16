@@ -54,7 +54,9 @@ import {
   Download,
   Paintbrush,
   Eraser,
-  Check
+  Check,
+  Lock,
+  Unlock
 } from 'lucide-react';
 import { cn } from './lib/utils';
 import { HighlightableText } from './components/HighlightableText';
@@ -317,6 +319,51 @@ export default function App() {
   const [showWhatsAppForm, setShowWhatsAppForm] = useState(false);
   const [waName, setWaName] = useState('');
   const [waChurch, setWaChurch] = useState('');
+
+  // Central Login Modal State
+  const [showCentralLoginModal, setShowCentralLoginModal] = useState(false);
+
+  const handleCentralModalLogin = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (systemHashConfirm(passInput) === '1570946') {
+      setAuthorized(true);
+      setUser({ uid: 'admin', displayName: 'Conferencista' });
+      localStorage.setItem('system_auth', 'true');
+      setMoonMode(false);
+      setShowSidebar(false);
+      setShowRightSidebar(false);
+      setShowCentralLoginModal(false);
+      setPassInput('');
+      setPassError(false);
+    } else {
+      setPassError(true);
+      setTimeout(() => setPassError(false), 2000);
+    }
+  };
+
+  const closeCentralLoginModal = () => {
+    setShowCentralLoginModal(false);
+    setPassInput('');
+    setPassError(false);
+  };
+
+  useEffect(() => {
+    if (!showCentralLoginModal) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        closeCentralLoginModal();
+      } else if (e.key >= '0' && e.key <= '9') {
+        setPassInput(prev => prev + e.key);
+      } else if (e.key === 'Backspace') {
+        setPassInput(prev => prev.slice(0, -1));
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        handleCentralModalLogin();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [showCentralLoginModal, passInput]);
 
   const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
   
@@ -997,8 +1044,6 @@ export default function App() {
         <div className="left-edge-luxury" aria-hidden="true" />
 
         {/* Systems Indicators & Verses */}
-        <div className="sys-init-luxury font-space-grotesk font-bold">JIMMY// CONFERENCISTA</div>
-        <span className="deco-verse-luxury bv1 font-space-grotesk font-medium">Sl 91:1 — Aquele que habita no abrigo do Altíssimo</span>
         <span className="deco-verse-luxury bv2 font-space-grotesk font-medium">Sl 91:11 — Aos seus anjos dará ordem a teu respeito, para te guardarem</span>
 
         {/* Centered Luxury Presentation Title with text scrambling algorithm */}
@@ -1284,7 +1329,7 @@ export default function App() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-1.5">
+                <div className="grid grid-cols-2 gap-2">
                   {/* WhatsApp Button inside Dropdown */}
                   <button 
                     onClick={() => {
@@ -1348,9 +1393,40 @@ export default function App() {
                       <span className="text-white text-[7.5px] font-orbitron font-extrabold uppercase tracking-[0.5px] leading-none">Evento</span>
                     </div>
                   </button>
+
+                  {/* Login (Padlock Slider) Button inside Dropdown */}
+                  <button 
+                    onClick={() => {
+                      if (authorized) {
+                        handleLogout();
+                      } else {
+                        setShowCentralLoginModal(true);
+                      }
+                      setShowRightSidebar(false);
+                    }}
+                    className={cn(
+                      "group flex flex-col items-center justify-center gap-1.5 p-2 rounded-xl bg-black/40 border transition-all duration-200 hover:bg-white/5 active:scale-95 cursor-pointer outline-none select-none text-center",
+                      authorized ? "border-green-500/30 bg-green-950/10" : "border-[#ffaa00]/15 hover:border-[#ff8c00]/45 bg-black/40"
+                    )}
+                  >
+                    <div className={cn(
+                      "w-5 h-5 rounded-full flex items-center justify-center transition-all duration-700 text-[10px] bg-white/5 border border-white/5 shrink-0",
+                      authorized ? "text-green-400 bg-green-500/10 border-green-500/30" : "text-amber-400 bg-amber-500/5"
+                    )}>
+                      {authorized ? <Unlock className="w-3 h-3 text-green-400" /> : <Lock className="w-3 h-3 text-amber-450" />}
+                    </div>
+                    <div className="flex flex-col items-center select-none">
+                      <span className="text-[5.5px] text-white/50 font-extrabold uppercase tracking-[0.1em] mb-0.5 font-bold">
+                        {authorized ? "Online" : "Acesso"}
+                      </span>
+                      <span className="text-white text-[7.5px] font-orbitron font-extrabold uppercase tracking-[0.5px]">
+                        {authorized ? "Sair" : "Login"}
+                      </span>
+                    </div>
+                  </button>
                 </div>
 
-                {/* Login Form Formatted Specifically for Sidebar Panel */}
+                {/* Status indicator and system info */}
                 <div className="border-t border-white/5 pt-3.5 mt-1 flex flex-col gap-2.5">
                   {authorized ? (
                     <div className="space-y-2 px-0.5">
@@ -1381,69 +1457,7 @@ export default function App() {
                         </span>
                       </button>
                     </div>
-                  ) : (
-                    <>
-                      <div className="flex items-center gap-1.5 px-1">
-                        <LogIn className={cn("w-3.5 h-3.5", passError ? "text-red-400" : "text-[#00f5ff]")} />
-                        <div className="flex flex-col flex-1">
-                          <span className="text-[7px] text-white/40 uppercase font-mono tracking-[0.14em] leading-none">
-                            {passError ? "Acesso Negado" : "Acesso Restrito"}
-                          </span>
-                          <span className={cn("text-[9px] font-orbitron font-extrabold uppercase tracking-[1.5px] leading-none mt-0.5", passError ? "text-red-400 animate-pulse" : "text-[#00f5ff]")}>
-                            {passError ? "SENHA INCORRETA" : "MINISTRO LOGIN"}
-                          </span>
-                        </div>
-                      </div>
-
-                      <form onSubmit={handleLogin} className="space-y-2 px-0.5">
-                        <div className="relative group/input">
-                          <input 
-                            type="password"
-                            value={passInput}
-                            onChange={(e) => setPassInput(e.target.value)}
-                            placeholder="SENHA..."
-                            className={cn(
-                              "w-full p-2.5 rounded-xl border bg-black/80 text-white font-rajdhani outline-none text-center text-xs tracking-[4px] uppercase transition-all duration-300",
-                              passError 
-                                ? "border-red-500/40 focus:border-red-500 text-red-300 placeholder-red-500/50" 
-                                : "border-white/10 focus:border-[#00f5ff]/70 focus:shadow-[0_0_12px_rgba(0,245,255,0.25)]"
-                            )}
-                          />
-                          
-                          {/* Visual Progress Bar Flow Indicator */}
-                          <div 
-                            className={cn(
-                              "absolute bottom-0 left-1/2 -translate-x-1/2 h-[1.5px] transition-all duration-500 rounded-full",
-                              passInput.length > 0 ? "w-[80%] bg-[#00f5ff]" : "w-0 bg-transparent"
-                            )} 
-                          />
-                        </div>
-
-                        <button 
-                          type="submit"
-                          disabled={!passInput}
-                          className={cn(
-                            "w-full py-2.5 px-4 rounded-xl relative overflow-hidden font-orbitron font-extrabold text-[10px] uppercase tracking-[2.5px] transition-all duration-300 active:scale-[0.96] select-none group/btn shadow-md",
-                            passInput
-                              ? "text-black bg-white hover:text-white cursor-pointer"
-                              : "text-white/30 bg-white/5 border border-white/10 pointer-events-none"
-                          )}
-                        >
-                          {/* Hover Slide BG */}
-                          {passInput && (
-                            <span 
-                              className="absolute inset-x-0 top-0 bottom-0 luxury-progress-track opacity-0 group-hover/btn:opacity-100 transition-opacity duration-500" 
-                            />
-                          )}
-                          
-                          <span className="relative z-10 flex items-center justify-center gap-1.5">
-                            <span>CONFIRMAR</span>
-                            <span className="text-[10px] opacity-80 group-hover/btn:translate-x-1 transition-transform duration-300">➜</span>
-                          </span>
-                        </button>
-                      </form>
-                    </>
-                  )}
+                  ) : null}
                 </div>
 
                 <div className="mt-1 pt-1.5 border-t border-white/5 text-center">
@@ -1533,6 +1547,149 @@ export default function App() {
                 </p>
               </div>
             </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Central Luxury Slider Login Modal */}
+        <AnimatePresence>
+          {showCentralLoginModal && (
+            <>
+              {/* Overlay background dim with Blur */}
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={closeCentralLoginModal}
+                className="fixed inset-0 bg-black/75 backdrop-blur-md z-[1600]"
+                id="centralLoginOverlay"
+              />
+
+              {/* Centered Login Modal in same position as Calendar */}
+              <div className="fixed inset-0 pointer-events-none flex items-center justify-center p-4 z-[1700]">
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.95, y: -20 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, y: -20 }}
+                  transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                  className={cn(
+                    "pointer-events-auto p-4 rounded-[20px] w-full max-w-[215px] bg-[#0c0c0e]/95 border transition-all duration-350 shadow-[0_20px_50px_rgba(0,0,0,0.95)] backdrop-blur-2xl flex flex-col items-center gap-3 relative overflow-visible",
+                    passError 
+                      ? "border-red-500/40 shadow-[0_0_50px_rgba(239,68,68,0.35)] animate-card-shake" 
+                      : "border-white/10"
+                  )}
+                  id="centralLoginModal"
+                >
+                  {/* Close modal action */}
+                  <button 
+                    onClick={closeCentralLoginModal}
+                    className="absolute top-3 right-3 text-white/40 hover:text-white pb-0.5 rounded-full hover:bg-white/5 transition-all outline-none cursor-pointer w-6 h-6 flex items-center justify-center border border-white/5"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+
+                  <div className="w-10 h-10 rounded-full bg-amber-500/5 border border-amber-500/20 flex items-center justify-center mt-1 shadow-[0_0_15px_rgba(245,158,11,0.03)]">
+                    <Lock className={cn("w-4 h-4 transition-all duration-500", passError ? "text-red-400 animate-bounce" : "text-amber-500")} />
+                  </div>
+
+                  {/* Header context */}
+                  <div className="text-center w-full">
+                    <h3 className="font-orbitron font-bold text-[10px] tracking-[2px] text-white/90 uppercase">
+                      Acesso do Ministro
+                    </h3>
+                    <p className={cn(
+                      "text-[6.5px] font-mono tracking-[2px] uppercase mt-0.5 transition-colors duration-300",
+                      passError ? "text-red-400 animate-pulse" : "text-amber-500/85"
+                    )}>
+                      {passError ? "// COMBINAÇÃO INCORRETA" : "// DIGITE SUA SENHA"}
+                    </p>
+                  </div>
+
+                  {/* Input form with readOnly input to suppress virtual keyboard */}
+                  <form onSubmit={handleCentralModalLogin} className="w-full space-y-3">
+                    <div className="relative group/input">
+                      <input 
+                        type="password"
+                        value={passInput}
+                        onChange={(e) => setPassInput(e.target.value)}
+                        placeholder="SENHA..."
+                        readOnly={true}
+                        className={cn(
+                          "w-full p-2.5 rounded-xl border bg-black/80 text-white font-rajdhani outline-none text-center text-xs tracking-[4px] uppercase transition-all duration-300 focus:bg-black cursor-default",
+                          passError 
+                            ? "border-red-500/40 focus:border-red-500 text-red-300 placeholder-red-500/50" 
+                            : "border-white/10 focus:border-[#00f5ff]/70 focus:shadow-[0_0_12px_rgba(0,245,255,0.25)]"
+                        )}
+                      />
+                    </div>
+
+                    <button 
+                      type="submit"
+                      disabled={!passInput}
+                      className={cn(
+                        "w-full py-2.5 px-3 rounded-xl relative overflow-hidden font-orbitron font-extrabold text-[9px] uppercase tracking-[1.5px] transition-all duration-300 active:scale-[0.96] select-none group/btn shadow-md",
+                        passInput
+                          ? "text-black bg-white hover:text-white cursor-pointer"
+                          : "text-white/30 bg-white/5 border border-white/10 pointer-events-none"
+                      )}
+                    >
+                      {passInput && (
+                        <span 
+                          className="absolute inset-x-0 top-0 bottom-0 bg-[#00f5ff]/20 opacity-0 group-hover/btn:opacity-100 transition-opacity duration-500" 
+                        />
+                      )}
+                      
+                      <span className="relative z-10 flex items-center justify-center gap-1">
+                        <span>CONFIRMAR</span>
+                        <span className="text-[9px] opacity-80 group-hover/btn:translate-x-1 transition-transform duration-300">➜</span>
+                      </span>
+                    </button>
+                  </form>
+
+                  {/* Tactile Keypad grid below the capsule lock */}
+                  <div className="grid grid-cols-3 gap-1.5 w-full max-w-[170px] mt-0.5">
+                    {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
+                      <button 
+                        key={`keypad-${num}`}
+                        type="button"
+                        onClick={() => setPassInput(prev => prev + num.toString())}
+                        className="h-7 rounded-lg bg-white/5 hover:bg-white/10 active:scale-95 border border-white/5 active:border-white/15 text-white font-orbitron font-bold text-[10px] transition-all duration-100 flex items-center justify-center cursor-pointer select-none outline-none"
+                      >
+                        {num}
+                      </button>
+                    ))}
+                    <button 
+                      type="button"
+                      onClick={() => {
+                        setPassInput('');
+                      }}
+                      className="h-7 rounded-lg bg-red-950/20 hover:bg-red-950/35 active:scale-95 border border-red-500/10 hover:border-red-500/25 text-red-400 font-orbitron font-bold text-[7.5px] uppercase transition-all duration-100 flex items-center justify-center cursor-pointer select-none outline-none"
+                    >
+                      LIMPAR
+                    </button>
+                    <button 
+                      type="button"
+                      onClick={() => setPassInput(prev => prev + '0')}
+                      className="h-7 rounded-lg bg-white/5 hover:bg-white/10 active:scale-95 border border-white/5 active:border-white/15 text-white font-orbitron font-bold text-[10px] transition-all duration-100 flex items-center justify-center cursor-pointer select-none outline-none"
+                    >
+                      0
+                    </button>
+                    <button 
+                      type="button"
+                      onClick={() => {
+                        setPassInput(prev => prev.slice(0, -1));
+                      }}
+                      className="h-7 rounded-lg bg-white/5 hover:bg-white/10 active:scale-95 border border-white/5 active:border-white/12 text-white font-orbitron font-bold text-[10px] transition-all duration-100 flex items-center justify-center cursor-pointer select-none outline-none"
+                    >
+                      ⌫
+                    </button>
+                  </div>
+
+                  <p className="text-[5.5px] font-space-grotesk tracking-[1px] text-white/30 text-center uppercase leading-none mt-0.5">
+                    SUPORTA TECLADO FÍSICO E TOUCH SCREEN
+                  </p>
+                </motion.div>
+              </div>
+            </>
           )}
         </AnimatePresence>
 
