@@ -1,10 +1,15 @@
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&family=Space+Grotesk:wght@300;400;700&family=Outfit:wght@100;300;700;900&family=Noto+Sans+Hebrew:wght@400;700;900&display=swap');
 @import "tailwindcss";
 
 @theme {
   --font-orbitron: "Orbitron", sans-serif;
   --font-mono: "Share Tech Mono", monospace;
   --font-rajdhani: "Rajdhani", sans-serif;
+  --font-noto-jp: "Noto Sans JP", sans-serif;
+  --font-noto-hebrew: "Noto Sans Hebrew", sans-serif;
+  --font-space-grotesk: "Space Grotesk", sans-serif;
+  --font-outfit: "Outfit", sans-serif;
 
   --color-neon-cyan: #00f5ff;
   --color-neon-pink: #ffffff;
@@ -294,6 +299,471 @@
 
 .animate-pulse-slow {
   animation: pulseSlow 3s ease-in-out infinite;
+}
+
+/* ===== LUXURY CLASS OVERLAYS & ANIMATIONS ===== */
+:root {
+  --red-casino: #C41E2A;
+  --red-dark: #7A0A10;
+  --red-glow: #FF1744;
+  --gold: #D4AF37;
+  --gold-bright: #FFD700;
+  --black-deep: #050505;
+}
+
+.bg-layer-luxury {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+}
+
+.bg-photo-luxury {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 25%;
+  filter: contrast(1.1) brightness(0.58) saturate(0.7);
+  transform: scale(1.08);
+  transition: transform .8s cubic-bezier(.25,.46,.45,.94);
+}
+
+.geo-grid-luxury {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background-image: linear-gradient(rgba(196,30,42,0.035) 1px, transparent 1px), linear-gradient(90deg, rgba(196,30,42,0.035) 1px, transparent 1px);
+  background-size: 80px 80px;
+  mask-image: radial-gradient(ellipse at 50% 50%, black 15%, transparent 70%);
+  -webkit-mask-image: radial-gradient(ellipse at 50% 50%, black 15%, transparent 70%);
+}
+
+.modern-overlay-luxury {
+  position: fixed;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 50% 50%, rgba(196,30,42,0.1) 0%, transparent 50%), radial-gradient(ellipse at 80% 20%, rgba(212,175,55,0.03) 0%, transparent 40%), linear-gradient(135deg, rgba(5,5,5,0.45) 0%, rgba(5,5,5,0.08) 50%, rgba(5,5,5,0.5) 100%);
+}
+
+.left-edge-luxury {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 2px;
+  height: 100vh;
+  z-index: 10;
+  pointer-events: none;
+  background: linear-gradient(180deg, transparent 5%, var(--red-casino) 30%, var(--red-glow) 50%, var(--red-casino) 70%, transparent 95%);
+  opacity: .4;
+}
+
+.scanlines-luxury {
+  position: fixed;
+  inset: 0;
+  z-index: 11;
+  pointer-events: none;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.035) 2px, rgba(0,0,0,0.035) 4px);
+}
+
+.corner-light-luxury {
+  position: fixed;
+  width: 180px;
+  height: 180px;
+  pointer-events: none;
+  z-index: 6;
+  opacity: 0;
+  animation: cornerFade 2s 1s ease-out forwards;
+}
+
+@keyframes cornerFade {
+  to { opacity: 1; }
+}
+
+.corner-light-luxury.tl {
+  top: -60px;
+  left: -60px;
+  background: radial-gradient(circle at 100% 100%, rgba(196,30,42,0.12), transparent 70%);
+}
+
+.corner-light-luxury.tr {
+  top: -60px;
+  right: -60px;
+  background: radial-gradient(circle at 0% 100%, rgba(212,175,55,0.06), transparent 70%);
+}
+
+.corner-light-luxury.bl {
+  bottom: -60px;
+  left: -60px;
+  background: radial-gradient(circle at 100% 0%, rgba(212,175,55,0.06), transparent 70%);
+}
+
+.corner-light-luxury.br {
+  bottom: -60px;
+  right: -60px;
+  background: radial-gradient(circle at 0% 0%, rgba(196,30,42,0.08), transparent 70%);
+}
+
+.center-content-luxury {
+  position: fixed;
+  inset: 0;
+  z-index: 8;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.title-block-luxury {
+  text-align: center;
+  opacity: 0;
+  animation: titleIn 1.8s .6s cubic-bezier(.16,1,.3,1) forwards;
+}
+
+@keyframes titleIn {
+  0% { opacity: 0; transform: translateY(50px) scale(.92); filter: blur(8px); }
+  100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+
+.main-title-luxury {
+  font-family: "Outfit", sans-serif;
+  font-size: clamp(60px, 11vw, 160px);
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: .18em;
+  line-height: 1;
+  text-shadow: 0 0 50px rgba(196,30,42,0.35), 0 0 100px rgba(196,30,42,0.12), 0 4px 12px rgba(0,0,0,0.7);
+  position: relative;
+  min-height: 1.1em;
+  white-space: nowrap;
+}
+
+.main-title-luxury.resolving::after {
+  content: '';
+  position: absolute;
+  inset: -10% -15%;
+  background: radial-gradient(ellipse, rgba(196,30,42,0.2), transparent 65%);
+  pointer-events: none;
+  z-index: -1;
+  animation: resolveFlash .8s ease-out forwards;
+}
+
+@keyframes resolveFlash {
+  0% { opacity: 0; transform: scale(.9); }
+  30% { opacity: 1; transform: scale(1.05); }
+  100% { opacity: 0; transform: scale(1.1); }
+}
+
+.deco-text-luxury {
+  font-family: "Space Grotesk", monospace;
+  font-size: clamp(9px, 1.1vw, 13px);
+  font-weight: 400;
+  color: rgba(196,30,42,0.6);
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  position: absolute;
+  opacity: 0;
+  text-shadow: 0 0 12px rgba(196,30,42,0.3);
+}
+
+.deco-text-luxury.bottom-deco {
+  bottom: -34px;
+  right: 0;
+  animation: decoInRight 1s 2.6s ease-out forwards;
+}
+
+@keyframes decoInRight {
+  0% { opacity: 0; transform: translateY(8px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.title-underline-luxury {
+  display: block;
+  width: 70px;
+  height: 3px;
+  background: linear-gradient(90deg, var(--red-casino), var(--gold));
+  margin: 22px auto 0;
+  border-radius: 2px;
+  box-shadow: 0 0 25px rgba(196,30,42,0.4), 0 0 10px rgba(212,175,55,0.2);
+  opacity: 0;
+  animation: lineIn 1s 1.6s ease-out forwards;
+}
+
+@keyframes lineIn {
+  0% { opacity: 0; width: 0; }
+  100% { opacity: 1; width: 70px; }
+}
+
+.sub-jp-luxury {
+  font-family: "Noto Sans Hebrew", sans-serif;
+  font-size: clamp(14px, 2vw, 22px);
+  font-weight: 400;
+  color: rgba(212,175,55,0.7);
+  letter-spacing: 12px;
+  margin-top: 7px;
+  opacity: 0;
+  animation: subIn 1.2s 2s ease-out forwards;
+}
+
+@keyframes subIn {
+  0% { opacity: 0; transform: translateY(12px); }
+  100% { opacity: .7; transform: translateY(0); }
+}
+
+.geo-ring-luxury {
+  position: fixed;
+  border-radius: 50%;
+  border: 1px solid rgba(196,30,42,0.1);
+  pointer-events: none;
+  z-index: 4;
+}
+
+.geo-ring-luxury-1 {
+  width: 500px;
+  height: 500px;
+  right: -150px;
+  bottom: -150px;
+  animation: ringR 40s linear infinite;
+}
+
+.geo-ring-luxury-2 {
+  width: 350px;
+  height: 350px;
+  right: -80px;
+  bottom: -80px;
+  border-color: rgba(212,175,55,0.08);
+  animation: ringR 30s linear infinite reverse;
+}
+
+.geo-ring-luxury-3 {
+  width: 200px;
+  height: 200px;
+  right: -30px;
+  bottom: -30px;
+  border-color: rgba(255,255,255,0.04);
+  border-style: dashed;
+  animation: ringR 20s linear infinite;
+}
+
+@keyframes ringR {
+  to { transform: rotate(360deg); }
+}
+
+.line-h-luxury {
+  position: fixed;
+  bottom: 85px;
+  left: 50px;
+  right: 50px;
+  height: 1px;
+  background: linear-gradient(to right, rgba(196,30,42,0.4), rgba(212,175,55,0.1) 60%, transparent);
+  z-index: 6;
+  pointer-events: none;
+  opacity: 0;
+  animation: lineSl 1.5s 2.4s ease-out forwards;
+}
+
+.line-v-luxury {
+  position: fixed;
+  right: 50px;
+  top: 50px;
+  bottom: 50px;
+  width: 1px;
+  background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.06) 30%, rgba(255,255,255,0.06) 70%, transparent);
+  z-index: 6;
+  pointer-events: none;
+  opacity: 0;
+  animation: lineSlV 1.5s 2.7s ease-out forwards;
+}
+
+@keyframes lineSl {
+  0% { opacity: 0; clip-path: inset(0 100% 0 0); }
+  100% { opacity: .6; clip-path: inset(0 0 0 0); }
+}
+
+@keyframes lineSlV {
+  0% { opacity: 0; clip-path: inset(100% 0 0 0); }
+  100% { opacity: .4; clip-path: inset(0 0 0 0); }
+}
+
+.corner-tag-luxury {
+  position: fixed;
+  bottom: 22px;
+  right: 28px;
+  z-index: 12;
+  text-align: right;
+  opacity: 0;
+  animation: footerIn 1.2s 3s cubic-bezier(.16,1,.3,1) forwards;
+}
+
+@keyframes footerIn {
+  0% { opacity: 0; transform: translateY(16px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.corner-tag-luxury .footer-year {
+  display: block;
+  font-family: "Outfit", sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.92);
+  letter-spacing: 5px;
+  margin-bottom: 6px;
+  text-shadow: 0 0 20px rgba(196,30,42,0.35), 0 0 40px rgba(196,30,42,0.12), 0 1px 4px rgba(0,0,0,0.8);
+}
+
+.corner-tag-luxury .footer-main {
+  display: block;
+  font-family: "Outfit", sans-serif;
+  font-size: clamp(13px, 1.4vw, 16px);
+  font-weight: 700;
+  color: rgba(255,255,255,0.92);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  text-shadow: 0 0 20px rgba(196,30,42,0.35), 0 0 40px rgba(196,30,42,0.12), 0 1px 4px rgba(0,0,0,0.8);
+  animation: footerPulse 4s 4.2s ease-in-out infinite;
+}
+
+@keyframes footerPulse {
+  0%, 100% { text-shadow: 0 0 20px rgba(196, 30, 42, 0.35), 0 0 40px rgba(196, 30, 42, 0.12), 0 1px 4px rgba(0, 0, 0, 0.8); }
+  50% { text-shadow: 0 0 30px rgba(196, 30, 42, 0.55), 0 0 60px rgba(196, 30, 42, 0.2), 0 0 8px rgba(212, 175, 55, 0.15), 0 1px 4px rgba(0, 0, 0, 0.8); }
+}
+
+.top-tag-luxury {
+  position: fixed;
+  top: 28px;
+  right: 28px;
+  z-index: 9;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  opacity: 0;
+  animation: fadeUp 1s 2.5s ease-out forwards;
+}
+
+@keyframes fadeUp {
+  0% { opacity: 0; transform: translateY(10px); }
+  100% { opacity: .5; transform: translateY(0); }
+}
+
+.top-tag-luxury .live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--red-glow);
+  box-shadow: 0 0 8px rgba(255,23,68,0.6);
+  animation: liveBlink 2s ease-in-out infinite;
+}
+
+@keyframes liveBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .3; }
+}
+
+.top-tag-luxury span {
+  font-family: "Outfit", sans-serif;
+  font-size: 9px;
+  font-weight: 300;
+  color: rgba(255,255,255,0.4);
+  letter-spacing: 5px;
+  text-transform: uppercase;
+}
+
+.particles-luxury {
+  position: fixed;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.dot-particle-luxury {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0;
+  animation: floatUpLuxury linear infinite;
+}
+
+@keyframes floatUpLuxury {
+  0% { opacity: 0; transform: translateY(0) scale(0); }
+  8% { opacity: .6; transform: translateY(-5vh) scale(1); }
+  85% { opacity: .15; }
+  100% { opacity: 0; transform: translateY(-105vh) scale(.4); }
+}
+
+.noise-luxury {
+  position: fixed;
+  inset: 0;
+  z-index: 7;
+  pointer-events: none;
+  opacity: .018;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%45' height='100%45' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 128px 128px;
+}
+
+.sys-init-luxury {
+  position: fixed;
+  top: 14%;
+  right: 8%;
+  font-family: "Space Grotesk", monospace;
+  font-size: clamp(8px, .9vw, 11px);
+  font-weight: 400;
+  color: rgba(196,30,42,0.55);
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  z-index: 6;
+  pointer-events: none;
+  opacity: 0;
+  text-shadow: 0 0 12px rgba(196,30,42,0.25);
+  animation: sysInitIn 1.2s 1.6s ease-out forwards;
+}
+
+@keyframes sysInitIn {
+  0% { opacity: 0; transform: translateX(12px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+
+.deco-verse-luxury {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: clamp(8px, .95vw, 12px);
+  font-weight: 400;
+  color: rgba(212,175,55,0.45);
+  letter-spacing: 1.5px;
+  position: fixed;
+  z-index: 6;
+  pointer-events: none;
+  opacity: 0;
+  white-space: nowrap;
+  max-width: 280px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-shadow: 0 0 10px rgba(212,175,55,0.2), 0 0 25px rgba(212,175,55,0.08);
+  line-height: 1.5;
+}
+
+.deco-verse-luxury.bv1 {
+  top: 10%;
+  left: 3.5%;
+  animation: verseFade 2.5s 1.8s ease-out forwards;
+}
+
+.deco-verse-luxury.bv2 {
+  bottom: 12%;
+  right: 3.5%;
+  animation: verseFade 2.5s 2.6s ease-out forwards;
+  text-align: right;
+}
+
+@keyframes verseFade {
+  0% { opacity: 0; transform: translateY(8px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@media(max-width:768px){
+  .main-title-luxury { letter-spacing: .1em; }
+  .line-h-luxury { left: 30px; bottom: 40px; }
+  .deco-text-luxury { font-size: 7px; letter-spacing: 2px; }
+  .sys-init-luxury { top: 10%; right: 5%; font-size: 7px; }
 }
 
 

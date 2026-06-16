@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { 
   collection, 
   query, 
@@ -323,6 +323,178 @@ export default function App() {
   const [hoveredName, setHoveredName] = useState<string | null>(null);
   const [flightProgress, setFlightProgress] = useState(() => Number(localStorage.getItem('flight_progress') || '70'));
 
+  const [luxuryParticles, setLuxuryParticles] = useState<any[]>([]);
+  const mainTitleRef = useRef<HTMLHeadingElement | null>(null);
+  const bgPhotoRef = useRef<HTMLImageElement | null>(null);
+
+  useEffect(() => {
+    if (!authorized) {
+      const list: any[] = [];
+      for (let i = 0; i < 20; i++) {
+        const left = `${Math.random() * 70}%`;
+        const bottom = '-2%';
+        const size = 1.5 + Math.random() * 2.5;
+        const duration = `${8 + Math.random() * 14}s`;
+        const delay = `${Math.random() * 10}s`;
+        const background = Math.random() > 0.6 ? 'rgba(212,175,55,0.6)' : 'rgba(196,30,42,0.5)';
+        list.push({ left, bottom, size, duration, delay, background });
+      }
+      setLuxuryParticles(list);
+    }
+  }, [authorized]);
+
+  useEffect(() => {
+    if (!authorized) {
+      let tx = 0, ty = 0, cx = 0, cy = 0;
+      let frameRequest: number;
+
+      const handleMouseMove = (e: MouseEvent) => {
+        tx = (e.clientX / window.innerWidth - 0.5) * 2;
+        ty = (e.clientY / window.innerHeight - 0.5) * 2;
+      };
+
+      document.addEventListener('mousemove', handleMouseMove);
+
+      const updatePosition = () => {
+        cx += (tx - cx) * 0.04;
+        cy += (ty - cy) * 0.04;
+        const bg = bgPhotoRef.current;
+        if (bg) {
+          bg.style.transform = `scale(1.08) translate(${cx * 12}px, ${cy * 8}px)`;
+        }
+        frameRequest = requestAnimationFrame(updatePosition);
+      };
+
+      updatePosition();
+
+      return () => {
+        document.removeEventListener('mousemove', handleMouseMove);
+        cancelAnimationFrame(frameRequest);
+      };
+    }
+  }, [authorized]);
+
+  useEffect(() => {
+    if (!authorized) {
+      const el = mainTitleRef.current;
+      if (!el) return;
+
+      const SCRAMBLE_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ';
+      let frameRequest: number;
+      let frame = 0;
+      let queue: any[] = [];
+      let resolvePromise: (() => void) | null = null;
+
+      const updateScramble = () => {
+        let out = '';
+        let completedCount = 0;
+        for (let i = 0; i < queue.length; i++) {
+          const item = queue[i];
+          if (frame >= item.end) {
+            completedCount++;
+            out += item.to;
+          } else if (frame >= item.start) {
+            if (!item.char || Math.random() < 0.28) {
+              item.char = SCRAMBLE_CHARS[Math.floor(Math.random() * SCRAMBLE_CHARS.length)];
+            }
+            out += `<span style="color:rgba(255,255,255,0.35)">${item.char}</span>`;
+          } else {
+            out += item.from;
+          }
+        }
+        
+        if (el) {
+          el.innerHTML = out;
+        }
+
+        if (completedCount === queue.length) {
+          if (resolvePromise) resolvePromise();
+        } else {
+          frameRequest = requestAnimationFrame(updateScramble);
+          frame++;
+        }
+      };
+
+      const scrambleToText = (targetText: string) => {
+        const currentText = el.innerText || '';
+        const maxLength = Math.max(currentText.length, targetText.length);
+        const promise = new Promise<void>((res) => {
+          resolvePromise = res;
+        });
+        cancelAnimationFrame(frameRequest);
+        queue = [];
+        frame = 0;
+        for (let i = 0; i < maxLength; i++) {
+          const start = Math.floor(Math.random() * 30);
+          const end = start + Math.floor(Math.random() * 35) + 15;
+          queue.push({
+            from: currentText[i] || '',
+            to: targetText[i] || '',
+            start,
+            end,
+            char: null
+          });
+        }
+        updateScramble();
+        return promise;
+      };
+
+      let isRunning = false;
+      const targetName = 'JIMMY';
+
+      const runInitial = () => {
+        if (isRunning) return;
+        isRunning = true;
+        el.classList.add('resolving');
+        scrambleToText(targetName).then(() => {
+          setTimeout(() => {
+            el.classList.remove('resolving');
+            isRunning = false;
+          }, 800);
+        });
+      };
+
+      const runCycle = () => {
+        if (isRunning) return;
+        isRunning = true;
+        const wordPool = ['JEOVA', 'ELOHIM', 'STRONG', 'JESUS', 'KADOSH', 'KING', 'שלום'];
+        const shuffled = [...wordPool].sort(() => Math.random() - 0.5);
+        const wordsToCycle = [shuffled[0], shuffled[1], targetName];
+        let index = 0;
+
+        const nextWord = () => {
+          if (index >= wordsToCycle.length) {
+            el.classList.remove('resolving');
+            isRunning = false;
+            return;
+          }
+          const word = wordsToCycle[index];
+          index++;
+          if (index === wordsToCycle.length) {
+            el.classList.add('resolving');
+          }
+          scrambleToText(word).then(() => {
+            setTimeout(nextWord, 500);
+          });
+        };
+
+        nextWord();
+      };
+
+      // Start the cycle
+      const initialTimeout = setTimeout(() => {
+        runInitial();
+        const cycleInterval = setInterval(runCycle, 15000);
+        return () => clearInterval(cycleInterval);
+      }, 2200);
+
+      return () => {
+        clearTimeout(initialTimeout);
+        cancelAnimationFrame(frameRequest);
+      };
+    }
+  }, [authorized]);
+
   const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
     const clickX = e.clientX - rect.left;
@@ -507,7 +679,7 @@ export default function App() {
     });
   };
 
-  const renderCalendarDays = () => {
+  const calendarDays = useMemo(() => {
     const date = currentDate;
     const firstDay = new Date(date.getFullYear(), date.getMonth(), 1).getDay();
     const totalDays = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
@@ -542,7 +714,7 @@ export default function App() {
         );
     }
     return days;
-  };
+  }, [currentDate, blockedDates, editMode]);
 
   useEffect(() => {
     if (mode === 'pulpito') {
@@ -753,6 +925,7 @@ export default function App() {
       localStorage.setItem('system_auth', 'true');
       setMoonMode(false);
       setShowSidebar(false);
+      setShowRightSidebar(false);
       setPassError(false);
     } else {
       setPassError(true);
@@ -776,77 +949,84 @@ export default function App() {
 
   if (!authorized) {
     return (
-      <div className="min-h-screen relative overflow-hidden bg-[#06070a]">
-        {/* Cinematic Animated Background Image (Ken Burns Zoom/Pan Movement) */}
-        <div 
-          className="absolute inset-0 bg-cover bg-center pointer-events-none select-none z-0 transform will-change-transform scale-[1.01] animate-ken-burns" 
-          style={{ backgroundImage: 'url("https://i.postimg.cc/nLPMStSW/file-000000004dfc720ea8c064164c28632e.png")' }}
-        />
-
-        {/* Ambient Drifting Clouds (Multi-layered moving foggy blurs to animate clouds) */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden z-[1] mix-blend-screen opacity-20">
-          <div className="absolute -top-[10%] -left-[20%] w-[60%] h-[50%] bg-white rounded-full blur-[140px] animate-fog-drift-slow" />
-          <div className="absolute top-[30%] -right-[15%] w-[55%] h-[60%] bg-cyan-400 rounded-full blur-[160px] animate-fog-drift-medium" />
-          <div className="absolute -bottom-[15%] left-[10%] w-[70%] h-[45%] bg-white rounded-full blur-[180px] animate-fog-drift-fast" />
+      <div className="min-h-screen relative overflow-hidden bg-[#050505] text-white">
+        {/* Cinematic Animated Background Image with React Parallax Response */}
+        <div className="bg-layer-luxury" aria-hidden="true">
+          <img 
+            ref={bgPhotoRef}
+            src="https://z-cdn-media.chatglm.cn/files/2bc12d5c-ebd1-40e6-8163-b932dcac376d.jpg?auth_key=1880721171-2bb0faa40a0d498f9d87989d84254199-0-afad9fe410a0c084637ce7729aca626f" 
+            alt="Jimmy Landscape" 
+            className="bg-photo-luxury select-none pointer-events-none" 
+          />
         </div>
 
-        {/* Divine Sparkles & Floating Light Particles rising through the clouds */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden z-[2] select-none">
-          <div className="absolute bottom-0 left-[12%] w-[2px] h-[2px] bg-white rounded-full animate-particle-float-1" />
-          <div className="absolute bottom-0 left-[28%] w-[2.5px] h-[2.5px] bg-cyan-300 rounded-full animate-particle-float-2 animate-pulse" />
-          <div className="absolute bottom-0 left-[47%] w-[1.5px] h-[1.5px] bg-white rounded-full animate-particle-float-3" />
-          <div className="absolute bottom-0 left-[62%] w-[2px] h-[2px] bg-white rounded-full animate-particle-float-4" />
-          <div className="absolute bottom-0 left-[78%] w-[3px] h-[3px] bg-white rounded-full animate-particle-float-5 animate-pulse" />
-          <div className="absolute bottom-0 left-[88%] w-[2px] h-[2px] bg-cyan-200 rounded-full animate-particle-float-6" />
+        {/* Cinematic Underlays, scanning lines, grid */}
+        <div className="geo-grid-luxury" aria-hidden="true" />
+        <div className="modern-overlay-luxury" aria-hidden="true" />
+        <div className="geo-ring-luxury geo-ring-luxury-1" aria-hidden="true" />
+        <div className="geo-ring-luxury geo-ring-luxury-2" aria-hidden="true" />
+        <div className="geo-ring-luxury geo-ring-luxury-3" aria-hidden="true" />
+
+        {/* Dynamic Spark particles from React state */}
+        <div className="particles-luxury" aria-hidden="true">
+          {luxuryParticles.map((p, idx) => (
+            <div 
+              key={`p-lux-${idx}`}
+              className="dot-particle-luxury"
+              style={{
+                left: p.left,
+                bottom: p.bottom,
+                width: `${p.size}px`,
+                height: `${p.size}px`,
+                backgroundColor: p.background,
+                animationDuration: p.duration,
+                animationDelay: p.delay,
+              }}
+            />
+          ))}
         </div>
 
-        {/* Ambient Grid of Hebrew & Greek Names of God Letters (Luxurious, Interactive & Flickering) */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden z-[3] select-none">
-          {DEUS_NAMES_LETTERS.map((letter, idx) => {
-            const isHovered = hoveredName === letter.name;
-            const isAnyHovered = hoveredName !== null;
-            const style = {
-              top: letter.top,
-              left: letter.left,
-              right: letter.right,
-              '--glow-color': letter.color,
-              color: letter.color,
-            } as React.CSSProperties;
+        <div className="noise-luxury" aria-hidden="true" />
+        <div className="scanlines-luxury" aria-hidden="true" />
+        
+        {/* Luminous Glow Corners */}
+        <div className="corner-light-luxury tl" aria-hidden="true" />
+        <div className="corner-light-luxury tr" aria-hidden="true" />
+        <div className="corner-light-luxury bl" aria-hidden="true" />
+        <div className="corner-light-luxury br" aria-hidden="true" />
+        <div className="left-edge-luxury" aria-hidden="true" />
 
-            return (
-              <div
-                key={`deus-l-${idx}`}
-                onMouseEnter={() => setHoveredName(letter.name)}
-                onMouseLeave={() => setHoveredName(null)}
-                style={style}
-                className={cn(
-                  "absolute pointer-events-auto cursor-help transition-all duration-500 font-orbitron font-extrabold text-[15px] sm:text-[18px] tracking-wider select-none flex flex-col items-center justify-center group",
-                  letter.animClass,
-                  isHovered ? "scale-[1.25] brightness-[1.5] z-[30]" : isAnyHovered ? "opacity-20 scale-[0.85] saturate-[0.3]" : "opacity-65"
-                )}
-              >
-                {/* Visual Glow Aura behind individual letter */}
-                <span 
-                  className="absolute w-8 h-8 rounded-full blur-[14px] opacity-25 group-hover:opacity-80 transition-all duration-500"
-                  style={{ backgroundColor: letter.color }} 
-                />
-                
-                {/* The Letter Itself */}
-                <span className="relative z-[10] transition-transform duration-300">
-                  {letter.char}
-                </span>
+        {/* Systems Indicators & Verses */}
+        <div className="sys-init-luxury font-space-grotesk font-bold">JIMMY// CONFERENCISTA</div>
+        <span className="deco-verse-luxury bv1 font-space-grotesk font-medium">Sl 91:1 — Aquele que habita no abrigo do Altíssimo</span>
+        <span className="deco-verse-luxury bv2 font-space-grotesk font-medium">Sl 91:11 — Aos seus anjos dará ordem a teu respeito, para te guardarem</span>
 
-                {/* Secret Meaning Popup Tooltip on Hover */}
-                <div 
-                  className="absolute bottom-full mb-2 bg-black/90 text-white font-rajdhani border border-white/20 px-3 py-1.5 rounded-lg text-[9px] uppercase tracking-[2px] opacity-0 group-hover:opacity-100 scale-75 group-hover:scale-100 transition-all duration-300 z-[50] pointer-events-none whitespace-nowrap shadow-[0_4px_12px_rgba(0,0,0,0.5)]"
-                >
-                  <p className="font-bold text-neon-cyan leading-tight">{letter.name === 'ALPHA_OMEGA' ? 'Alfa e Ômega' : letter.name}</p>
-                  <p className="text-white/60 text-[8px] mt-0.5 font-sans lowercase">{letter.meaning}</p>
-                  <p className="text-white/40 text-[7px] mt-1 tracking-widest leading-none font-mono">[{letter.lang}]</p>
-                </div>
-              </div>
-            );
-          })}
+        {/* Centered Luxury Presentation Title with text scrambling algorithm */}
+        <div className="center-content-luxury">
+          <div className="title-block-luxury">
+            <div className="deco-text-luxury bottom-deco font-space-grotesk font-black text-rose-600/80">JESUS// KING</div>
+            <h1 ref={mainTitleRef} className="main-title-luxury text-white transition-all font-outfit select-none" id="mainTitle">
+              -----
+            </h1>
+            <span className="title-underline-luxury" />
+            <p className="sub-jp-luxury tracking-[12px] font-medium text-amber-500/80"> אֱלֹהִים </p>
+          </div>
+        </div>
+
+        {/* Coordinates Lines */}
+        <div className="line-h-luxury" aria-hidden="true" />
+        <div className="line-v-luxury" aria-hidden="true" />
+
+        {/* Top Active Tag */}
+        <div className="top-tag-luxury select-none pointer-events-none">
+          <div className="live-dot" />
+          <span className="font-outfit text-white">Active</span>
+        </div>
+
+        {/* Location Corner Tag */}
+        <div className="corner-tag-luxury select-none pointer-events-none">
+          <span className="footer-year text-neutral-200">2026</span>
+          <span className="footer-main text-neutral-200">CONFERENCISTA &middot; JOINVILLE</span>
         </div>
 
         <div className={cn("fixed inset-0 transition-all duration-1000 pointer-events-none z-[3]", moonMode ? "bg-black/85" : "bg-transparent")} />
@@ -1044,8 +1224,7 @@ export default function App() {
             </>
           )}
         </AnimatePresence>
-
-        {/* Elegant Menu Drawer Toggle in place of 'Minha Agenda' */}
+         {/* Elegant Menu Drawer Toggle in place of 'Minha Agenda' */}
         <button 
           onClick={() => setShowRightSidebar(!showRightSidebar)}
           className={cn(
@@ -1061,8 +1240,8 @@ export default function App() {
             )}
           </div>
           <div className="flex flex-col select-none">
-            <span className="text-[7px] text-[#00f5ff] font-extrabold uppercase tracking-[0.15em] leading-none mb-0.5 animate-pulse">Minha</span>
-            <span className="text-white text-[9px] font-orbitron font-extrabold uppercase tracking-[1.5px] leading-none">Agenda</span>
+            <span className="text-[7px] text-[#00f5ff] font-extrabold uppercase tracking-[0.14em] leading-none mb-0.5 animate-pulse">MENU & LOGIN</span>
+            <span className="text-white text-[9px] font-orbitron font-extrabold uppercase tracking-[1.3px] leading-none">CONFERENCISTA</span>
           </div>
           {/* Glowing cursor ring helper on hover */}
           <span className="absolute -inset-0.5 rounded-xl bg-gradient-to-r from-[#00f5ff]/20 to-[#ffffff]/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
@@ -1081,18 +1260,23 @@ export default function App() {
                 className="fixed inset-0 bg-black/25 backdrop-blur-xs z-[1000]"
               />
 
-              {/* Gaveta Sanfonada Curtinha e Compacta */}
+              {/* Gaveta Sanfonada Modificada: Wider and including integrated Login Section */}
               <motion.div 
                 initial={{ opacity: 0, height: 0, scaleY: 0.8 }}
                 animate={{ opacity: 1, height: 'auto', scaleY: 1 }}
                 exit={{ opacity: 0, height: 0, scaleY: 0.8 }}
                 transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
                 style={{ originY: 0 }}
-                className="fixed right-5 top-[59px] w-[175px] bg-[#0c0c0e]/95 backdrop-blur-2xl border border-white/10 p-2.5 rounded-2xl z-[1000] flex flex-col gap-1.5 shadow-[0_15px_35px_rgba(0,0,0,0.85),0_0_15px_rgba(0,245,255,0.08)] overflow-hidden"
+                className={cn(
+                  "fixed right-5 top-[59px] w-[235px] bg-[#0c0c0e]/95 backdrop-blur-2xl border p-3.5 rounded-2xl z-[1000] flex flex-col gap-3 shadow-[0_15px_35px_rgba(0,0,0,0.85),0_0_20px_rgba(0,245,255,0.12)] overflow-hidden transition-all duration-300",
+                  passError 
+                    ? "animate-card-shake border-red-500/80 shadow-[0_0_35px_rgba(239,68,68,0.4)] bg-red-950/20" 
+                    : "border-white/10"
+                )}
               >
                 {/* Decorative Accordion Bellow Lines */}
-                <div className="flex items-center justify-between px-1 mb-1 border-b border-white/5 pb-1">
-                  <span className="text-[7px] text-white/40 font-mono tracking-[0.2em] uppercase font-bold">// GAVETA AGENDA</span>
+                <div className="flex items-center justify-between px-1 border-b border-white/5 pb-1.5">
+                  <span className="text-[7px] text-white/40 font-mono tracking-[0.2em] uppercase font-bold">// MENU PORTAL</span>
                   <div className="flex gap-[1.5px]">
                     <span className="w-[1.5px] h-1 bg-[#00f5ff]/30 rounded-full animate-pulse" />
                     <span className="w-[1.5px] h-1.5 bg-[#00f5ff]/50 rounded-full animate-pulse [animation-delay:0.1s]" />
@@ -1100,22 +1284,22 @@ export default function App() {
                   </div>
                 </div>
 
-                <div className="flex flex-col gap-2">
+                <div className="grid grid-cols-3 gap-1.5">
                   {/* WhatsApp Button inside Dropdown */}
                   <button 
                     onClick={() => {
                       setShowWhatsAppForm(true);
                       setShowRightSidebar(false);
                     }}
-                    className="w-full group flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-black/40 border border-green-500/20 transition-all duration-200 hover:bg-green-500/5 active:scale-95 cursor-pointer outline-none select-none text-left shadow-[0_0_10px_rgba(34,197,94,0.03)] hover:border-green-400/40"
+                    className="group flex flex-col items-center justify-center gap-1.5 p-2 rounded-xl bg-black/40 border border-green-500/20 transition-all duration-200 hover:bg-green-500/5 active:scale-95 cursor-pointer outline-none select-none text-center shadow-[0_0_10px_rgba(34,197,94,0.03)] hover:border-green-400/40"
                   >
-                    <div className="relative w-3.5 h-3.5 rounded-full flex items-center justify-center bg-green-500/10 text-green-400 shrink-0">
+                    <div className="relative w-5 h-5 rounded-full flex items-center justify-center bg-green-500/10 text-green-400 shrink-0">
                       <span className="absolute inset-0 rounded-full bg-green-400 opacity-15 blur-[1px] animate-pulse" />
-                      <MessageCircle className="w-2.5 h-2.5 fill-current relative z-10" />
+                      <MessageCircle className="w-3 h-3 fill-current relative z-10" />
                     </div>
-                    <div className="flex flex-col select-none">
+                    <div className="flex flex-col items-center select-none">
                       <span className="text-[5.5px] text-green-300 font-extrabold uppercase tracking-[0.1em] leading-none mb-0.5">Falar</span>
-                      <span className="text-white text-[8px] font-orbitron font-extrabold uppercase tracking-[1px] leading-none">WhatsApp</span>
+                      <span className="text-white text-[7.5px] font-orbitron font-extrabold uppercase tracking-[0.5px] leading-none">WhatsApp</span>
                     </div>
                   </button>
 
@@ -1126,19 +1310,19 @@ export default function App() {
                       setShowRightSidebar(false);
                     }}
                     className={cn(
-                      "w-full group flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-black/40 border border-white/5 transition-all duration-200 hover:bg-white/5 active:scale-95 cursor-pointer outline-none select-none text-left",
-                      moonMode ? "border-[#00f5ff]/45 bg-cyan-950/15" : "hover:border-[#00f5ff]/30"
+                      "group flex flex-col items-center justify-center gap-1.5 p-2 rounded-xl bg-black/40 border transition-all duration-200 hover:bg-white/5 active:scale-95 cursor-pointer outline-none select-none text-center",
+                      moonMode ? "border-[#00f5ff]/45 bg-cyan-950/15" : "border-white/5 hover:border-[#00f5ff]/30"
                     )}
                   >
                     <div className={cn(
-                      "w-3.5 h-3.5 rounded-full flex items-center justify-center transition-all duration-700 text-[8px] bg-white/5 border border-white/5 shrink-0",
+                      "w-5 h-5 rounded-full flex items-center justify-center transition-all duration-700 text-[10px] bg-white/5 border border-white/5 shrink-0",
                       moonMode && "rotate-[360deg] bg-cyan-500/10 border-[#00f5ff]/20"
                     )}>
                       <span className="relative z-10">{moonMode ? '🌕' : '🌙'}</span>
                     </div>
-                    <div className="flex flex-col select-none">
+                    <div className="flex flex-col items-center select-none">
                       <span className="text-[5.5px] text-[#00f5ff] font-extrabold uppercase tracking-[0.1em] leading-none mb-0.5">Consultar</span>
-                      <span className="text-white text-[8px] font-orbitron font-extrabold uppercase tracking-[1px] leading-none">Agenda</span>
+                      <span className="text-white text-[7.5px] font-orbitron font-extrabold uppercase tracking-[0.5px] leading-none">Agenda</span>
                     </div>
                   </button>
 
@@ -1149,25 +1333,121 @@ export default function App() {
                       setShowRightSidebar(false);
                     }}
                     className={cn(
-                      "w-full group flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-black/40 border border-white/5 transition-all duration-200 hover:bg-white/5 active:scale-95 cursor-pointer outline-none select-none text-left",
-                      showSidebar ? "border-[#ffaa00]/45 bg-amber-950/15" : "hover:border-[#ffaa00]/30"
+                      "group flex flex-col items-center justify-center gap-1.5 p-2 rounded-xl bg-black/40 border transition-all duration-200 hover:bg-white/5 active:scale-95 cursor-pointer outline-none select-none text-center",
+                      showSidebar ? "border-[#ffaa00]/45 bg-amber-950/15" : "border-white/5 hover:border-[#ffaa00]/30"
                     )}
                   >
                     <div className={cn(
-                      "w-3.5 h-3.5 rounded-full flex items-center justify-center transition-all duration-700 text-[8px] bg-white/5 border border-white/5 shrink-0 text-amber-400",
+                      "w-5 h-5 rounded-full flex items-center justify-center transition-all duration-700 text-[10px] bg-white/5 border border-white/5 shrink-0 text-amber-400",
                       showSidebar && "rotate-[360deg] bg-amber-500/10 border-[#ffaa00]/20"
                     )}>
-                      <Sparkles className="w-2.5 h-2.5" />
+                      <Sparkles className="w-3 h-3" />
                     </div>
-                    <div className="flex flex-col select-none">
+                    <div className="flex flex-col items-center select-none">
                       <span className="text-[5.5px] text-amber-400 font-extrabold uppercase tracking-[0.1em] leading-none mb-0.5 font-bold">Próximo</span>
-                      <span className="text-white text-[8px] font-orbitron font-extrabold uppercase tracking-[1px] leading-none">Evento</span>
+                      <span className="text-white text-[7.5px] font-orbitron font-extrabold uppercase tracking-[0.5px] leading-none">Evento</span>
                     </div>
                   </button>
                 </div>
 
-                <div className="mt-1 pt-1 border-t border-white/5 text-center">
-                  <span className="text-[6px] font-mono tracking-widest text-white/15 uppercase">DEUS É FIEL</span>
+                {/* Login Form Formatted Specifically for Sidebar Panel */}
+                <div className="border-t border-white/5 pt-3.5 mt-1 flex flex-col gap-2.5">
+                  {authorized ? (
+                    <div className="space-y-2 px-0.5">
+                      <div className="flex items-center gap-1.5 px-1 pb-1">
+                        <div className="w-4 h-4 rounded-full bg-[#00f5ff]/10 border border-[#00f5ff]/30 flex items-center justify-center text-[8px] text-[#00f5ff] font-bold">
+                          ✓
+                        </div>
+                        <div className="flex flex-col flex-1">
+                          <span className="text-[7px] text-white/40 uppercase font-mono tracking-[0.14em] leading-none">
+                            Autenticado
+                          </span>
+                          <span className="text-[#00f5ff] text-[9.5px] font-orbitron font-extrabold uppercase tracking-[1.2px] leading-none mt-0.5">
+                            MINISTRO ATIVO
+                          </span>
+                        </div>
+                      </div>
+                      
+                      <button 
+                        onClick={() => {
+                          handleLogout();
+                          setShowRightSidebar(false);
+                        }}
+                        className="w-full py-2.5 px-3 rounded-xl relative overflow-hidden font-orbitron font-extrabold text-[9px] uppercase tracking-[2px] transition-all duration-300 active:scale-[0.96] select-none text-white bg-red-950/40 border border-red-500/20 hover:bg-red-500/10 hover:border-red-500/40 cursor-pointer shadow-md"
+                      >
+                        <span className="relative z-10 flex items-center justify-center gap-1.5">
+                          <span>DESCONECTAR</span>
+                          <span className="text-[9px] opacity-80">✖</span>
+                        </span>
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="flex items-center gap-1.5 px-1">
+                        <LogIn className={cn("w-3.5 h-3.5", passError ? "text-red-400" : "text-[#00f5ff]")} />
+                        <div className="flex flex-col flex-1">
+                          <span className="text-[7px] text-white/40 uppercase font-mono tracking-[0.14em] leading-none">
+                            {passError ? "Acesso Negado" : "Acesso Restrito"}
+                          </span>
+                          <span className={cn("text-[9px] font-orbitron font-extrabold uppercase tracking-[1.5px] leading-none mt-0.5", passError ? "text-red-400 animate-pulse" : "text-[#00f5ff]")}>
+                            {passError ? "SENHA INCORRETA" : "MINISTRO LOGIN"}
+                          </span>
+                        </div>
+                      </div>
+
+                      <form onSubmit={handleLogin} className="space-y-2 px-0.5">
+                        <div className="relative group/input">
+                          <input 
+                            type="password"
+                            value={passInput}
+                            onChange={(e) => setPassInput(e.target.value)}
+                            placeholder="SENHA..."
+                            className={cn(
+                              "w-full p-2.5 rounded-xl border bg-black/80 text-white font-rajdhani outline-none text-center text-xs tracking-[4px] uppercase transition-all duration-300",
+                              passError 
+                                ? "border-red-500/40 focus:border-red-500 text-red-300 placeholder-red-500/50" 
+                                : "border-white/10 focus:border-[#00f5ff]/70 focus:shadow-[0_0_12px_rgba(0,245,255,0.25)]"
+                            )}
+                          />
+                          
+                          {/* Visual Progress Bar Flow Indicator */}
+                          <div 
+                            className={cn(
+                              "absolute bottom-0 left-1/2 -translate-x-1/2 h-[1.5px] transition-all duration-500 rounded-full",
+                              passInput.length > 0 ? "w-[80%] bg-[#00f5ff]" : "w-0 bg-transparent"
+                            )} 
+                          />
+                        </div>
+
+                        <button 
+                          type="submit"
+                          disabled={!passInput}
+                          className={cn(
+                            "w-full py-2.5 px-4 rounded-xl relative overflow-hidden font-orbitron font-extrabold text-[10px] uppercase tracking-[2.5px] transition-all duration-300 active:scale-[0.96] select-none group/btn shadow-md",
+                            passInput
+                              ? "text-black bg-white hover:text-white cursor-pointer"
+                              : "text-white/30 bg-white/5 border border-white/10 pointer-events-none"
+                          )}
+                        >
+                          {/* Hover Slide BG */}
+                          {passInput && (
+                            <span 
+                              className="absolute inset-x-0 top-0 bottom-0 luxury-progress-track opacity-0 group-hover/btn:opacity-100 transition-opacity duration-500" 
+                            />
+                          )}
+                          
+                          <span className="relative z-10 flex items-center justify-center gap-1.5">
+                            <span>CONFIRMAR</span>
+                            <span className="text-[10px] opacity-80 group-hover/btn:translate-x-1 transition-transform duration-300">➜</span>
+                          </span>
+                        </button>
+                      </form>
+                    </>
+                  )}
+                </div>
+
+                <div className="mt-1 pt-1.5 border-t border-white/5 text-center">
+                  <span className="text-[6px] font-mono tracking-widest text-white/15 uppercase">SISTEMA SEGURO</span>
                 </div>
               </motion.div>
             </>
@@ -1320,7 +1600,7 @@ export default function App() {
                         {d}
                       </div>
                     ))}
-                    {renderCalendarDays()}
+                    {calendarDays}
                   </div>
 
                   {/* Minimalist Visual Legend / Footer info */}
@@ -1344,86 +1624,8 @@ export default function App() {
           )}
         </AnimatePresence>
 
-        <div className="flex items-end justify-center min-h-screen pb-14 px-4 z-10">
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.95, y: 30 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            className={cn(
-              "w-full max-w-[265px] pt-3.5 pb-5 px-5 rounded-[24px] backdrop-blur-[24px] border transition-all duration-500 shadow-2xl text-white text-center z-10",
-              passError 
-                ? "animate-card-shake border-red-500/80 bg-red-950/20 shadow-[0_0_35px_rgba(239,68,68,0.4)]" 
-                : "luxury-card-glow bg-black/45 border-white/20"
-            )}
-          >
-            <h2 className="text-lg font-bold font-orbitron tracking-[3px] uppercase bg-gradient-to-r from-white via-cyan-300 to-white bg-clip-text text-transparent">
-              {passError ? "Acesso Negado" : "Conferencista Jimmy"}
-            </h2>
-            
-            <p className="text-[8px] font-mono tracking-[0.25em] text-white/50 uppercase mb-4 mt-0.5">
-              {passError ? "// Senha incorreta" : "// Credenciais do Portal"}
-            </p>
-
-            <form onSubmit={handleLogin} className="space-y-3.5">
-              <div className="relative group/input">
-                <input 
-                  type="password"
-                  value={passInput}
-                  onChange={(e) => setPassInput(e.target.value)}
-                  placeholder="DIGITE A SENHA..."
-                  className={cn(
-                    "w-full p-3 rounded-lg border bg-black/60 text-white font-rajdhani outline-none text-center text-xs tracking-[4px] uppercase transition-all duration-300",
-                    passError 
-                      ? "border-red-500/30 focus:border-red-500 text-red-300 placeholder-red-500/50" 
-                      : "border-white/10 focus:border-[#00f5ff]/70 focus:shadow-[0_0_15px_rgba(0,245,255,0.30)]"
-                  )}
-                />
-                
-                {/* Visual feedback glow bar beneath input */}
-                <div 
-                  className={cn(
-                    "absolute bottom-0 left-1/2 -translate-x-1/2 h-[2px] transition-all duration-500 rounded-full",
-                    passInput.length > 0 ? "w-[80%] bg-[#00f5ff]" : "w-0 bg-transparent"
-                  )} 
-                />
-              </div>
-
-              <div className="pt-1">
-                <button 
-                  type="submit"
-                  disabled={!passInput}
-                  className={cn(
-                    "w-full py-3 px-5 rounded-lg relative overflow-hidden font-orbitron font-extrabold text-[10px] uppercase tracking-[3px] transition-all duration-300 active:scale-[0.96] active:brightness-90 select-none group/btn shadow-lg",
-                    passInput
-                      ? "text-black bg-white hover:text-white cursor-pointer"
-                      : "text-white/30 bg-white/5 border border-white/10 pointer-events-none"
-                  )}
-                >
-                  {/* Dynamic sliding gradient layer visible only on hover */}
-                  {passInput && (
-                    <span 
-                      className="absolute inset-x-0 top-0 bottom-0 luxury-progress-track opacity-0 group-hover/btn:opacity-100 transition-opacity duration-500" 
-                    />
-                  )}
-
-                  <span className="relative z-10 flex items-center justify-center gap-2">
-                    <span>ENTRAR</span>
-                    <span className="text-[11px] opacity-80 group-hover/btn:translate-x-1 transition-transform duration-300">➜</span>
-                  </span>
-
-                  {/* Reactive halo glow for hover cursor feedback */}
-                  {passInput && (
-                    <span className="absolute -inset-1 rounded-lg bg-gradient-to-r from-[#00f5ff] via-[#ffffff] to-[#ffee00] opacity-0 group-hover/btn:opacity-40 blur-[10px] transition-all duration-500 -z-10" />
-                  )}
-                </button>
-              </div>
-            </form>
-
-            <div className="mt-4 text-[7px] font-mono tracking-widest text-white/30 uppercase">
-              SEGURO & CRIPTOGRAFADO
-            </div>
-          </motion.div>
-        </div>
+        {/* Purely Artistic Luxurious Minimalist Footer Signature empty container */}
+        <div className="flex flex-col items-center justify-end min-h-screen pb-16 px-4 z-10 pointer-events-none" />
       </div>
     );
   }
