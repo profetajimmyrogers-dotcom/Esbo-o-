@@ -40,6 +40,7 @@ import {
   ChevronRight,
   Database,
   Clock,
+  Plane,
   Sparkles,
   Radio,
   Tag,
@@ -305,14 +306,74 @@ export default function App() {
   const [editMode, setEditMode] = useState(false);
   const [blockedDates, setBlockedDates] = useState<string[]>([]);
   const defaultFields = {
-    id1: 'LED',
-    id2: 'TLL',
-    id3: 'St. Petersburg',
-    id4: 'JAN 13, 6:15 AM',
-    id5: 'Tallinn',
-    id6: 'JAN 13, 12:35 PM'
+    id1: '48',
+    id2: '27',
+    id3: 'VIVA LARES',
+    id4: 'SÁB, 19:30',
+    id5: 'BETEL',
+    id6: 'SÁB, 19:30',
+    id7: 'CONFERENCISTA // JIMMY ROGERS',
+    id8: '20/06',
+    id9: '2026-06-20T19:30',
+    id10: 'CULT 19:30'
   };
   const [systemFields, setSystemFields] = useState<Record<string, string>>(defaultFields);
+
+  const [brasiliaTime, setBrasiliaTime] = useState('--:--:--');
+  const [countdownText, setCountdownText] = useState('--D --H');
+  const [alertText, setAlertText] = useState('MINISTRAÇÃO EM:');
+  const [alertColor, setAlertColor] = useState('#ff9100');
+
+  useEffect(() => {
+    const tick = () => {
+      const now = new Date();
+      let spDate = now;
+      try {
+        const spStr = now.toLocaleString("en-US", { timeZone: "America/Sao_Paulo" });
+        spDate = new Date(spStr);
+      } catch (err) {
+        // Fallback or ignore
+      }
+      
+      const hh = String(spDate.getHours()).padStart(2, '0');
+      const mm = String(spDate.getMinutes()).padStart(2, '0');
+      const ss = String(spDate.getSeconds()).padStart(2, '0');
+      setBrasiliaTime(`${hh}:${mm}:${ss}`);
+
+      const targetIso = systemFields.id9 || '2026-06-20T19:30';
+      let targetDate = new Date();
+      try {
+        if (targetIso.includes('T')) {
+          const parts = targetIso.split('T');
+          const d = parts[0].split('-');
+          const t = parts[1].split(':');
+          targetDate = new Date(Number(d[0]), Number(d[1]) - 1, Number(d[2]), Number(t[0]), Number(t[1]) || 0, 0);
+        } else {
+          targetDate = new Date(targetIso);
+        }
+      } catch (e) {
+        // Fallback
+      }
+
+      const diffMs = targetDate.getTime() - spDate.getTime();
+      if (diffMs <= 0) {
+        setCountdownText("EM CULTO");
+        setAlertText("EVENTO INICIADO");
+        setAlertColor("#9ccc00");
+      } else {
+        setAlertText("MINISTRAÇÃO EM:");
+        setAlertColor("#ff9100");
+        const days = Math.floor(diffMs / 86400000);
+        const hrs = Math.floor((diffMs % 86400000) / 3600000);
+        const p2 = (n: number) => n < 10 ? '0' + n : '' + n;
+        setCountdownText(days > 0 ? `-${days}D ${p2(hrs)}H` : `-${p2(hrs)}H`);
+      }
+    };
+
+    tick();
+    const interval = setInterval(tick, 1000);
+    return () => clearInterval(interval);
+  }, [systemFields.id9]);
   const [currentDate, setCurrentDate] = useState(() => new Date());
 
   // WhatsApp Lead State
@@ -1110,22 +1171,154 @@ export default function App() {
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95, y: -20 }}
                   transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                  className="pointer-events-auto p-5 md:p-6 rounded-[24px] w-full max-w-[320px] bg-[#0c0c0e]/95 border border-white/10 shadow-[0_0_50px_rgba(255,170,0,0.12)] backdrop-blur-2xl relative overflow-visible"
+                  className="pointer-events-auto p-4 md:p-5 rounded-[24px] w-full max-w-[440px] bg-[#0c0c0e]/95 border border-white/10 shadow-[0_0_50px_rgba(255,170,0,0.12)] backdrop-blur-2xl relative overflow-visible"
                 >
+                  <style>{`
+                    .evt-custom-track {
+                      flex: 1;
+                      height: 38px;
+                      background: #0f1011;
+                      border-radius: 19px;
+                      padding: 3px;
+                      box-shadow: inset 0 3px 12px rgba(0,0,0,0.95), 0 1px 1px rgba(255,255,255,0.03);
+                      position: relative;
+                      display: flex;
+                      align-items: center;
+                      border: 1px solid rgba(255,255,255,0.01);
+                      overflow: hidden;
+                    }
+                    .evt-custom-fill {
+                      height: 100%;
+                      border-radius: 16px;
+                      background: linear-gradient(90deg, #81a415 0%, #aee30d 100%);
+                      position: relative;
+                      display: flex;
+                      align-items: center;
+                      justify-content: flex-end;
+                      padding-right: 3px;
+                      min-width: 32px;
+                      box-shadow: 0 0 20px rgba(174,227,13,0.5);
+                      transition: width 0.8s cubic-bezier(0.1,0.8,0.25,1);
+                      overflow: hidden;
+                    }
+                    .evt-custom-fill::before {
+                      content: '';
+                      position: absolute;
+                      inset: 0;
+                      background: repeating-linear-gradient(90deg, transparent, transparent 10px, rgba(255,255,255,0.45) 15px, rgba(255,255,255,0.6) 20px, rgba(255,255,255,0.45) 25px, transparent 30px);
+                      background-size: 150px 100%;
+                      animation: evtElectricSparks 1s infinite linear;
+                      filter: drop-shadow(0 0 10px rgba(255,255,255,0.9));
+                    }
+                    @keyframes evtElectricSparks {
+                      0% { background-position: -150px 0; }
+                      100% { background-position: 150% 0; }
+                    }
+                    .evt-custom-fill::after {
+                      content: '';
+                      position: absolute;
+                      inset: 0;
+                      background: radial-gradient(circle at var(--evt-x, 50%) var(--evt-y, 50%), rgba(255,255,255,0.8), transparent 30%);
+                      mix-blend-mode: overlay;
+                      opacity: 0.9;
+                      animation: evtLightningCrack 1.8s infinite steps(2);
+                    }
+                    @keyframes evtLightningCrack {
+                      0%,100%{--evt-x:10%;--evt-y:20%;opacity:.2}
+                      25%{--evt-x:80%;--evt-y:70%;opacity:.9}
+                      50%{--evt-x:40%;--evt-y:30%;opacity:.4}
+                      75%{--evt-x:95%;--evt-y:10%;opacity:.85}
+                    }
+                    .evt-custom-plane-btn {
+                      width: 26px;
+                      height: 26px;
+                      background: #ffffff;
+                      border-radius: 50%;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      box-shadow: 0 4px 14px rgba(0,0,0,0.55), 0 0 15px rgba(174,227,13,0.8);
+                      z-index: 2;
+                      flex-shrink: 0;
+                      border: 1px solid rgba(174,227,13,0.4);
+                      animation: evtPlaneThrob 1.5s ease-in-out infinite alternate;
+                    }
+                    @keyframes evtPlaneThrob {
+                      0%{transform:scale(1);box-shadow:0 4px 14px rgba(0,0,0,0.55),0 0 10px rgba(174,227,13,0.6)}
+                      100%{transform:scale(1.08);box-shadow:0 4px 16px rgba(0,0,0,0.55),0 0 25px rgba(174,227,13,1)}
+                    }
+                    /* Custom Airport LED Dot Matrix Grid Overlay Styles */
+                    .evt-led-big-white {
+                      font-family: "Outfit", sans-serif !important;
+                      font-size: 34px !important;
+                      font-weight: 900 !important;
+                      letter-spacing: 1px !important;
+                      color: #ffffff !important;
+                      line-height: 1 !important;
+                      position: relative !important;
+                      display: inline-block !important;
+                      text-shadow: 0 0 10px rgba(255, 255, 255, 0.4), 0 0 20px rgba(255, 255, 255, 0.15) !important;
+                    }
+                    .evt-led-big-white::after {
+                      content: "";
+                      position: absolute;
+                      inset: 0;
+                      background-image: radial-gradient(rgba(12,12,14,0.95) 40%, transparent 45%) !important;
+                      background-size: 2.2px 2.2px !important;
+                      pointer-events: none;
+                      z-index: 10;
+                    }
+                    .evt-led-small-dim {
+                      font-family: "Outfit", sans-serif !important;
+                      font-size: 11px !important;
+                      font-weight: 700 !important;
+                      letter-spacing: 1.5px !important;
+                      color: rgba(255, 255, 255, 0.38) !important;
+                      text-transform: lowercase !important;
+                      line-height: 1 !important;
+                      position: relative !important;
+                      display: inline-block !important;
+                      text-shadow: 0 0 5px rgba(255, 255, 255, 0.1) !important;
+                    }
+                    .evt-led-small-dim::after {
+                      content: "";
+                      position: absolute;
+                      inset: 0;
+                      background-image: radial-gradient(rgba(12,12,14,0.95) 40%, transparent 45%) !important;
+                      background-size: 1.4px 1.4px !important;
+                      pointer-events: none;
+                      z-index: 10;
+                    }
+                    .evt-led-big-green {
+                      font-family: "Outfit", sans-serif !important;
+                      font-size: 18px !important;
+                      font-weight: 950 !important;
+                      letter-spacing: 1px !important;
+                      color: #ccff00 !important;
+                      line-height: 1 !important;
+                      position: relative !important;
+                      display: inline-block !important;
+                      text-shadow: 0 0 12px rgba(204, 255, 0, 0.65), 0 0 20px rgba(204, 255, 0, 0.25) !important;
+                    }
+                    .evt-led-big-green::after {
+                      content: "";
+                      position: absolute;
+                      inset: 0;
+                      background-image: radial-gradient(rgba(12,12,14,0.95) 43%, transparent 48%) !important;
+                      background-size: 2.4px 2.4px !important;
+                      pointer-events: none;
+                      z-index: 10;
+                    }
+                  `}</style>
+
                   {/* Close button inside modal container */}
                   <button 
                     onClick={() => setShowSidebar(false)}
-                    className="absolute top-4 right-4 p-1.5 text-white/50 hover:text-white transition-colors cursor-pointer rounded-full hover:bg-white/5 border border-transparent outline-none"
+                    className="absolute top-4 right-4 p-1.5 text-white/50 hover:text-white transition-colors cursor-pointer rounded-full hover:bg-white/5 border border-transparent outline-none z-20"
                     title="Fechar Evento"
                   >
                     <X className="w-4 h-4" />
                   </button>
-
-                  <div 
-                    onClick={() => setShowMiniLogin(!showMiniLogin)}
-                    className="w-1.5 h-1.5 bg-[#ff5e00] rounded-full absolute top-[18px] right-[48px] cursor-pointer shadow-[0_0_8px_#ff5e00] animate-pulse z-10" 
-                    title="Acesso Administrador"
-                  />
                   
                   <AnimatePresence>
                     {showMiniLogin && (
@@ -1133,7 +1326,7 @@ export default function App() {
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
-                        className="bg-black/60 rounded-xl p-3 border border-white/10 mb-4 flex gap-2"
+                        className="bg-black/60 rounded-xl p-3 border border-white/10 mb-4 flex gap-2 relative z-10"
                       >
                         <input 
                           type="password" 
@@ -1152,117 +1345,219 @@ export default function App() {
                     )}
                   </AnimatePresence>
 
-                  <div className="flex items-center gap-3 font-mono text-[32px] text-[#eee] mb-4">
-                    <span 
-                      contentEditable={editMode}
-                      onBlur={(e) => updateSystemField('id1', e.currentTarget.innerText)}
-                      suppressContentEditableWarning
-                      className={cn("outline-none transition-all", editMode && "border-b border-dashed border-[#ff5e00]")}
-                    >
-                      {systemFields.id1}
-                    </span>
-                    <span className="text-[#555] text-[20px]">→</span>
-                    <span 
-                      contentEditable={editMode}
-                      onBlur={(e) => updateSystemField('id2', e.currentTarget.innerText)}
-                      suppressContentEditableWarning
-                      className={cn("outline-none transition-all", editMode && "border-b border-dashed border-[#ff5e00]")}
-                    >
-                      {systemFields.id2}
-                    </span>
-                  </div>
-
-                  <div className="flex justify-between text-[12px] text-[#aaa] mb-4">
-                    <div>
-                      <b 
-                        contentEditable={editMode}
-                        onBlur={(e) => updateSystemField('id3', e.currentTarget.innerText)}
-                        suppressContentEditableWarning
-                        className={cn("outline-none transition-all block", editMode && "border-b border-dashed border-[#ff5e00]")}
-                      >
-                        {systemFields.id3}
-                      </b>
-                      <small 
-                        contentEditable={editMode}
-                        onBlur={(e) => updateSystemField('id4', e.currentTarget.innerText)}
-                        suppressContentEditableWarning
-                        className={cn("outline-none transition-all block", editMode && "border-b border-dashed border-[#ff5e00]")}
-                      >
-                        {systemFields.id4}
-                      </small>
-                    </div>
-                    <div className="text-right">
-                      <b 
-                        contentEditable={editMode}
-                        onBlur={(e) => updateSystemField('id5', e.currentTarget.innerText)}
-                        suppressContentEditableWarning
-                        className={cn("outline-none transition-all block", editMode && "border-b border-dashed border-[#ff5e00]")}
-                      >
-                        {systemFields.id5}
-                      </b>
-                      <small 
-                        contentEditable={editMode}
-                        onBlur={(e) => updateSystemField('id6', e.currentTarget.innerText)}
-                        suppressContentEditableWarning
-                        className={cn("outline-none transition-all block", editMode && "border-b border-dashed border-[#ff5e00]")}
-                      >
-                        {systemFields.id6}
-                      </small>
-                    </div>
-                  </div>
-
-                  {/* Luxury Interactive Flight Progress Track */}
-                  <div className="mt-6 space-y-2">
-                    <div className="flex justify-between items-center text-[10px] font-orbitron tracking-[2px]">
-                      <span className="text-[#a2ff00] flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-current animate-ping" />
-                        VOO EM CURSO
-                      </span>
-                      <span className="text-white/80 font-mono font-bold">{flightProgress}%</span>
-                    </div>
-
+                  <div className="flex items-center justify-between mb-3 border-b border-white/5 pb-2">
                     <div 
-                      onClick={handleProgressClick}
-                      className="w-full h-2.5 bg-[#141414] rounded-full relative cursor-pointer border border-white/10 shadow-inner group/track"
-                      title="Clique para ajustar o progresso do voo"
+                      contentEditable={editMode}
+                      onBlur={(e) => updateSystemField('id7', e.currentTarget.innerText)}
+                      suppressContentEditableWarning
+                      className={cn(
+                        "font-outfit text-[11px] font-bold text-[#d4af37]/80 tracking-[3px] uppercase outline-none transition-all",
+                        editMode && "border-b border-dashed border-[#ff5e00]"
+                      )}
                     >
-                      {/* Glowing active path track with luxury multi-color letters flow */}
-                      <div 
-                        style={{ width: `${flightProgress}%` }} 
-                        className="h-full luxury-progress-track rounded-full relative transition-all duration-700 ease-out shadow-[0_0_12px_rgba(0,245,255,0.4)]"
-                      >
-                        {/* Sub-trail particle mist */}
-                        <span className="absolute right-2 top-0 bottom-0 w-8 bg-gradient-to-l from-white/40 to-transparent blur-[2px]" />
+                      {systemFields.id7 || 'CONFERENCISTA // JIMMY ROGERS'}
+                    </div>
+                    <div className="flex items-center gap-1.5 text-[8.5px] text-[#25d366]/85 tracking-[1.5px] uppercase font-bold pr-6">
+                      <div className="w-[5px] h-[5px] rounded-full bg-[#25d366] shadow-[0_0_8px_#25d366] animate-pulse" />
+                      Sincronizado
+                    </div>
+                  </div>
+
+                  {/* Flight Widget Main Panel Container */}
+                  <div className="w-full bg-gradient-to-br from-[#101010] to-[#0c0c0c] border border-white/[0.05] rounded-[24px] p-5 relative overflow-hidden shadow-inner">
+                    {/* Dot grid decoration pattern */}
+                    <div className="absolute top-0 left-0 w-[130px] h-[120px] pointer-events-none opacity-[0.18] [mask-image:radial-gradient(circle_at_0_0,white,transparent_80%)]" 
+                         style={{ backgroundImage: 'radial-gradient(#6c8511 15%, transparent 20%)', backgroundSize: '4px 4px' }} />
+                    <div className="absolute -top-5 -left-5 w-[140px] h-[140px] bg-[radial-gradient(circle,rgba(173,255,47,0.08)_0%,transparent_70%)] pointer-events-none" />
+
+                    <div className="flex justify-between items-start gap-4 mb-5">
+                      {/* Left: Origin and Destination Column */}
+                      <div className="flex flex-col gap-4 flex-1">
+                        {/* ORIGEM */}
+                        <div className="flex flex-col items-start text-left">
+                          <div className="flex items-baseline leading-none">
+                            <span className="evt-led-small-dim mr-1.5">setor</span>
+                            <span 
+                              contentEditable={editMode}
+                              onBlur={(e) => updateSystemField('id1', e.currentTarget.innerText)}
+                              suppressContentEditableWarning
+                              className={cn(
+                                "evt-led-big-white outline-none transition-all",
+                                editMode && "border-b border-dashed border-[#ff5e00]"
+                              )}
+                            >
+                              {systemFields.id1}
+                            </span>
+                          </div>
+                          <span 
+                            contentEditable={editMode}
+                            onBlur={(e) => updateSystemField('id3', e.currentTarget.innerText)}
+                            suppressContentEditableWarning
+                            className={cn(
+                              "font-space-grotesk text-[13px] font-bold text-white mt-1 leading-tight outline-none transition-all block",
+                              editMode && "border-b border-dashed border-[#ff5e00]"
+                            )}
+                          >
+                            {systemFields.id3}
+                          </span>
+                          <span 
+                            contentEditable={editMode}
+                            onBlur={(e) => updateSystemField('id4', e.currentTarget.innerText)}
+                            suppressContentEditableWarning
+                            className={cn(
+                              "font-space-grotesk text-[10px] text-white/35 mt-0.5 uppercase tracking-[0.5px] block outline-none transition-all",
+                              editMode && "border-b border-dashed border-[#ff5e00]"
+                            )}
+                          >
+                            {systemFields.id4}
+                          </span>
+                        </div>
+
+                        {/* Arrow separator */}
+                        <div className="text-[15px] text-[#ff9100] drop-shadow-[0_0_10px_rgba(255,145,0,0.4)] font-bold pl-3 leading-none select-none">
+                          ↓
+                        </div>
+
+                        {/* DESTINO */}
+                        <div className="flex flex-col items-start text-left">
+                          <div className="flex items-baseline leading-none">
+                            <span className="evt-led-small-dim mr-1.5">setor</span>
+                            <span 
+                              contentEditable={editMode}
+                              onBlur={(e) => updateSystemField('id2', e.currentTarget.innerText)}
+                              suppressContentEditableWarning
+                              className={cn(
+                                "evt-led-big-white outline-none transition-all",
+                                editMode && "border-b border-dashed border-[#ff5e00]"
+                              )}
+                            >
+                              {systemFields.id2}
+                            </span>
+                          </div>
+                          <span 
+                            contentEditable={editMode}
+                            onBlur={(e) => updateSystemField('id5', e.currentTarget.innerText)}
+                            suppressContentEditableWarning
+                            className={cn(
+                              "font-space-grotesk text-[13px] font-bold text-white mt-1 leading-tight outline-none transition-all block",
+                              editMode && "border-b border-dashed border-[#ff5e00]"
+                            )}
+                          >
+                            {systemFields.id5}
+                          </span>
+                          <span 
+                            contentEditable={editMode}
+                            onBlur={(e) => updateSystemField('id6', e.currentTarget.innerText)}
+                            suppressContentEditableWarning
+                            className={cn(
+                              "font-space-grotesk text-[10px] text-white/35 mt-0.5 uppercase tracking-[0.5px] block outline-none transition-all",
+                              editMode && "border-b border-dashed border-[#ff5e00]"
+                            )}
+                          >
+                            {systemFields.id6}
+                          </span>
+                        </div>
                       </div>
 
-                      {/* Luxurious Interactive Airplane Node */}
-                      <div 
-                        style={{ left: `${flightProgress}%` }}
-                        className="absolute -top-3.5 -translate-x-1/2 transition-all duration-700 ease-out z-20 pointer-events-none"
-                      >
-                        {/* Multi-layered luxury reactive halos */}
-                        <span className="absolute -inset-1 rounded-full bg-gradient-to-r from-[#00f5ff] to-[#ffffff] opacity-40 blur-[8px] animate-pulse" />
-                        <span className="absolute -inset-2.5 rounded-full bg-[#00f5ff]/20 opacity-30 blur-[12px] animate-engine-glow" />
-
-                        {/* Floating Airplane Sphere */}
-                        <div 
-                          className="w-[34px] h-[34px] rounded-full bg-black/90 border-[2px] border-white/90 flex items-center justify-center text-[15px] text-white shadow-[0_0_15px_var(--glow-color,#00f5ff)] relative transform animate-airplane-fly select-none"
-                          style={{ '--glow-color': flightProgress < 25 ? '#00f5ff' : flightProgress < 50 ? '#ffffff' : flightProgress < 75 ? '#ffee00' : '#00ff88' } as React.CSSProperties}
+                      {/* Right side: ETA panel & Event Date */}
+                      <div className="flex flex-col gap-4 items-end justify-between self-stretch text-right min-w-[135px]">
+                        {/* Event yellow Date Stamp on led matrix */}
+                        <span 
+                          contentEditable={editMode}
+                          onBlur={(e) => updateSystemField('id8', e.currentTarget.innerText)}
+                          suppressContentEditableWarning
+                          className={cn(
+                            "evt-led-big-green outline-none transition-all leading-none",
+                            editMode && "border-b border-dashed border-[#ff5e00]"
+                          )}
                         >
-                          {/* Glow indicator corresponding to background color of letters */}
-                          <span 
-                            className="absolute inset-[2px] rounded-full opacity-10 transition-colors duration-500" 
-                            style={{ backgroundColor: flightProgress < 25 ? '#00f5ff' : flightProgress < 50 ? '#ffffff' : flightProgress < 75 ? '#ffee00' : '#00ff88' }}
-                          />
-                          <span className="relative z-10 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">✈</span>
+                          Data-{systemFields.id8 || '20/06'}
+                        </span>
+
+                        {/* ETA Card Panel */}
+                        <div className="bg-[#101010]/85 border-[1.5px] border-white/[0.04] rounded-[18px] p-3 w-full shadow-[inset_0_2px_5px_rgba(0,0,0,0.5),0_4px_10px_rgba(0,0,0,0.3)] relative text-left">
+                          <div className="flex items-center justify-between gap-1.5">
+                            <span 
+                              contentEditable={editMode}
+                              onBlur={(e) => updateSystemField('id10', e.currentTarget.innerText)}
+                              suppressContentEditableWarning
+                              className={cn(
+                                "font-space-grotesk text-[13px] font-bold text-white outline-none transition-all leading-none uppercase",
+                                editMode && "border-b border-dashed border-[#ff5e00]"
+                              )}
+                            >
+                              {systemFields.id10 || 'CULT 19:30'}
+                            </span>
+                            <div className="w-[18px] h-[18px] bg-[#1c1c1e] rounded-full flex items-center justify-center text-white/60">
+                              <Clock className="w-2.5 h-2.5" />
+                            </div>
+                          </div>
+                          <div className="font-space-grotesk text-[11px] text-[#ff9100] mt-1.5 mb-2 font-bold drop-shadow-[0_0_8px_rgba(255,145,0,0.25)] tracking-wider">
+                            {brasiliaTime}
+                          </div>
+                          <div 
+                            className="font-space-grotesk text-[9px] font-bold tracking-[0.5px] leading-tight"
+                            style={{ color: alertColor }}
+                          >
+                            {alertText}
+                          </div>
                         </div>
                       </div>
                     </div>
-                    
-                    <div className="flex justify-between text-[8px] text-white/45 tracking-widest font-mono uppercase">
-                      <span>PARTIDA ({systemFields.id1})</span>
-                      <span>CHEGADA ({systemFields.id2})</span>
+
+                    {/* Progress slider track */}
+                    <div className="flex items-center justify-between gap-4 mt-2">
+                      <div 
+                        onClick={handleProgressClick}
+                        className="evt-custom-track cursor-pointer group/track"
+                        title="Ajustar o progresso em tempo real"
+                      >
+                        <div 
+                          style={{ width: `${flightProgress}%` }} 
+                          className="evt-custom-fill"
+                        >
+                          <div className="evt-custom-plane-btn">
+                            <Plane className="w-3.5 h-3.5 text-[#aee30d] transform rotate-90 animate-pulse" />
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Countdown and admin edit dot vertical container */}
+                      <div className="flex flex-col items-center justify-center min-w-[80px]">
+                        <span className={cn(
+                          "font-space-grotesk text-[12.5px] font-bold select-none text-white/40 tracking-[0.5px] leading-none transition-colors",
+                          countdownText === "EM CULTO" && "text-[#bfff00] drop-shadow-[0_0_8px_rgba(191,255,0,0.3)]"
+                        )}>
+                          {countdownText}
+                        </span>
+                        
+                        {/* Little orange edit dot (Acesso Administrador) centered below countdown text */}
+                        <div 
+                          onClick={() => setShowMiniLogin(!showMiniLogin)}
+                          className="w-1.5 h-1.5 bg-[#ff5e00] rounded-full mt-2 cursor-pointer shadow-[0_0_8px_#ff5e00] animate-pulse z-20" 
+                          title="Acesso Administrador"
+                        />
+                      </div>
                     </div>
+
+                    {/* Quick Config for countdown date */}
+                    {editMode && (
+                      <div className="mt-4 p-2 bg-black/40 rounded-xl border border-white/5 space-y-1.5 text-left text-[11px]">
+                        <div className="flex justify-between items-center text-white/60 font-mono text-[9px] uppercase tracking-wider font-bold">
+                          <span>⚙ Ajustes ISO Corrida</span>
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <label className="text-white/40 text-[9px]">ISO DATA (Para Contagem Regressiva):</label>
+                          <input 
+                            type="text" 
+                            value={systemFields.id9 || '2026-06-20T19:30'}
+                            onChange={(e) => updateSystemField('id9', e.target.value)}
+                            className="bg-white/10 hover:bg-white/15 focus:bg-white/20 border-none rounded px-2 py-1 text-[11px] font-mono text-white outline-none w-full"
+                            placeholder="YYYY-MM-DDTHH:MM"
+                          />
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </motion.div>
               </div>
