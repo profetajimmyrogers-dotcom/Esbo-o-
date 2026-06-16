@@ -1312,7 +1312,7 @@ export default function App() {
                 exit={{ opacity: 0, y: -10, scale: 0.96 }}
                 transition={{ type: "spring", stiffness: 450, damping: 30 }}
                 className={cn(
-                  "fixed right-5 top-[64px] w-[215px] bg-[#0c0c0e]/95 backdrop-blur-2xl border p-3 rounded-[20px] z-[1000] flex flex-col gap-2.5 shadow-[0_20px_50px_rgba(0,0,0,0.95),0_0_20px_rgba(0,245,255,0.08)] overflow-hidden transition-all duration-200",
+                  "fixed right-5 top-[64px] w-[235px] bg-[#0c0c0e]/95 backdrop-blur-2xl border p-3 rounded-[20px] z-[1000] flex flex-col gap-2.5 shadow-[0_20px_50px_rgba(0,0,0,0.95),0_0_20px_rgba(0,245,255,0.08)] overflow-hidden transition-all duration-200",
                   passError 
                     ? "animate-card-shake border-red-500/80 shadow-[0_0_35px_rgba(239,68,68,0.4)] bg-red-950/20" 
                     : "border-white/10"
@@ -1320,30 +1320,30 @@ export default function App() {
               >
                 {/* Decorative Accordion Bellow Lines */}
                 <div className="flex items-center justify-between px-1 border-b border-white/5 pb-1.5">
-                  <span className="text-[7px] text-white/40 font-mono tracking-[0.2em] uppercase font-bold">// MENU PORTAL</span>
-                  <div className="flex gap-[1.5px]">
-                    <span className="w-[1.5px] h-1 bg-[#00f5ff]/30 rounded-full animate-pulse" />
-                    <span className="w-[1.5px] h-1.5 bg-[#00f5ff]/50 rounded-full animate-pulse [animation-delay:0.1s]" />
-                    <span className="w-[1.5px] h-1 bg-[#00f5ff]/30 rounded-full animate-pulse [animation-delay:0.2s]" />
+                  <span className="text-[7.5px] text-white/40 font-mono tracking-[0.2em] uppercase font-bold">// MENU PORTAL</span>
+                  <div className="flex gap-[2px] items-center">
+                    <span className="w-[1.5px] h-[6px] bg-[#00f5ff] rounded-full opacity-40" />
+                    <span className="w-[1.5px] h-[9px] bg-[#00f5ff] rounded-full opacity-80" />
+                    <span className="w-[1.5px] h-[6px] bg-[#00f5ff] rounded-full opacity-45" />
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 gap-2.5">
                   {/* WhatsApp Button inside Dropdown */}
                   <button 
                     onClick={() => {
                       setShowWhatsAppForm(true);
                       setShowRightSidebar(false);
                     }}
-                    className="group flex flex-col items-center justify-center gap-1.5 p-2 rounded-xl bg-[#121214]/65 hover:bg-[#151d18]/80 border border-white/[0.04] hover:border-green-500/40 transition-all duration-200 active:scale-95 cursor-pointer outline-none select-none text-center shadow-inner"
+                    className="group/btn flex flex-col items-center justify-center gap-1.5 p-2.5 rounded-2xl bg-[#0f0f11]/90 border border-white/[0.04] hover:border-green-500/35 hover:bg-[#131316] transition-all duration-200 active:scale-95 cursor-pointer outline-none select-none text-center shadow-inner h-[86px]"
                   >
-                    <div className="relative w-5 h-5 rounded-full flex items-center justify-center bg-green-500/10 text-green-400 shrink-0">
+                    <div className="relative w-8 h-8 rounded-full flex items-center justify-center bg-green-500/10 text-green-400 shrink-0 transition-transform duration-350 group-hover/btn:scale-110 shadow-[0_0_12px_rgba(34,197,94,0.15)] group-hover/btn:shadow-[0_0_18px_rgba(34,197,94,0.3)]">
                       <span className="absolute inset-0 rounded-full bg-green-400 opacity-15 blur-[1px] animate-pulse" />
-                      <MessageCircle className="w-3 h-3 fill-current relative z-10" />
+                      <MessageCircle className="w-3.5 h-3.5 fill-current relative z-10" />
                     </div>
                     <div className="flex flex-col items-center select-none">
-                      <span className="text-[5.5px] text-green-300 font-extrabold uppercase tracking-[0.1em] leading-none mb-0.5">Falar</span>
-                      <span className="text-white text-[7.5px] font-orbitron font-extrabold uppercase tracking-[0.5px] leading-none">WhatsApp</span>
+                      <span className="text-[6.5px] text-[#10b981] font-extrabold uppercase tracking-[0.14em] leading-none mb-0.5">FALAR</span>
+                      <span className="text-white text-[8px] font-orbitron font-extrabold uppercase tracking-[0.5px] leading-none">WHATSAPP</span>
                     </div>
                   </button>
 
@@ -1354,21 +1354,18 @@ export default function App() {
                       setShowRightSidebar(false);
                     }}
                     className={cn(
-                      "group flex flex-col items-center justify-center gap-1.5 p-2 rounded-xl transition-all duration-200 active:scale-95 cursor-pointer outline-none select-none text-center bg-[#121214]/65 shadow-inner",
-                      moonMode 
-                        ? "border-[#00f5ff]/50 bg-cyan-950/30" 
-                        : "border-white/[0.04] hover:border-[#00f5ff]/40 hover:bg-[#11181c]/80"
+                      "group/btn flex flex-col items-center justify-center gap-1.5 p-2.5 rounded-2xl transition-all duration-200 active:scale-95 cursor-pointer outline-none select-none text-center bg-[#0f0f11]/90 border border-white/[0.04] hover:border-[#00f5ff]/35 hover:bg-[#131316] shadow-inner h-[86px]"
                     )}
                   >
                     <div className={cn(
-                      "w-5 h-5 rounded-full flex items-center justify-center transition-all duration-700 text-[10px] bg-white/5 border border-white/5 shrink-0",
+                      "w-8 h-8 rounded-full flex items-center justify-center transition-all duration-700 text-[14px] bg-white/5 border border-white/5 shrink-0 transition-transform duration-350 group-hover/btn:scale-110 shadow-[0_0_12px_rgba(0,245,255,0.15)] group-hover/btn:shadow-[0_0_18px_rgba(0,245,255,0.3)]",
                       moonMode && "rotate-[360deg] bg-cyan-500/10 border-[#00f5ff]/20"
                     )}>
                       <span className="relative z-10">{moonMode ? '🌕' : '🌙'}</span>
                     </div>
                     <div className="flex flex-col items-center select-none">
-                      <span className="text-[5.5px] text-[#00f5ff] font-extrabold uppercase tracking-[0.1em] leading-none mb-0.5">Consultar</span>
-                      <span className="text-white text-[7.5px] font-orbitron font-extrabold uppercase tracking-[0.5px] leading-none">Agenda</span>
+                      <span className="text-[6.5px] text-[#00f5ff] font-extrabold uppercase tracking-[0.14em] leading-none mb-0.5">CONSULTAR</span>
+                      <span className="text-white text-[8px] font-orbitron font-extrabold uppercase tracking-[0.5px] leading-none">AGENDA</span>
                     </div>
                   </button>
 
@@ -1379,21 +1376,18 @@ export default function App() {
                       setShowRightSidebar(false);
                     }}
                     className={cn(
-                      "group flex flex-col items-center justify-center gap-1.5 p-2 rounded-xl transition-all duration-200 active:scale-95 cursor-pointer outline-none select-none text-center bg-[#121214]/65 shadow-inner",
-                      showSidebar 
-                        ? "border-[#ffaa00]/50 bg-amber-950/30" 
-                        : "border-white/[0.04] hover:border-[#ffaa00]/45 hover:bg-[#1c160a]/80"
+                      "group/btn flex flex-col items-center justify-center gap-1.5 p-2.5 rounded-2xl transition-all duration-200 active:scale-95 cursor-pointer outline-none select-none text-center bg-[#0f0f11]/90 border border-white/[0.04] hover:border-[#ffaa00]/35 hover:bg-[#131316] shadow-inner h-[86px]"
                     )}
                   >
                     <div className={cn(
-                      "w-5 h-5 rounded-full flex items-center justify-center transition-all duration-700 text-[10px] bg-white/5 border border-white/5 shrink-0 text-amber-400",
+                      "w-8 h-8 rounded-full flex items-center justify-center transition-all duration-700 text-[10px] bg-white/5 border border-white/5 shrink-0 text-amber-400 transition-transform duration-350 group-hover/btn:scale-110 shadow-[0_0_12px_rgba(255,170,0,0.15)] group-hover/btn:shadow-[0_0_18px_rgba(255,170,0,0.3)]",
                       showSidebar && "rotate-[360deg] bg-amber-500/10 border-[#ffaa00]/20"
                     )}>
-                      <Sparkles className="w-3 h-3" />
+                      <Sparkles className="w-3.5 h-3.5 text-amber-500" />
                     </div>
                     <div className="flex flex-col items-center select-none">
-                      <span className="text-[5.5px] text-amber-400 font-extrabold uppercase tracking-[0.1em] leading-none mb-0.5 font-bold">Próximo</span>
-                      <span className="text-white text-[7.5px] font-orbitron font-extrabold uppercase tracking-[0.5px] leading-none">Evento</span>
+                      <span className="text-[6.5px] text-amber-500 font-extrabold uppercase tracking-[0.14em] leading-none mb-0.5 font-bold">PRÓXIMO</span>
+                      <span className="text-white text-[8px] font-orbitron font-extrabold uppercase tracking-[0.5px] leading-none">EVENTO</span>
                     </div>
                   </button>
 
@@ -1408,33 +1402,28 @@ export default function App() {
                       setShowRightSidebar(false);
                     }}
                     className={cn(
-                      "group flex flex-col items-center justify-center gap-1.5 p-2 rounded-xl transition-all duration-200 active:scale-95 cursor-pointer outline-none select-none text-center bg-[#121214]/65 shadow-inner",
-                      authorized 
-                        ? "border-green-500/40 bg-green-950/20" 
-                        : "border-white/[0.04] hover:border-amber-500/45 hover:bg-[#1a130c]/80"
+                      "group/btn flex flex-col items-center justify-center gap-1.5 p-2.5 rounded-2xl transition-all duration-200 active:scale-95 cursor-pointer outline-none select-none text-center bg-[#0f0f11]/90 border border-white/[0.04] hover:border-amber-500/35 hover:bg-[#131316] shadow-inner h-[86px]"
                     )}
                   >
                     <div className={cn(
-                      "w-5 h-5 rounded-full flex items-center justify-center transition-all duration-700 text-[10px] bg-white/5 border border-white/5 shrink-0",
-                      authorized ? "text-green-400 bg-green-500/10 border-green-500/30" : "text-amber-500 bg-amber-500/10 border-white/5"
+                      "w-8 h-8 rounded-full flex items-center justify-center transition-all duration-700 text-[10px] shrink-0 transition-transform duration-350 group-hover/btn:scale-110",
+                      authorized 
+                        ? "text-green-400 bg-green-500/10 border-green-500/30 shadow-[0_0_12px_rgba(34,197,94,0.15)] group-hover/btn:shadow-[0_0_18px_rgba(34,197,94,0.3)]" 
+                        : "text-amber-500 bg-amber-500/10 border-white/5 shadow-[0_0_12px_rgba(245,158,11,0.15)] group-hover/btn:shadow-[0_0_18px_rgba(245,158,11,0.3)]"
                     )}>
-                      {authorized ? <Unlock className="w-3 h-3 text-green-400" /> : <Lock className="w-3 h-3 text-amber-500" />}
+                      {authorized ? <Unlock className="w-3.5 h-3.5 text-green-400" /> : <Lock className="w-3.5 h-3.5 text-amber-500" />}
                     </div>
                     <div className="flex flex-col items-center select-none">
-                      <span className="text-[5.5px] text-white/50 font-extrabold uppercase tracking-[0.1em] mb-0.5 font-bold">
-                        {authorized ? "Online" : "Acesso"}
-                      </span>
-                      <span className="text-white text-[7.5px] font-orbitron font-extrabold uppercase tracking-[0.5px]">
-                        {authorized ? "Sair" : "Login"}
-                      </span>
+                      <span className="text-[6.5px] text-white/40 font-extrabold uppercase tracking-[0.14em] mb-0.5 font-bold">ACESSO</span>
+                      <span className="text-white text-[8px] font-orbitron font-extrabold uppercase tracking-[0.5px]">LOGIN</span>
                     </div>
                   </button>
                 </div>
 
                 {/* Single clean line at the bottom to stay lightweight */}
-                <div className="border-t border-white/5 pt-2 mt-1 text-center">
-                  {authorized ? (
-                    <div className="space-y-1.5 px-0.5 text-left pb-0.5">
+                <div className="border-t border-white/5 pt-1 mt-0.5 text-center">
+                  {authorized && (
+                    <div className="space-y-1.5 px-0.5 text-left pb-0.5 mt-1.5">
                       <div className="flex items-center gap-1.5 px-1 pb-0.5">
                         <div className="w-3.5 h-3.5 rounded-full bg-[#00f5ff]/10 border border-[#00f5ff]/30 flex items-center justify-center text-[7.5px] text-[#00f5ff] font-bold pb-0.5">
                           ✓
@@ -1462,8 +1451,6 @@ export default function App() {
                         </span>
                       </button>
                     </div>
-                  ) : (
-                    <span className="text-[5.5px] font-mono tracking-widest text-white/15 uppercase block py-0.5">SISTEMA SEGURO</span>
                   )}
                 </div>
               </motion.div>
