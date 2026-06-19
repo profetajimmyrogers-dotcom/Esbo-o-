@@ -811,9 +811,9 @@ export default function App() {
             className={cn(
               "aspect-square flex items-center justify-center rounded-xl text-[11px] font-orbitron font-bold transition-all relative border select-none duration-300",
               isBlocked 
-                ? "bg-red-950/25 text-red-500/50 border-red-900/60 hover:bg-red-950/40 hover:border-red-500/40 line-through decoration-red-500/30" 
-                : "bg-white/5 text-[#00f5ff] border-transparent hover:border-[#00f5ff]/40 hover:bg-[#00f5ff]/5 hover:shadow-[0_0_8px_rgba(0,245,255,0.2)] vacant cursor-pointer",
-              isToday && "bg-[#ff5e00]! text-white! font-black border-transparent shadow-[0_0_15px_rgba(255,94,0,0.6)] ring-1 ring-white/10 scale-[1.03] z-10",
+                ? "bg-[#171111]/70 text-[#9b5151]/40 border-[#4a1f1f]/35 hover:bg-[#1f1515]/85 hover:border-[#692929]/50 hover:text-[#bd6464]/50 line-through decoration-[#9b5151]/20" 
+                : "bg-[#CF9D7B]/3 text-[#E5C1A7] border-[#CF9D7B]/10 hover:border-[#CF9D7B]/45 hover:bg-[#CF9D7B]/10 hover:shadow-[0_0_12px_rgba(207,157,123,0.25)] vacant cursor-pointer",
+              isToday && "bg-gradient-to-br from-[#ff5e00] to-[#CF9D7B] text-white! font-black border-transparent shadow-[0_0_18px_rgba(255,94,0,0.55)] ring-1 ring-white/25 scale-[1.04] z-10",
               editMode && "cursor-pointer"
             )}
           >
@@ -2024,34 +2024,34 @@ export default function App() {
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95, y: -20 }}
                   transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                  className="pointer-events-auto p-4 rounded-[24px] w-full max-w-[285px] bg-[#0c0c0e]/95 border border-white/10 shadow-[0_0_50px_rgba(0,245,255,0.12)] backdrop-blur-2xl relative overflow-visible"
+                  className="pointer-events-auto p-5 rounded-[28px] w-full max-w-[290px] bg-[#0e0e11]/98 border border-[#CF9D7B]/20 shadow-[0_15px_45px_rgba(0,0,0,0.85),0_0_35px_rgba(207,157,123,0.12)] backdrop-blur-3xl relative overflow-visible"
                 >
                   {/* Admin Mode Floating Badge */}
                   {editMode && (
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-red-600 text-white font-mono text-[7px] tracking-[2.5px] px-3 py-1 rounded-full uppercase border border-red-500 shadow-md animate-pulse whitespace-nowrap z-50 font-bold">
+                    <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-red-700 to-red-600 text-white font-mono text-[7px] tracking-[2.5px] px-3.5 py-1.5 rounded-full uppercase border border-red-500/50 shadow-[0_4px_12px_rgba(239,68,68,0.3)] animate-pulse whitespace-nowrap z-50 font-black">
                       // MODO EDITOR ATIVO
                     </div>
                   )}
 
                   {/* Header with Navigation */}
-                  <div className="flex justify-between items-center mb-3.5 px-1">
+                  <div className="flex justify-between items-center mb-4 px-1">
                     <button 
                       onClick={handlePrevMonth}
-                      className="w-7 h-7 rounded-full border border-white/5 bg-white/5 flex items-center justify-center cursor-pointer transition-all duration-300 hover:border-[#00f5ff]/30 hover:bg-[#00f5ff]/5 hover:text-[#00f5ff] text-white/50 active:scale-90"
+                      className="w-7 h-7 rounded-full border border-[#CF9D7B]/15 bg-[#CF9D7B]/3 flex items-center justify-center cursor-pointer transition-all duration-300 hover:border-[#CF9D7B]/45 hover:bg-[#CF9D7B]/10 hover:text-[#CF9D7B] text-[#CF9D7B]/70 active:scale-90 outline-none"
                       title="Mês Anterior"
                     >
                       <ChevronLeft className="w-3.5 h-3.5" />
                     </button>
 
                     <div className="flex flex-col items-center">
-                      <span className="font-orbitron tracking-[3px] uppercase text-[10px] sm:text-xs font-extrabold text-white text-center select-none">
+                      <span className="font-orbitron tracking-[3px] uppercase text-[10px] sm:text-xs font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-[#FFF0E2] to-[#CF9D7B] text-center select-none drop-shadow-[0_0_8px_rgba(207,157,123,0.15)]">
                         {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
                       </span>
                     </div>
 
                     <button 
                       onClick={handleNextMonth}
-                      className="w-7 h-7 rounded-full border border-white/5 bg-white/5 flex items-center justify-center cursor-pointer transition-all duration-300 hover:border-[#00f5ff]/30 hover:bg-[#00f5ff]/5 hover:text-[#00f5ff] text-white/50 active:scale-90"
+                      className="w-7 h-7 rounded-full border border-[#CF9D7B]/15 bg-[#CF9D7B]/3 flex items-center justify-center cursor-pointer transition-all duration-300 hover:border-[#CF9D7B]/45 hover:bg-[#CF9D7B]/10 hover:text-[#CF9D7B] text-[#CF9D7B]/70 active:scale-90 outline-none"
                       title="Próximo Mês"
                     >
                       <ChevronRight className="w-3.5 h-3.5" />
@@ -2063,7 +2063,7 @@ export default function App() {
                     {["D", "S", "T", "Q", "Q", "S", "S"].map((d, i) => (
                       <div 
                         key={`${d}-${i}`} 
-                        className="text-white/40 text-[8px] font-black font-orbitron tracking-[1px] pb-1.5 uppercase flex justify-center items-center"
+                        className="text-[#CF9D7B]/55 text-[8px] font-black font-orbitron tracking-[1.5px] pb-2 uppercase flex justify-center items-center select-none"
                       >
                         {d}
                       </div>
@@ -2072,17 +2072,17 @@ export default function App() {
                   </div>
 
                   {/* Minimalist Visual Legend / Footer info */}
-                  <div className="mt-4 pt-2.5 border-t border-white/5 flex justify-center items-center gap-4 text-[7px] font-mono tracking-widest text-[#00f5ff]/60 select-none uppercase">
-                    <div className="flex items-center gap-1">
-                      <span className="w-1 h-1 rounded-full bg-[#00f5ff]" />
+                  <div className="mt-4 pt-3 border-t border-[#CF9D7B]/10 flex justify-center items-center gap-4 text-[7px] font-mono tracking-[1.5px] text-[#CF9D7B]/70 select-none uppercase">
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#CF9D7B] shadow-[0_0_8px_rgba(207,157,123,0.5)]" />
                       <span>Vago</span>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <span className="w-1 h-1 rounded-full bg-red-600" />
-                      <span>Reservado</span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#bd6464] shadow-[0_0_8px_rgba(189,100,100,0.5)]" />
+                      <span>Cheio</span>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <span className="w-1 h-1 rounded-full bg-[#ff5e00]" />
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#ff5e00] shadow-[0_0_8px_rgba(255,94,0,0.6)]" />
                       <span>Hoje</span>
                     </div>
                   </div>
