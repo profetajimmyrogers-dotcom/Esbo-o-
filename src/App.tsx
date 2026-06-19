@@ -812,7 +812,7 @@ export default function App() {
               "aspect-square flex items-center justify-center rounded-xl text-[11px] font-orbitron font-bold transition-all relative border select-none duration-300",
               isBlocked 
                 ? "bg-[#171111]/70 text-[#9b5151]/40 border-[#4a1f1f]/35 hover:bg-[#1f1515]/85 hover:border-[#692929]/50 hover:text-[#bd6464]/50 line-through decoration-[#9b5151]/20" 
-                : "bg-[#CF9D7B]/3 text-[#E5C1A7] border-[#CF9D7B]/10 hover:border-[#CF9D7B]/45 hover:bg-[#CF9D7B]/10 hover:shadow-[0_0_12px_rgba(207,157,123,0.25)] vacant cursor-pointer",
+                : "bg-white/10 text-white border-white/45 shadow-[0_0_6px_rgba(255,255,255,0.3)] hover:border-white hover:bg-white/20 hover:shadow-[0_0_12px_rgba(255,255,255,0.6)] vacant cursor-pointer",
               isToday && "bg-gradient-to-br from-[#ff5e00] to-[#CF9D7B] text-white! font-black border-transparent shadow-[0_0_18px_rgba(255,94,0,0.55)] ring-1 ring-white/25 scale-[1.04] z-10",
               editMode && "cursor-pointer"
             )}
@@ -2074,7 +2074,7 @@ export default function App() {
                   {/* Minimalist Visual Legend / Footer info */}
                   <div className="mt-4 pt-3 border-t border-[#CF9D7B]/10 flex justify-center items-center gap-4 text-[7px] font-mono tracking-[1.5px] text-[#CF9D7B]/70 select-none uppercase">
                     <div className="flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#CF9D7B] shadow-[0_0_8px_rgba(207,157,123,0.5)]" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)]" />
                       <span>Vago</span>
                     </div>
                     <div className="flex items-center gap-1.5">
