@@ -305,6 +305,69 @@ export default function App() {
   const [showRightSidebar, setShowRightSidebar] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [blockedDates, setBlockedDates] = useState<string[]>([]);
+
+  // Gallery Carousel Refs and Active States
+  const topScrollRef = useRef<HTMLDivElement>(null);
+  const bottomScrollRef = useRef<HTMLDivElement>(null);
+  const topCardsRef = useRef<(HTMLDivElement | null)[]>([]);
+  const bottomCardsRef = useRef<(HTMLDivElement | null)[]>([]);
+  const [activeTopCard, setActiveTopCard] = useState<number | null>(null);
+  const [activeBottomCard, setActiveBottomCard] = useState<number | null>(null);
+  const [topGalleryExpanded, setTopGalleryExpanded] = useState(false);
+  const [bottomGalleryExpanded, setBottomGalleryExpanded] = useState(false);
+
+  // Reset expansion states when calendar modal is closed
+  useEffect(() => {
+    if (!moonMode) {
+      setTopGalleryExpanded(false);
+      setBottomGalleryExpanded(false);
+      setActiveTopCard(null);
+      setActiveBottomCard(null);
+    }
+  }, [moonMode]);
+
+  const centerCard = (index: number, type: 'top' | 'bottom') => {
+    const container = type === 'top' ? topScrollRef.current : bottomScrollRef.current;
+    const cardList = type === 'top' ? topCardsRef.current : bottomCardsRef.current;
+    const card = cardList[index];
+    if (container && card) {
+      const containerWidth = container.clientWidth;
+      const cardLeft = card.offsetLeft;
+      const cardWidth = card.clientWidth;
+      const targetScrollLeft = cardLeft - (containerWidth / 2) + (cardWidth / 2);
+      container.scrollTo({
+        left: targetScrollLeft,
+        behavior: 'smooth'
+      });
+    }
+  };
+
+  const handleCardToggle = (index: number, type: 'top' | 'bottom') => {
+    if (type === 'top') {
+      const isAlreadyActive = activeTopCard === index;
+      setActiveTopCard(isAlreadyActive ? null : index);
+      if (!isAlreadyActive) {
+        setTimeout(() => centerCard(index, 'top'), 100);
+      }
+    } else {
+      const isAlreadyActive = activeBottomCard === index;
+      setActiveBottomCard(isAlreadyActive ? null : index);
+      if (!isAlreadyActive) {
+        setTimeout(() => centerCard(index, 'bottom'), 100);
+      }
+    }
+  };
+
+  const scrollGallery = (direction: 'left' | 'right', ref: React.RefObject<HTMLDivElement>) => {
+    if (ref.current) {
+      const scrollAmount = ref.current.clientWidth / 2;
+      ref.current.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth'
+      });
+    }
+  };
+
   const defaultFields = {
     id1: '48',
     id2: '27',
@@ -315,7 +378,69 @@ export default function App() {
     id7: 'CONFERENCISTA // JIMMY ROGERS',
     id8: '20/06',
     id9: '2026-06-20T19:30',
-    id10: 'CULT 19:30'
+    id10: 'CULT 19:30',
+    
+    // Top Gallery Cards (gt1 to gt5)
+    gt1_title: 'Templo Sede',
+    gt1_church: 'AD Templo Central Sede',
+    gt1_sector: 'Setor Autônomo',
+    gt1_datetime: '25/06 às 19:30',
+    gt1_city: 'São Paulo - SP',
+
+    gt2_title: 'Adolescentes',
+    gt2_church: 'AD Templo da Unidade',
+    gt2_sector: 'Setor 12',
+    gt2_datetime: '27/06 às 18:00',
+    gt2_city: 'Campinas - SP',
+
+    gt3_title: 'Círculo Oração',
+    gt3_church: 'AD Jardim das Flores',
+    gt3_sector: 'Setor 45',
+    gt3_datetime: '28/06 às 14:00',
+    gt3_city: 'Rio de Janeiro - RJ',
+
+    gt4_title: 'Congresso Varões',
+    gt4_church: 'AD Boas Novas',
+    gt4_sector: 'Setor Norte',
+    gt4_datetime: '02/07 às 19:00',
+    gt4_city: 'Belo Horizonte - MG',
+
+    gt5_title: 'Grande Campanha',
+    gt5_church: 'AD Betel Central',
+    gt5_sector: 'Setor Central',
+    gt5_datetime: '05/07 às 19:30',
+    gt5_city: 'Curitiba - PR',
+
+    // Bottom Gallery Cards (gb1 to gb5)
+    gb1_title: 'Culto Missões',
+    gb1_church: 'AD Missionária Peniel',
+    gb1_sector: 'Setor Leste',
+    gb1_datetime: '10/07 às 19:00',
+    gb1_city: 'Porto Alegre - RS',
+
+    gb2_title: 'Vigília Milagres',
+    gb2_church: 'AD Monte Sinai',
+    gb2_sector: 'Setor Oeste',
+    gb2_datetime: '12/07 às 23:00',
+    gb2_city: 'Goiânia - GO',
+
+    gb3_title: 'Festa Jovens',
+    gb3_church: 'AD Ebenézer',
+    gb3_sector: 'Setor Sul',
+    gb3_datetime: '18/07 às 18:30',
+    gb3_city: 'Salvador - BA',
+
+    gb4_title: 'Aniversário AD',
+    gb4_church: 'AD Amigos de Cristo',
+    gb4_sector: 'Setor Novo Horizonte',
+    gb4_datetime: '20/07 às 19:00',
+    gb4_city: 'Fortaleza - CE',
+
+    gb5_title: 'Culto Família',
+    gb5_church: 'AD Manancial de Vida',
+    gb5_sector: 'Setor Alvorada',
+    gb5_datetime: '25/07 às 19:00',
+    gb5_city: 'Manaus - AM'
   };
   const [systemFields, setSystemFields] = useState<Record<string, string>>(defaultFields);
 
@@ -1590,32 +1715,34 @@ export default function App() {
             </>
           )}
         </AnimatePresence>
-         {/* Elegant Menu Drawer Toggle in place of 'Minha Agenda' */}
-        <button 
-          onClick={() => setShowRightSidebar(!showRightSidebar)}
-          className={cn(
-            "fixed top-5 right-5 group flex items-center gap-2.5 pl-2 pr-4.5 py-1.5 rounded-full bg-black/60 backdrop-blur-xl border border-white/10 z-[1001] transition-all duration-150 hover:scale-[1.02] active:scale-95 cursor-pointer outline-none select-none text-left shadow-[0_0_15px_rgba(0,245,255,0.15)] hover:shadow-[0_0_20px_rgba(0,245,255,0.25)]",
-            showRightSidebar ? "border-[#00f5ff]/50 shadow-[0_0_25px_rgba(0,245,255,0.3)] bg-black/85" : "hover:border-[#00f5ff]/40"
+          {/* Elegant Menu Drawer Toggle in place of 'Minha Agenda' */}
+          {!moonMode && (
+            <button 
+              onClick={() => setShowRightSidebar(!showRightSidebar)}
+              className={cn(
+                "fixed top-5 right-5 group flex items-center gap-2.5 pl-2 pr-4.5 py-1.5 rounded-full bg-black/60 backdrop-blur-xl border border-white/10 z-[1001] transition-all duration-150 hover:scale-[1.02] active:scale-95 cursor-pointer outline-none select-none text-left shadow-[0_0_15px_rgba(0,245,255,0.15)] hover:shadow-[0_0_20px_rgba(0,245,255,0.25)]",
+                showRightSidebar ? "border-[#00f5ff]/50 shadow-[0_0_25px_rgba(0,245,255,0.3)] bg-black/85" : "hover:border-[#00f5ff]/40"
+              )}
+            >
+              <div className="w-6 h-6 rounded-full flex items-center justify-center transition-all duration-200 text-xs bg-[#0c0c0e]/80 border border-white/15 shadow-inner group-hover:border-[#00f5ff]/60">
+                {showRightSidebar ? (
+                  <X className="w-3 h-3 text-[#00f5ff]" />
+                ) : (
+                  <Menu className="w-3 h-3 text-[#00f5ff]" />
+                )}
+              </div>
+              <div className="flex flex-col select-none pr-1">
+                <span className="text-[7.5px] text-[#00f5ff] font-extrabold uppercase tracking-[0.14em] leading-none mb-0.5 animate-pulse">MENU & LOGIN</span>
+                <span className="text-white text-[9px] font-orbitron font-extrabold uppercase tracking-[1.3px] leading-none">CONFERENCISTA</span>
+              </div>
+              {/* Glowing cursor ring helper on hover */}
+              <span className="absolute -inset-0.5 rounded-full bg-gradient-to-r from-[#00f5ff]/20 to-[#ffffff]/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200 -z-10" />
+            </button>
           )}
-        >
-          <div className="w-6 h-6 rounded-full flex items-center justify-center transition-all duration-200 text-xs bg-[#0c0c0e]/80 border border-white/15 shadow-inner group-hover:border-[#00f5ff]/60">
-            {showRightSidebar ? (
-              <X className="w-3 h-3 text-[#00f5ff]" />
-            ) : (
-              <Menu className="w-3 h-3 text-[#00f5ff]" />
-            )}
-          </div>
-          <div className="flex flex-col select-none pr-1">
-            <span className="text-[7.5px] text-[#00f5ff] font-extrabold uppercase tracking-[0.14em] leading-none mb-0.5 animate-pulse">MENU & LOGIN</span>
-            <span className="text-white text-[9px] font-orbitron font-extrabold uppercase tracking-[1.3px] leading-none">CONFERENCISTA</span>
-          </div>
-          {/* Glowing cursor ring helper on hover */}
-          <span className="absolute -inset-0.5 rounded-full bg-gradient-to-r from-[#00f5ff]/20 to-[#ffffff]/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200 -z-10" />
-        </button>
 
         {/* Right Discrete Thin Drawer (Gaveta Sanfonada Compacta) */}
         <AnimatePresence>
-          {showRightSidebar && (
+          {showRightSidebar && !moonMode && (
             <>
               {/* Invisible Click-Outside Overlay */}
               <motion.div 
@@ -2013,18 +2140,24 @@ export default function App() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                onClick={() => setMoonMode(false)}
-                className="fixed inset-0 bg-black/50 backdrop-blur-md z-[499]"
+                className="fixed inset-0 bg-black/50 backdrop-blur-md z-[499] pointer-events-none"
               />
 
-              {/* Robust Centering Container for Viewport Safety */}
-              <div className="fixed inset-0 pointer-events-none flex items-center justify-center p-4 z-[500]">
+              {/* Robust Centering & Scrollable Container for Viewport Safety */}
+              <div 
+                onClick={(e) => {
+                  if (e.target === e.currentTarget) {
+                    setMoonMode(false);
+                  }
+                }}
+                className="fixed inset-0 overflow-y-auto pointer-events-auto flex justify-center items-start sm:items-center p-4 z-[500]"
+              >
                 <motion.div 
                   initial={{ opacity: 0, scale: 0.95, y: -20 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95, y: -20 }}
                   transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                  className="pointer-events-auto p-5 rounded-[28px] w-full max-w-[290px] bg-[#0e0e11]/98 border border-[#CF9D7B]/20 shadow-[0_15px_45px_rgba(0,0,0,0.85),0_0_35px_rgba(207,157,123,0.12)] backdrop-blur-3xl relative overflow-visible"
+                  className="my-auto p-4 rounded-[24px] w-[92vw] xs:w-full max-w-[340px] sm:max-w-[360px] md:max-w-[370px] bg-[#0e0e11]/98 border border-[#CF9D7B]/20 shadow-[0_15px_45px_rgba(0,0,0,0.85),0_0_45px_rgba(207,157,123,0.15)] backdrop-blur-3xl relative overflow-visible flex flex-col"
                 >
                   {/* Admin Mode Floating Badge */}
                   {editMode && (
@@ -2033,8 +2166,215 @@ export default function App() {
                     </div>
                   )}
 
+                  {/* Top Gallery Row - 5 Cards (above the calendar) - Collapsible */}
+                  <motion.div
+                    initial={false}
+                    animate={{ 
+                      height: topGalleryExpanded ? "auto" : 0, 
+                      opacity: topGalleryExpanded ? 1 : 0,
+                      marginBottom: topGalleryExpanded ? 12 : 0
+                    }}
+                    transition={{ duration: 0.35, ease: "easeInOut" }}
+                    className="relative w-full overflow-hidden"
+                  >
+                    <div className="relative w-full mb-5 pb-1">
+                      <div 
+                         ref={topScrollRef}
+                        className="flex gap-2 relative overflow-x-auto scrollbar-none snap-x snap-mandatory py-1 px-0.5"
+                        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                      >
+                        {[1, 2, 3, 4, 5].map((idx) => {
+                          const idPrefix = `gt${idx}`;
+                          const title = systemFields[`${idPrefix}_title`] || defaultFields[`${idPrefix}_title` as keyof typeof defaultFields] || '';
+                          const isExpanded = activeTopCard === idx - 1;
+
+                          return (
+                            <div 
+                              key={`top-card-wrapper-${idx}`}
+                              className="flex flex-col items-center gap-1 shrink-0 snap-start"
+                            >
+                              <div 
+                                ref={el => { topCardsRef.current[idx - 1] = el; }}
+                                onClick={() => handleCardToggle(idx - 1, 'top')}
+                                className={cn(
+                                  "w-[46px] xs:w-[50px] sm:w-[54px] md:w-[58px] h-[135px] xs:h-[145px] sm:h-[155px] md:h-[165px]",
+                                  "bg-[#111114]/90 border transition-all duration-300 relative rounded-xl flex flex-col justify-center p-2 overflow-hidden shadow-lg cursor-pointer select-none",
+                                  isExpanded 
+                                    ? "border-[#E5C1A7] shadow-[0_0_15px_rgba(207,157,123,0.4)] ring-1 ring-[#CF9D7B]/20" 
+                                    : "border-[#CF9D7B]/15 hover:border-[#CF9D7B]/35 hover:shadow-[0_0_8px_rgba(207,157,123,0.15)]"
+                                )}
+                              >
+                                {/* Vertically Rotated Text Title */}
+                                <div className="absolute inset-0 flex items-center justify-center overflow-hidden pointer-events-none p-1">
+                                  <span className="font-orbitron text-[6.5px] xs:text-[7px] sm:text-[7.5px] md:text-[8px] font-black tracking-[1px] text-[#E5C1A7] uppercase -rotate-90 origin-center whitespace-nowrap block">
+                                    {title}
+                                  </span>
+                                </div>
+                              </div>
+
+                              {/* Sequence Number Header below the card */}
+                              <div className="bg-red-950/70 border border-red-500/60 rounded px-1.5 py-[2px] pointer-events-none shadow-[0_0_6px_rgba(239,68,68,0.25)] flex items-center justify-center">
+                                <span className="font-orbitron text-[6.5px] xs:text-[7.5px] font-bold text-red-500 leading-none">
+                                  #{idx}
+                                </span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {/* Left & Right custom modern arrow slide controllers below */}
+                      <div className="flex justify-center items-center gap-3 mt-1 select-none">
+                        <button 
+                          onClick={() => scrollGallery('left', topScrollRef)}
+                          className="w-4 h-4 rounded-full border border-[#CF9D7B]/15 bg-[#CF9D7B]/3 flex items-center justify-center cursor-pointer transition-all hover:bg-[#CF9D7B]/10 hover:border-[#CF9D7B]/40 text-[#E5C1A7]/60 hover:text-white pb-[1px]"
+                        >
+                          <ChevronLeft className="w-2.5 h-2.5" />
+                        </button>
+                        <button 
+                          onClick={() => scrollGallery('right', topScrollRef)}
+                          className="w-4 h-4 rounded-full border border-[#CF9D7B]/15 bg-[#CF9D7B]/3 flex items-center justify-center cursor-pointer transition-all hover:bg-[#CF9D7B]/10 hover:border-[#CF9D7B]/40 text-[#E5C1A7]/60 hover:text-white pb-[1px]"
+                        >
+                          <ChevronRight className="w-2.5 h-2.5" />
+                        </button>
+                      </div>
+
+                      {/* Expansion details - "calcule para nunca se abrir para laterais sempre para meio" */}
+                      <AnimatePresence>
+                        {activeTopCard !== null && (
+                          <motion.div
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            className="absolute inset-0 z-30 bg-[#08080a]/98 backdrop-blur-2xl rounded-2xl p-3.5 flex flex-col justify-between border border-[#CF9D7B]/40 shadow-[0_0_20px_#CF9D7B] text-left"
+                          >
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <span className="text-[6px] font-mono text-[#CF9D7B]/60 tracking-[1.5px] uppercase block">MINI GALERIA TOP (EVENTO #{activeTopCard + 1})</span>
+                                <h4 
+                                  contentEditable={editMode}
+                                  onBlur={(e) => updateSystemField(`gt${activeTopCard + 1}_title`, e.currentTarget.innerText)}
+                                  suppressContentEditableWarning
+                                  className={cn(
+                                    "font-orbitron font-black text-[11px] sm:text-[12px] text-white tracking-[0.5px] uppercase outline-none mt-0.5",
+                                    editMode && "border-b border-dashed border-[#ff5e00]"
+                                  )}
+                                >
+                                  {systemFields[`gt${activeTopCard + 1}_title`] || defaultFields[`gt${activeTopCard + 1}_title` as keyof typeof defaultFields]}
+                                </h4>
+                              </div>
+                            </div>
+
+                            <div className="flex flex-col gap-1 my-1.5 bg-white/[0.01] border border-white/[0.03] p-2 rounded-xl">
+                              <div>
+                                <span className="text-[5.5px] text-[#CF9D7B]/65 font-mono uppercase tracking-[0.5px] block">Nome da Igreja:</span>
+                                <span 
+                                  contentEditable={editMode}
+                                  onBlur={(e) => updateSystemField(`gt${activeTopCard + 1}_church`, e.currentTarget.innerText)}
+                                  suppressContentEditableWarning
+                                  className={cn(
+                                    "text-[9.5px] sm:text-[10px] font-bold text-white/90 leading-tight outline-none block",
+                                    editMode && "border-b border-dashed border-[#ff5e00]"
+                                  )}
+                                >
+                                  {systemFields[`gt${activeTopCard + 1}_church`] || defaultFields[`gt${activeTopCard + 1}_church` as keyof typeof defaultFields]}
+                                </span>
+                              </div>
+
+                              <div>
+                                <span className="text-[5.5px] text-[#CF9D7B]/65 font-mono uppercase tracking-[0.5px] block">Setor de Atuação:</span>
+                                <span 
+                                  contentEditable={editMode}
+                                  onBlur={(e) => updateSystemField(`gt${activeTopCard + 1}_sector`, e.currentTarget.innerText)}
+                                  suppressContentEditableWarning
+                                  className={cn(
+                                    "text-[9.5px] sm:text-[10px] font-bold text-white/75 leading-tight outline-none block",
+                                    editMode && "border-b border-dashed border-[#ff5e00]"
+                                  )}
+                                >
+                                  {systemFields[`gt${activeTopCard + 1}_sector`] || defaultFields[`gt${activeTopCard + 1}_sector` as keyof typeof defaultFields]}
+                                </span>
+                              </div>
+
+                              <div>
+                                <span className="text-[5.5px] text-[#CF9D7B]/65 font-mono uppercase tracking-[0.5px] block">Data e Horário:</span>
+                                <span 
+                                  contentEditable={editMode}
+                                  onBlur={(e) => updateSystemField(`gt${activeTopCard + 1}_datetime`, e.currentTarget.innerText)}
+                                  suppressContentEditableWarning
+                                  className={cn(
+                                    "text-[9.5px] sm:text-[10px] font-bold text-[#E5C1A7] leading-tight outline-none block",
+                                    editMode && "border-b border-dashed border-[#ff5e00]"
+                                  )}
+                                >
+                                  {systemFields[`gt${activeTopCard + 1}_datetime`] || defaultFields[`gt${activeTopCard + 1}_datetime` as keyof typeof defaultFields]}
+                                </span>
+                              </div>
+
+                              <div>
+                                <span className="text-[5.5px] text-[#CF9D7B]/65 font-mono uppercase tracking-[0.5px] block">Cidade / UF:</span>
+                                <span 
+                                  contentEditable={editMode}
+                                  onBlur={(e) => updateSystemField(`gt${activeTopCard + 1}_city`, e.currentTarget.innerText)}
+                                  suppressContentEditableWarning
+                                  className={cn(
+                                    "text-[9.5px] sm:text-[10px] font-bold text-white/80 leading-tight outline-none block",
+                                    editMode && "border-b border-dashed border-[#ff5e00]"
+                                  )}
+                                >
+                                  {systemFields[`gt${activeTopCard + 1}_city`] || defaultFields[`gt${activeTopCard + 1}_city` as keyof typeof defaultFields]}
+                                </span>
+                              </div>
+                            </div>
+
+                            <div className="w-full h-0.5 relative overflow-hidden rounded-full mb-1.5">
+                              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#CF9D7B] to-transparent shadow-[0_0_6px_#CF9D7B] animate-pulse" />
+                            </div>
+
+                            <button
+                              onClick={() => setActiveTopCard(null)}
+                              className="w-full py-1.5 px-3 rounded-xl bg-red-950/40 hover:bg-red-900/40 border border-red-500/40 hover:border-red-500/80 text-red-400 hover:text-white font-orbitron font-black text-[8px] tracking-[2px] transition-all flex items-center justify-center gap-1.5 cursor-pointer mt-1"
+                            >
+                              <X className="w-2.5 h-2.5" />
+                              FECHAR DETALHES
+                            </button>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  </motion.div>
+
+                  {/* Toggle Button for Top Gallery */}
+                  <div className="relative flex justify-center items-center mb-4 mt-2">
+                    <div className="absolute inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-[#CF9D7B]/20 to-transparent" />
+                    <button
+                      onClick={() => {
+                        const nextState = !topGalleryExpanded;
+                        setTopGalleryExpanded(nextState);
+                        if (nextState) {
+                          setTimeout(() => {
+                            topScrollRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                          }, 380);
+                        }
+                      }}
+                      className={cn(
+                        "relative z-10 flex items-center justify-center gap-1.5 bg-[#111114] border rounded-full px-4 py-1.5 cursor-pointer transition-all duration-300 shadow-md",
+                        topGalleryExpanded 
+                          ? "border-red-500/50 text-red-400 hover:bg-red-950/20 shadow-[0_0_8px_rgba(239,68,68,0.2)]" 
+                          : "border-[#CF9D7B]/30 text-[#E5C1A7]/90 hover:bg-[#CF9D7B]/5 hover:border-[#CF9D7B] shadow-[0_0_8px_rgba(207,157,123,0.1)]"
+                      )}
+                    >
+                      <span className="font-orbitron font-extrabold text-[8px] tracking-[2px] uppercase">
+                        {topGalleryExpanded ? "Recolher Atividades " : "Atividades #1 a #5 "}
+                      </span>
+                      <span className="font-sans font-bold text-xs -mt-[1px]">
+                        {topGalleryExpanded ? "−" : "+"}
+                      </span>
+                    </button>
+                  </div>
+
                   {/* Header with Navigation */}
-                  <div className="flex justify-between items-center mb-4 px-1">
+                  <div className="flex justify-between items-center mb-3 px-1 pt-4 border-t border-[#CF9D7B]/20">
                     <button 
                       onClick={handlePrevMonth}
                       className="w-7 h-7 rounded-full border border-[#CF9D7B]/15 bg-[#CF9D7B]/3 flex items-center justify-center cursor-pointer transition-all duration-300 hover:border-[#CF9D7B]/45 hover:bg-[#CF9D7B]/10 hover:text-[#CF9D7B] text-[#CF9D7B]/70 active:scale-90 outline-none"
@@ -2059,7 +2399,7 @@ export default function App() {
                   </div>
 
                   {/* Calendar Days Table */}
-                  <div className="grid grid-cols-7 gap-1 text-center">
+                  <div className="grid grid-cols-7 gap-1 text-center mb-1">
                     {["D", "S", "T", "Q", "Q", "S", "S"].map((d, i) => (
                       <div 
                         key={`${d}-${i}`} 
@@ -2071,8 +2411,216 @@ export default function App() {
                     {calendarDays}
                   </div>
 
+                  {/* Toggle Button for Bottom Gallery */}
+                  <div className="relative flex justify-center items-center mt-5 mb-2">
+                    <div className="absolute inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-[#CF9D7B]/20 to-transparent" />
+                    <button
+                      onClick={() => {
+                        const nextState = !bottomGalleryExpanded;
+                        setBottomGalleryExpanded(nextState);
+                        if (nextState) {
+                          setTimeout(() => {
+                            bottomScrollRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                          }, 380);
+                        }
+                      }}
+                      className={cn(
+                        "relative z-10 flex items-center justify-center gap-1.5 bg-[#111114] border rounded-full px-4 py-1.5 cursor-pointer transition-all duration-300 shadow-md",
+                        bottomGalleryExpanded 
+                          ? "border-red-500/50 text-red-500 hover:bg-red-950/20 shadow-[0_0_8px_rgba(239,68,68,0.2)]" 
+                          : "border-[#CF9D7B]/30 text-[#E5C1A7]/90 hover:bg-[#CF9D7B]/5 hover:border-[#CF9D7B] shadow-[0_0_8px_rgba(207,157,123,0.1)]"
+                      )}
+                    >
+                      <span className="font-orbitron font-extrabold text-[8px] tracking-[2px] uppercase">
+                        {bottomGalleryExpanded ? "Recolher Atividades " : "Atividades #6 a #10 "}
+                      </span>
+                      <span className="font-sans font-bold text-xs -mt-[1px]">
+                        {bottomGalleryExpanded ? "−" : "+"}
+                      </span>
+                    </button>
+                  </div>
+
+                  {/* Bottom Gallery Row - 5 Cards (below the calendar) - Collapsible */}
+                  <motion.div
+                    initial={false}
+                    animate={{ 
+                      height: bottomGalleryExpanded ? "auto" : 0, 
+                      opacity: bottomGalleryExpanded ? 1 : 0,
+                      marginTop: bottomGalleryExpanded ? 12 : 0,
+                      marginBottom: bottomGalleryExpanded ? 10 : 0
+                    }}
+                    transition={{ duration: 0.35, ease: "easeInOut" }}
+                    className="relative w-full overflow-hidden"
+                  >
+                    <div className="relative w-full mb-2.5 pt-1">
+                      <div 
+                        ref={bottomScrollRef}
+                        className="flex gap-2 relative overflow-x-auto scrollbar-none snap-x snap-mandatory py-1 px-0.5"
+                        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                      >
+                        {[1, 2, 3, 4, 5].map((idx) => {
+                          const idPrefix = `gb${idx}`;
+                          const title = systemFields[`${idPrefix}_title`] || defaultFields[`${idPrefix}_title` as keyof typeof defaultFields] || '';
+                          const isExpanded = activeBottomCard === idx - 1;
+
+                          return (
+                            <div 
+                              key={`bottom-card-wrapper-${idx}`}
+                              className="flex flex-col items-center gap-1 shrink-0 snap-start"
+                            >
+                              <div 
+                                ref={el => { bottomCardsRef.current[idx - 1] = el; }}
+                                onClick={() => handleCardToggle(idx - 1, 'bottom')}
+                                className={cn(
+                                  "w-[46px] xs:w-[50px] sm:w-[54px] md:w-[58px] h-[135px] xs:h-[145px] sm:h-[155px] md:h-[165px]",
+                                  "bg-[#111114]/90 border transition-all duration-300 relative rounded-xl flex flex-col justify-center p-2 overflow-hidden shadow-lg cursor-pointer select-none",
+                                  isExpanded 
+                                    ? "border-[#E5C1A7] shadow-[0_0_15px_rgba(207,157,123,0.4)] ring-1 ring-[#CF9D7B]/20" 
+                                    : "border-[#CF9D7B]/15 hover:border-[#CF9D7B]/35 hover:shadow-[0_0_8px_rgba(207,157,123,0.15)]"
+                                )}
+                              >
+                                {/* Vertically Rotated Text Title */}
+                                <div className="absolute inset-0 flex items-center justify-center overflow-hidden pointer-events-none p-1">
+                                  <span className="font-orbitron text-[6.5px] xs:text-[7px] sm:text-[7.5px] md:text-[8px] font-black tracking-[1px] text-[#E5C1A7] uppercase -rotate-90 origin-center whitespace-nowrap block">
+                                    {title}
+                                  </span>
+                                </div>
+                              </div>
+
+                              {/* Sequence Number Header below the card (Numbered 6-10) */}
+                              <div className="bg-red-950/70 border border-red-500/60 rounded px-1.5 py-[2px] pointer-events-none shadow-[0_0_6px_rgba(239,68,68,0.25)] flex items-center justify-center">
+                                <span className="font-orbitron text-[6.5px] xs:text-[7.5px] font-bold text-red-500 leading-none">
+                                  #{idx + 5}
+                                </span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {/* Left & Right custom modern arrow slide controllers below */}
+                      <div className="flex justify-center items-center gap-3 mt-1 select-none">
+                        <button 
+                          onClick={() => scrollGallery('left', bottomScrollRef)}
+                          className="w-4 h-4 rounded-full border border-[#CF9D7B]/15 bg-[#CF9D7B]/3 flex items-center justify-center cursor-pointer transition-all hover:bg-[#CF9D7B]/10 hover:border-[#CF9D7B]/40 text-[#E5C1A7]/60 hover:text-white pb-[1px]"
+                        >
+                          <ChevronLeft className="w-2.5 h-2.5" />
+                        </button>
+                        <button 
+                          onClick={() => scrollGallery('right', bottomScrollRef)}
+                          className="w-4 h-4 rounded-full border border-[#CF9D7B]/15 bg-[#CF9D7B]/3 flex items-center justify-center cursor-pointer transition-all hover:bg-[#CF9D7B]/10 hover:border-[#CF9D7B]/40 text-[#E5C1A7]/60 hover:text-white pb-[1px]"
+                        >
+                          <ChevronRight className="w-2.5 h-2.5" />
+                        </button>
+                      </div>
+
+                      {/* Expansion details - "calcule para nunca se abrir para laterais sempre para meio" */}
+                      <AnimatePresence>
+                        {activeBottomCard !== null && (
+                          <motion.div
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            className="absolute inset-0 z-30 bg-[#08080a]/98 backdrop-blur-2xl rounded-2xl p-3.5 flex flex-col justify-between border border-[#CF9D7B]/40 shadow-[0_0_20px_#CF9D7B] text-left"
+                          >
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <span className="text-[6px] font-mono text-[#CF9D7B]/60 tracking-[1.5px] uppercase block">MINI GALERIA INFERIOR (EVENTO #{activeBottomCard + 6})</span>
+                                <h4 
+                                  contentEditable={editMode}
+                                  onBlur={(e) => updateSystemField(`gb${activeBottomCard + 1}_title`, e.currentTarget.innerText)}
+                                  suppressContentEditableWarning
+                                  className={cn(
+                                    "font-orbitron font-black text-[11px] sm:text-[12px] text-white tracking-[0.5px] uppercase outline-none mt-0.5",
+                                    editMode && "border-b border-dashed border-[#ff5e00]"
+                                  )}
+                                >
+                                  {systemFields[`gb${activeBottomCard + 1}_title`] || defaultFields[`gb${activeBottomCard + 1}_title` as keyof typeof defaultFields]}
+                                </h4>
+                              </div>
+                            </div>
+
+                            <div className="flex flex-col gap-1 my-1.5 bg-white/[0.01] border border-white/[0.03] p-2 rounded-xl">
+                              <div>
+                                <span className="text-[5.5px] text-[#CF9D7B]/65 font-mono uppercase tracking-[0.5px] block">Nome da Igreja:</span>
+                                <span 
+                                  contentEditable={editMode}
+                                  onBlur={(e) => updateSystemField(`gb${activeBottomCard + 1}_church`, e.currentTarget.innerText)}
+                                  suppressContentEditableWarning
+                                  className={cn(
+                                    "text-[9.5px] sm:text-[10px] font-bold text-white/90 leading-tight outline-none block",
+                                    editMode && "border-b border-dashed border-[#ff5e00]"
+                                  )}
+                                >
+                                  {systemFields[`gb${activeBottomCard + 1}_church`] || defaultFields[`gb${activeBottomCard + 1}_church` as keyof typeof defaultFields]}
+                                </span>
+                              </div>
+
+                              <div>
+                                <span className="text-[5.5px] text-[#CF9D7B]/65 font-mono uppercase tracking-[0.5px] block">Setor de Atuação:</span>
+                                <span 
+                                  contentEditable={editMode}
+                                  onBlur={(e) => updateSystemField(`gb${activeBottomCard + 1}_sector`, e.currentTarget.innerText)}
+                                  suppressContentEditableWarning
+                                  className={cn(
+                                    "text-[9.5px] sm:text-[10px] font-bold text-white/75 leading-tight outline-none block",
+                                    editMode && "border-b border-dashed border-[#ff5e00]"
+                                  )}
+                                >
+                                  {systemFields[`gb${activeBottomCard + 1}_sector`] || defaultFields[`gb${activeBottomCard + 1}_sector` as keyof typeof defaultFields]}
+                                </span>
+                              </div>
+
+                              <div>
+                                <span className="text-[5.5px] text-[#CF9D7B]/65 font-mono uppercase tracking-[0.5px] block">Data e Horário:</span>
+                                <span 
+                                  contentEditable={editMode}
+                                  onBlur={(e) => updateSystemField(`gb${activeBottomCard + 1}_datetime`, e.currentTarget.innerText)}
+                                  suppressContentEditableWarning
+                                  className={cn(
+                                    "text-[9.5px] sm:text-[10px] font-bold text-[#E5C1A7] leading-tight outline-none block",
+                                    editMode && "border-b border-dashed border-[#ff5e00]"
+                                  )}
+                                >
+                                  {systemFields[`gb${activeBottomCard + 1}_datetime`] || defaultFields[`gb${activeBottomCard + 1}_datetime` as keyof typeof defaultFields]}
+                                </span>
+                              </div>
+
+                              <div>
+                                <span className="text-[5.5px] text-[#CF9D7B]/65 font-mono uppercase tracking-[0.5px] block">Cidade / UF:</span>
+                                <span 
+                                  contentEditable={editMode}
+                                  onBlur={(e) => updateSystemField(`gb${activeBottomCard + 1}_city`, e.currentTarget.innerText)}
+                                  suppressContentEditableWarning
+                                  className={cn(
+                                    "text-[9.5px] sm:text-[10px] font-bold text-white/80 leading-tight outline-none block",
+                                    editMode && "border-b border-dashed border-[#ff5e00]"
+                                  )}
+                                >
+                                  {systemFields[`gb${activeBottomCard + 1}_city`] || defaultFields[`gb${activeBottomCard + 1}_city` as keyof typeof defaultFields]}
+                                </span>
+                              </div>
+                            </div>
+
+                            <div className="w-full h-0.5 relative overflow-hidden rounded-full mb-1.5">
+                              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#CF9D7B] to-transparent shadow-[0_0_6px_#CF9D7B] animate-pulse" />
+                            </div>
+
+                            <button
+                              onClick={() => setActiveBottomCard(null)}
+                              className="w-full py-1.5 px-3 rounded-xl bg-red-950/40 hover:bg-red-900/40 border border-red-500/40 hover:border-red-500/80 text-red-400 hover:text-white font-orbitron font-black text-[8px] tracking-[2px] transition-all flex items-center justify-center gap-1.5 cursor-pointer mt-1"
+                            >
+                              <X className="w-2.5 h-2.5" />
+                              FECHAR DETALHES
+                            </button>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  </motion.div>
+
                   {/* Minimalist Visual Legend / Footer info */}
-                  <div className="mt-4 pt-3 border-t border-[#CF9D7B]/10 flex justify-center items-center gap-4 text-[7px] font-mono tracking-[1.5px] text-[#CF9D7B]/70 select-none uppercase">
+                  <div className="mt-3 pt-2.5 border-t border-[#CF9D7B]/10 flex justify-center items-center gap-4 text-[7px] font-mono tracking-[1.5px] text-[#CF9D7B]/70 select-none uppercase">
                     <div className="flex items-center gap-1.5">
                       <span className="w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)]" />
                       <span>Vago</span>
@@ -2099,7 +2647,24 @@ export default function App() {
   }
 
   const filteredSermoes = sermoes.filter(s => {
-    const matchesSearch = s.tema.toLowerCase().includes(busca.toLowerCase());
+    const buscaLower = busca.toLowerCase().trim();
+    if (!buscaLower) {
+      if (showOnlyDownloaded) {
+        return s.id && downloadedSermonIds.includes(s.id);
+      }
+      return true;
+    }
+    
+    const matchesTema = (s.tema || '').toLowerCase().includes(buscaLower);
+    const matchesTexto = (s.texto || '').toLowerCase().includes(buscaLower);
+    const matchesSetores = (s.setores || []).some(sec => sec.toLowerCase().includes(buscaLower));
+    const matchesIntroduction = (s.intro || '').toLowerCase().includes(buscaLower);
+    const matchesAgradecimento = (s.agr || '').toLowerCase().includes(buscaLower);
+    const matchesPontos = (s.pontos || []).some(p => 
+      (p || '').toLowerCase().includes(buscaLower)
+    );
+    
+    const matchesSearch = matchesTema || matchesTexto || matchesSetores || matchesIntroduction || matchesAgradecimento || matchesPontos;
     if (showOnlyDownloaded) {
       return matchesSearch && s.id && downloadedSermonIds.includes(s.id);
     }
@@ -2543,136 +3108,158 @@ export default function App() {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {filteredSermoes.map((s, index) => {
-                  const hasImage = !!s.img;
-                  const pointsCount = s.pontos?.length || 0;
-                  const randomID = (s.id || '').substring(0, 5).toUpperCase();
-                  return (
-                    <motion.div 
-                      layout
-                      key={s.id}
-                      onClick={() => setSelectedSermonId(s.id!)}
-                      className="group relative bg-[#162127]/30 border border-white/5 hover:border-[#CF9D7B]/40 rounded-xl overflow-hidden cursor-pointer hover:shadow-[0_0_30px_rgba(207,157,123,0.15)] flex flex-col h-96 justify-between transition-all duration-300"
-                    >
-                      {/* Favorite trigger (Sermão do Dia heart icon) */}
-                      <button 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleToggleFavorite(s.id!);
-                        }}
-                        className={cn(
-                          "absolute top-3 left-3 z-20 w-8 h-8 flex items-center justify-center rounded-lg bg-black/75 border transition-all shadow-md transform active:scale-95 duration-200 cursor-pointer",
-                          s.isFavorite 
-                            ? "border-[#ff2a5f] text-[#ff144f] bg-[#ff2a5f]/15 opacity-100 shadow-[0_0_15px_rgba(255,42,95,0.4)]" 
-                            : "border-white/10 text-white/30 hover:text-[#ff2a5f] hover:border-[#ff2a5f]/30 hover:bg-black/90 opacity-0 group-hover:opacity-100"
-                        )}
-                        title={s.isFavorite ? "Remover de Sermão do Dia" : "Definir como Sermão do Dia"}
+                {filteredSermoes.length === 0 ? (
+                  <div className="col-span-full py-20 px-6 bg-[#162127]/20 border border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center text-center gap-5">
+                    <div className="w-14 h-14 rounded-full bg-[#CF9D7B]/10 border border-[#CF9D7B]/20 flex items-center justify-center text-[#CF9D7B] shadow-[0_0_15px_rgba(207,157,123,0.1)]">
+                      <Search className="w-6 h-6 animate-pulse" />
+                    </div>
+                    <div className="space-y-2 max-w-sm">
+                      <h4 className="font-orbitron font-extrabold text-xs text-white/95 uppercase tracking-[2px]">NENHUM SERMÃO ENCONTRADO</h4>
+                      <p className="font-sans text-[11px] text-text-dim leading-relaxed">
+                        Não encontramos registros para <span className="text-[#CF9D7B] font-mono">"{busca}"</span>. Experimente pesquisar por outras palavras-chaves, referências bíblicas, setores ou tópicos.
+                      </p>
+                    </div>
+                    {busca && (
+                      <button
+                        onClick={() => setBusca('')}
+                        className="mt-1 px-4 py-1.5 rounded-full border border-[#CF9D7B]/30 hover:border-[#CF9D7B] bg-[#CF9D7B]/5 hover:bg-[#CF9D7B]/10 text-[#E5C1A7] hover:text-white transition-all font-orbitron font-extrabold text-[8px] tracking-[1.5px] uppercase cursor-pointer"
                       >
-                        <Heart className={cn("w-4 h-4 transition-transform duration-300", s.isFavorite ? "fill-[#ff2a5f] scale-110 text-[#ff2a5f]" : "")} />
+                        Limpar Termo de Busca
                       </button>
-
-                      {/* Download offline trigger (Spotify style) */}
-                      <button 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleToggleDownloadSermon(s.id!);
-                        }}
-                        className={cn(
-                          "absolute top-3 left-12 z-20 w-8 h-8 flex items-center justify-center rounded-lg bg-black/75 border transition-all shadow-md transform active:scale-95 duration-200 cursor-pointer",
-                          downloadedSermonIds.includes(s.id!) 
-                            ? "border-emerald-500 text-emerald-400 bg-emerald-500/15 opacity-100 shadow-[0_0_15px_rgba(16,185,129,0.4)]" 
-                            : "border-white/10 text-white/30 hover:text-emerald-400 hover:border-emerald-500/30 hover:bg-black/90 opacity-0 group-hover:opacity-100"
-                        )}
-                        title={downloadedSermonIds.includes(s.id!) ? "Remover dos Baixados (Offline)" : "Baixar Sermão para Offline"}
+                    )}
+                  </div>
+                ) : (
+                  filteredSermoes.map((s, index) => {
+                    const hasImage = !!s.img;
+                    const pointsCount = s.pontos?.length || 0;
+                    const randomID = (s.id || '').substring(0, 5).toUpperCase();
+                    return (
+                      <motion.div 
+                        layout
+                        key={s.id}
+                        onClick={() => setSelectedSermonId(s.id!)}
+                        className="group relative bg-[#162127]/30 border border-white/5 hover:border-[#CF9D7B]/40 rounded-xl overflow-hidden cursor-pointer hover:shadow-[0_0_30px_rgba(207,157,123,0.15)] flex flex-col h-96 justify-between transition-all duration-300"
                       >
-                        <Download className={cn("w-4 h-4 transition-transform duration-300", downloadedSermonIds.includes(s.id!) ? "scale-110 text-emerald-400" : "")} />
-                      </button>
+                        {/* Favorite trigger (Sermão do Dia heart icon) */}
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleToggleFavorite(s.id!);
+                          }}
+                          className={cn(
+                            "absolute top-3 left-3 z-20 w-8 h-8 flex items-center justify-center rounded-lg bg-black/75 border transition-all shadow-md transform active:scale-95 duration-200 cursor-pointer",
+                            s.isFavorite 
+                              ? "border-[#ff2a5f] text-[#ff144f] bg-[#ff2a5f]/15 opacity-100 shadow-[0_0_15px_rgba(255,42,95,0.4)]" 
+                              : "border-white/10 text-white/30 hover:text-[#ff2a5f] hover:border-[#ff2a5f]/30 hover:bg-black/90 opacity-0 group-hover:opacity-100"
+                          )}
+                          title={s.isFavorite ? "Remover de Sermão do Dia" : "Definir como Sermão do Dia"}
+                        >
+                          <Heart className={cn("w-4 h-4 transition-transform duration-300", s.isFavorite ? "fill-[#ff2a5f] scale-110 text-[#ff2a5f]" : "")} />
+                        </button>
 
-                      {/* Delete trigger */}
-                      <button 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setShowDeleteConfirm(s.id!);
-                        }}
-                        className="absolute top-3 right-3 z-20 w-8 h-8 flex items-center justify-center rounded-lg bg-black/60 border border-red-500/30 text-red-400 hover:bg-red-500 hover:text-white transition-all opacity-0 group-hover:opacity-100 shadow-md transform"
-                        title="Deletar Sermão"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                        {/* Download offline trigger (Spotify style) */}
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleToggleDownloadSermon(s.id!);
+                          }}
+                          className={cn(
+                            "absolute top-3 left-12 z-20 w-8 h-8 flex items-center justify-center rounded-lg bg-black/75 border transition-all shadow-md transform active:scale-95 duration-200 cursor-pointer",
+                            downloadedSermonIds.includes(s.id!) 
+                              ? "border-emerald-500 text-emerald-400 bg-emerald-500/15 opacity-100 shadow-[0_0_15px_rgba(16,185,129,0.4)]" 
+                              : "border-white/10 text-white/30 hover:text-emerald-400 hover:border-emerald-500/30 hover:bg-black/90 opacity-0 group-hover:opacity-100"
+                          )}
+                          title={downloadedSermonIds.includes(s.id!) ? "Remover dos Baixados (Offline)" : "Baixar Sermão para Offline"}
+                        >
+                          <Download className={cn("w-4 h-4 transition-transform duration-300", downloadedSermonIds.includes(s.id!) ? "scale-110 text-emerald-400" : "")} />
+                        </button>
 
-                      {/* Cover Area */}
-                      <div className="relative w-full h-44 bg-[#0C1519] overflow-hidden shrink-0 border-b border-white/5">
-                        {hasImage ? (
-                          <img 
-                            src={s.img} 
-                            className="w-full h-full object-cover opacity-70 group-hover:opacity-90 group-hover:scale-105 transition-all duration-500" 
-                            alt={s.tema}
-                            loading="lazy"
-                          />
-                        ) : (
-                          <div className="w-full h-full bg-gradient-to-tr from-[#0C1519]/90 to-[#162127]/90 flex items-center justify-center p-4">
-                            <BookOpen className="w-10 h-10 text-[#CF9D7B]/30 group-hover:scale-110 duration-300" />
+                        {/* Delete trigger */}
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setShowDeleteConfirm(s.id!);
+                          }}
+                          className="absolute top-3 right-3 z-20 w-8 h-8 flex items-center justify-center rounded-lg bg-black/60 border border-red-500/30 text-red-400 hover:bg-red-500 hover:text-white transition-all opacity-0 group-hover:opacity-100 shadow-md transform"
+                          title="Deletar Sermão"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+
+                        {/* Cover Area */}
+                        <div className="relative w-full h-44 bg-[#0C1519] overflow-hidden shrink-0 border-b border-white/5">
+                          {hasImage ? (
+                            <img 
+                              src={s.img} 
+                              className="w-full h-full object-cover opacity-70 group-hover:opacity-90 group-hover:scale-105 transition-all duration-500" 
+                              alt={s.tema}
+                              loading="lazy"
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-gradient-to-tr from-[#0C1519]/90 to-[#162127]/90 flex items-center justify-center p-4">
+                              <BookOpen className="w-10 h-10 text-[#CF9D7B]/30 group-hover:scale-110 duration-300" />
+                            </div>
+                          )}
+
+                          {/* Interactive "Start Preaching" Floating Play Tag */}
+                          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 duration-300 flex items-center justify-center gap-2">
+                            <div className="w-10 h-10 rounded-full bg-[#CF9D7B] flex items-center justify-center text-white scale-75 group-hover:scale-100 border border-white/20 shadow-lg transform duration-300">
+                              <Play className="w-5 h-5 ml-0.5 fill-current" />
+                            </div>
                           </div>
-                        )}
 
-                        {/* Interactive "Start Preaching" Floating Play Tag */}
-                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 duration-300 flex items-center justify-center gap-2">
-                          <div className="w-10 h-10 rounded-full bg-[#CF9D7B] flex items-center justify-center text-white scale-75 group-hover:scale-100 border border-white/20 shadow-lg transform duration-300">
-                            <Play className="w-5 h-5 ml-0.5 fill-current" />
-                          </div>
+                          {/* Badged Sectors */}
+                          {s.setores && s.setores.length > 0 && (
+                            <div className="absolute bottom-2 left-2 flex flex-wrap gap-1 max-w-[85%] z-10">
+                              {s.setores.slice(0, 2).map((setor, idx) => (
+                                <span key={idx} className="bg-black/80 border border-[#CF9D7B]/40 text-[#CF9D7B] text-[8px] font-mono font-bold px-1.5 py-0.5 rounded-sm shadow-[0_0_5px_rgba(207,157,123,0.3)] uppercase">
+                                  {setor}
+                                </span>
+                              ))}
+                              {s.setores.length > 2 && (
+                                <span className="bg-black/80 text-[#CF9D7B] text-[8px] font-mono font-bold px-1.5 py-0.5 rounded-sm">
+                                  +{s.setores.length - 2}
+                                </span>
+                              )}
+                            </div>
+                          )}
                         </div>
 
-                        {/* Badged Sectors */}
-                        {s.setores && s.setores.length > 0 && (
-                          <div className="absolute bottom-2 left-2 flex flex-wrap gap-1 max-w-[85%] z-10">
-                            {s.setores.slice(0, 2).map((setor, idx) => (
-                              <span key={idx} className="bg-black/80 border border-[#CF9D7B]/40 text-[#CF9D7B] text-[8px] font-mono font-bold px-1.5 py-0.5 rounded-sm shadow-[0_0_5px_rgba(207,157,123,0.3)] uppercase">
-                                {setor}
+                        {/* Card Content & Meta */}
+                        <div className="flex-1 p-4 flex flex-col justify-between">
+                          <div>
+                            {/* Code Serial / Visual Grid Detail */}
+                            <div className="flex justify-between items-center text-[9px] font-mono tracking-widest text-text-dim mb-1">
+                              <span>REG_KEY: #{randomID}</span>
+                              <span>ORD: {(index+1).toString().padStart(2, '0')}</span>
+                            </div>
+
+                            <h3 className="font-orbitron font-bold text-base text-white/95 group-hover:text-[#CF9D7B] transition-colors leading-snug line-clamp-2" translate="no">
+                              {s.tema}
+                            </h3>
+                          </div>
+
+                          {/* Card Footer Bible and point statistics */}
+                          <div className="border-t border-white/5 pt-3">
+                            <p className="text-[10px] text-[#CF9D7B] font-mono uppercase truncate mb-1" translate="no">
+                              📖 {s.texto || '// SEM BASE CADASTRADA'}
+                            </p>
+
+                            <div className="flex justify-between items-center text-[10px] text-text-dim font-mono">
+                              <span className="flex items-center gap-1">
+                                <Layers size={10} />
+                                {pointsCount} {pointsCount === 1 ? 'tópico' : 'tópicos'}
                               </span>
-                            ))}
-                            {s.setores.length > 2 && (
-                              <span className="bg-black/80 text-[#CF9D7B] text-[8px] font-mono font-bold px-1.5 py-0.5 rounded-sm">
-                                +{s.setores.length - 2}
+                              <span className="text-[9px] opacity-75">
+                                {s.createdAt ? new Date(s.createdAt.seconds * 1000).toLocaleDateString('pt-BR') : 'Recente'}
                               </span>
-                            )}
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Card Content & Meta */}
-                      <div className="flex-1 p-4 flex flex-col justify-between">
-                        <div>
-                          {/* Code Serial / Visual Grid Detail */}
-                          <div className="flex justify-between items-center text-[9px] font-mono tracking-widest text-text-dim mb-1">
-                            <span>REG_KEY: #{randomID}</span>
-                            <span>ORD: {(index+1).toString().padStart(2, '0')}</span>
-                          </div>
-
-                          <h3 className="font-orbitron font-bold text-base text-white/95 group-hover:text-[#CF9D7B] transition-colors leading-snug line-clamp-2" translate="no">
-                            {s.tema}
-                          </h3>
-                        </div>
-
-                        {/* Card Footer Bible and point statistics */}
-                        <div className="border-t border-white/5 pt-3">
-                          <p className="text-[10px] text-[#CF9D7B] font-mono uppercase truncate mb-1" translate="no">
-                            📖 {s.texto || '// SEM BASE CADASTRADA'}
-                          </p>
-
-                          <div className="flex justify-between items-center text-[10px] text-text-dim font-mono">
-                            <span className="flex items-center gap-1">
-                              <Layers size={10} />
-                              {pointsCount} {pointsCount === 1 ? 'tópico' : 'tópicos'}
-                            </span>
-                            <span className="text-[9px] opacity-75">
-                              {s.createdAt ? new Date(s.createdAt.seconds * 1000).toLocaleDateString('pt-BR') : 'Recente'}
-                            </span>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </motion.div>
-                  );
-                })}
+                      </motion.div>
+                    );
+                  })
+                )}
               </div>
             </div>
           </>
