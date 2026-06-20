@@ -886,6 +886,38 @@ export default function App() {
   const [showMiniLogin, setShowMiniLogin] = useState(false);
   const [showLockMessage, setShowLockMessage] = useState(false);
 
+  const [cardsLockInput, setCardsLockInput] = useState('');
+  const [showCardsLockInput, setShowCardsLockInput] = useState(false);
+  const [cardsUnlocked, setCardsUnlocked] = useState(false);
+
+  const [calendarCardsLockInput, setCalendarCardsLockInput] = useState('');
+  const [showCalendarCardsLockInput, setShowCalendarCardsLockInput] = useState(false);
+  const [calendarCardsUnlocked, setCalendarCardsUnlocked] = useState(false);
+
+  const checkCalendarCardsUnlock = () => {
+    if (systemHashConfirm(calendarCardsLockInput) === '47671') {
+      const nextState = !calendarCardsUnlocked;
+      setCalendarCardsUnlocked(nextState);
+      alert(nextState ? "Cards do Calendário Liberados! Agora você pode expandi-los normalmente." : "Cards do Calendário Bloqueados!");
+      setShowCalendarCardsLockInput(false);
+    } else {
+      alert("Senha inválida!");
+    }
+    setCalendarCardsLockInput('');
+  };
+
+  const checkCardsUnlock = () => {
+    if (systemHashConfirm(cardsLockInput) === '47671') {
+      const nextState = !cardsUnlocked;
+      setCardsUnlocked(nextState);
+      alert(nextState ? "Cards Liberados! Agora você pode expandir os sermões normalmente." : "Cards Bloqueados!");
+      setShowCardsLockInput(false);
+    } else {
+      alert("Senha inválida!");
+    }
+    setCardsLockInput('');
+  };
+
   const checkEditAuth = () => {
     if (systemHashConfirm(editPassInput) === '1570946') {
       setEditMode(true);
@@ -2180,7 +2212,7 @@ export default function App() {
                     <div className="relative w-full mb-5 pb-1">
                       <div 
                          ref={topScrollRef}
-                        className="flex gap-2 relative overflow-x-auto scrollbar-none snap-x snap-mandatory py-1 px-0.5"
+                        className="flex justify-center gap-2 relative overflow-x-auto scrollbar-none snap-x snap-mandatory py-1 px-0.5"
                         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
                       >
                         {[1, 2, 3, 4, 5].map((idx) => {
@@ -2345,33 +2377,83 @@ export default function App() {
                   </motion.div>
 
                   {/* Toggle Button for Top Gallery */}
-                  <div className="relative flex justify-center items-center mb-4 mt-2">
-                    <div className="absolute inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-[#CF9D7B]/20 to-transparent" />
-                    <button
-                      onClick={() => {
-                        const nextState = !topGalleryExpanded;
-                        setTopGalleryExpanded(nextState);
-                        if (nextState) {
-                          setTimeout(() => {
-                            topScrollRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                          }, 380);
-                        }
-                      }}
-                      className={cn(
-                        "relative z-10 flex items-center justify-center gap-1.5 bg-[#111114] border rounded-full px-4 py-1.5 cursor-pointer transition-all duration-300 shadow-md",
-                        topGalleryExpanded 
-                          ? "border-red-500/50 text-red-400 hover:bg-red-950/20 shadow-[0_0_8px_rgba(239,68,68,0.2)]" 
-                          : "border-[#CF9D7B]/30 text-[#E5C1A7]/90 hover:bg-[#CF9D7B]/5 hover:border-[#CF9D7B] shadow-[0_0_8px_rgba(207,157,123,0.1)]"
-                      )}
-                    >
-                      <span className="font-orbitron font-extrabold text-[8px] tracking-[2px] uppercase">
-                        {topGalleryExpanded ? "Recolher Atividades " : "Atividades #1 a #5 "}
-                      </span>
-                      <span className="font-sans font-bold text-xs -mt-[1px]">
-                        {topGalleryExpanded ? "−" : "+"}
-                      </span>
-                    </button>
+                  <div className="relative flex flex-col items-center mb-4 mt-2">
+                    <div className="absolute inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-[#CF9D7B]/20 to-transparent top-1/2 -translate-y-1/2" />
+                    <div className="flex items-center gap-2 relative z-10">
+                      <button
+                        onClick={() => {
+                          if (!topGalleryExpanded && !calendarCardsUnlocked) {
+                            setShowCalendarCardsLockInput(true);
+                            alert("Fichas de Atividades bloqueadas! Digite o código de liberação no terminal expandido abaixo.");
+                            return;
+                          }
+                          const nextState = !topGalleryExpanded;
+                          setTopGalleryExpanded(nextState);
+                          if (nextState) {
+                            setTimeout(() => {
+                              topScrollRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            }, 380);
+                          }
+                        }}
+                        className={cn(
+                          "flex items-center justify-center gap-1.5 bg-[#111114] border rounded-full px-4 py-1.5 cursor-pointer transition-all duration-300 shadow-md",
+                          topGalleryExpanded 
+                            ? "border-red-500/50 text-red-400 hover:bg-red-950/20 shadow-[0_0_8px_rgba(239,68,68,0.2)]" 
+                            : "border-[#CF9D7B]/30 text-[#E5C1A7]/90 hover:bg-[#CF9D7B]/5 hover:border-[#CF9D7B] shadow-[0_0_8px_rgba(207,157,123,0.1)]"
+                        )}
+                      >
+                        <span className="font-orbitron font-extrabold text-[8px] tracking-[2px] uppercase">
+                          {topGalleryExpanded ? "Recolher Atividades " : "Atividades #1 a #5 "}
+                        </span>
+                        <span className="font-sans font-bold text-xs -mt-[1px]">
+                          {topGalleryExpanded ? "−" : "+"}
+                        </span>
+                      </button>
+
+                      {/* Orange dot "•" */}
+                      <div 
+                        onClick={() => setShowCalendarCardsLockInput(!showCalendarCardsLockInput)}
+                        className={cn(
+                          "w-1.5 h-1.5 rounded-full cursor-pointer transition-all duration-300 animate-pulse",
+                          calendarCardsUnlocked 
+                            ? "bg-green-500 shadow-[0_0_8px_#10b981]" 
+                            : "bg-[#ff5e00] shadow-[0_0_8px_#ff5e00]"
+                        )}
+                        title={calendarCardsUnlocked ? "Atividades Desbloqueadas" : "Liberar Atividades (Acesso Protegido)"}
+                      />
+                    </div>
                   </div>
+
+                  {/* Password input for calendar activities (Top) */}
+                  <AnimatePresence>
+                    {showCalendarCardsLockInput && (
+                      <motion.div 
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="bg-black/80 rounded-xl p-3 border border-white/10 flex gap-2 relative z-50 w-full mb-3 shadow-[0_4px_20px_rgba(0,0,0,0.5)] self-center"
+                      >
+                        <input 
+                          type="password" 
+                          value={calendarCardsLockInput}
+                          onChange={(e) => setCalendarCardsLockInput(e.target.value)}
+                          placeholder="Código de Acesso"
+                          className="flex-1 bg-white/80 border-none rounded-md p-1.5 text-[12px] outline-none text-[#222]" 
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              checkCalendarCardsUnlock();
+                            }
+                          }}
+                        />
+                        <button 
+                          onClick={checkCalendarCardsUnlock}
+                          className="bg-[#ff5e00] hover:bg-[#e05300] border-none text-white rounded-md px-3.5 py-1 text-[10px] font-bold cursor-pointer transition-colors"
+                        >
+                          OK
+                        </button>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
 
                   {/* Header with Navigation */}
                   <div className="flex justify-between items-center mb-3 px-1 pt-4 border-t border-[#CF9D7B]/20">
@@ -2412,33 +2494,83 @@ export default function App() {
                   </div>
 
                   {/* Toggle Button for Bottom Gallery */}
-                  <div className="relative flex justify-center items-center mt-5 mb-2">
-                    <div className="absolute inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-[#CF9D7B]/20 to-transparent" />
-                    <button
-                      onClick={() => {
-                        const nextState = !bottomGalleryExpanded;
-                        setBottomGalleryExpanded(nextState);
-                        if (nextState) {
-                          setTimeout(() => {
-                            bottomScrollRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                          }, 380);
-                        }
-                      }}
-                      className={cn(
-                        "relative z-10 flex items-center justify-center gap-1.5 bg-[#111114] border rounded-full px-4 py-1.5 cursor-pointer transition-all duration-300 shadow-md",
-                        bottomGalleryExpanded 
-                          ? "border-red-500/50 text-red-500 hover:bg-red-950/20 shadow-[0_0_8px_rgba(239,68,68,0.2)]" 
-                          : "border-[#CF9D7B]/30 text-[#E5C1A7]/90 hover:bg-[#CF9D7B]/5 hover:border-[#CF9D7B] shadow-[0_0_8px_rgba(207,157,123,0.1)]"
-                      )}
-                    >
-                      <span className="font-orbitron font-extrabold text-[8px] tracking-[2px] uppercase">
-                        {bottomGalleryExpanded ? "Recolher Atividades " : "Atividades #6 a #10 "}
-                      </span>
-                      <span className="font-sans font-bold text-xs -mt-[1px]">
-                        {bottomGalleryExpanded ? "−" : "+"}
-                      </span>
-                    </button>
+                  <div className="relative flex flex-col items-center mt-5 mb-2">
+                    <div className="absolute inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-[#CF9D7B]/20 to-transparent top-1/2 -translate-y-1/2" />
+                    <div className="flex items-center gap-2 relative z-10">
+                      <button
+                        onClick={() => {
+                          if (!bottomGalleryExpanded && !calendarCardsUnlocked) {
+                            setShowCalendarCardsLockInput(true);
+                            alert("Fichas de Atividades bloqueadas! Digite o código de liberação no terminal expandido.");
+                            return;
+                          }
+                          const nextState = !bottomGalleryExpanded;
+                          setBottomGalleryExpanded(nextState);
+                          if (nextState) {
+                            setTimeout(() => {
+                              bottomScrollRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            }, 380);
+                          }
+                        }}
+                        className={cn(
+                          "flex items-center justify-center gap-1.5 bg-[#111114] border rounded-full px-4 py-1.5 cursor-pointer transition-all duration-300 shadow-md",
+                          bottomGalleryExpanded 
+                            ? "border-red-500/50 text-red-500 hover:bg-red-950/20 shadow-[0_0_8px_rgba(239,68,68,0.2)]" 
+                            : "border-[#CF9D7B]/30 text-[#E5C1A7]/90 hover:bg-[#CF9D7B]/5 hover:border-[#CF9D7B] shadow-[0_0_8px_rgba(207,157,123,0.1)]"
+                        )}
+                      >
+                        <span className="font-orbitron font-extrabold text-[8px] tracking-[2px] uppercase">
+                          {bottomGalleryExpanded ? "Recolher Atividades " : "Atividades #6 a #10 "}
+                        </span>
+                        <span className="font-sans font-bold text-xs -mt-[1px]">
+                          {bottomGalleryExpanded ? "−" : "+"}
+                        </span>
+                      </button>
+
+                      {/* Orange dot "•" */}
+                      <div 
+                        onClick={() => setShowCalendarCardsLockInput(!showCalendarCardsLockInput)}
+                        className={cn(
+                          "w-1.5 h-1.5 rounded-full cursor-pointer transition-all duration-300 animate-pulse",
+                          calendarCardsUnlocked 
+                            ? "bg-green-500 shadow-[0_0_8px_#10b981]" 
+                            : "bg-[#ff5e00] shadow-[0_0_8px_#ff5e00]"
+                        )}
+                        title={calendarCardsUnlocked ? "Atividades Desbloqueadas" : "Liberar Atividades (Acesso Protegido)"}
+                      />
+                    </div>
                   </div>
+
+                  {/* Password input for calendar activities (Bottom) */}
+                  <AnimatePresence>
+                    {showCalendarCardsLockInput && (
+                      <motion.div 
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="bg-black/80 rounded-xl p-3 border border-white/10 flex gap-2 relative z-50 w-full mt-3 mb-2 shadow-[0_4px_20px_rgba(0,0,0,0.5)] self-center"
+                      >
+                        <input 
+                          type="password" 
+                          value={calendarCardsLockInput}
+                          onChange={(e) => setCalendarCardsLockInput(e.target.value)}
+                          placeholder="Código de Acesso"
+                          className="flex-1 bg-white/80 border-none rounded-md p-1.5 text-[12px] outline-none text-[#222]" 
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              checkCalendarCardsUnlock();
+                            }
+                          }}
+                        />
+                        <button 
+                          onClick={checkCalendarCardsUnlock}
+                          className="bg-[#ff5e00] hover:bg-[#e05300] border-none text-white rounded-md px-3.5 py-1 text-[10px] font-bold cursor-pointer transition-colors"
+                        >
+                          OK
+                        </button>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
 
                   {/* Bottom Gallery Row - 5 Cards (below the calendar) - Collapsible */}
                   <motion.div
@@ -2455,7 +2587,7 @@ export default function App() {
                     <div className="relative w-full mb-2.5 pt-1">
                       <div 
                         ref={bottomScrollRef}
-                        className="flex gap-2 relative overflow-x-auto scrollbar-none snap-x snap-mandatory py-1 px-0.5"
+                        className="flex justify-center gap-2 relative overflow-x-auto scrollbar-none snap-x snap-mandatory py-1 px-0.5"
                         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
                       >
                         {[1, 2, 3, 4, 5].map((idx) => {
@@ -3102,14 +3234,59 @@ export default function App() {
 
             {/* Contemporary Elegant Sermon Catalog Grid Gallery */}
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-orbitron font-bold tracking-[0.25em] text-[#CF9D7B] uppercase">// EXPEDIENTE DE PREGAÇÕES ({filteredSermoes.length})</span>
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-orbitron font-bold tracking-[0.25em] text-[#CF9D7B] uppercase">// EXPEDIENTE DE PREGAÇÕES ({filteredSermoes.length})</span>
+                  
+                  {/* Little orange edit dot (Acesso Administrador para os Cards) */}
+                  <div 
+                    onClick={() => setShowCardsLockInput(!showCardsLockInput)}
+                    className={cn(
+                      "w-1.5 h-1.5 rounded-full cursor-pointer transition-all duration-300 animate-pulse z-20",
+                      cardsUnlocked 
+                        ? "bg-green-500 shadow-[0_0_8px_#10b981]" 
+                        : "bg-[#ff5e00] shadow-[0_0_8px_#ff5e00]"
+                    )}
+                    title={cardsUnlocked ? "Cards Desbloqueados" : "Acesso Administrador - Liberar Cards"}
+                  />
+                </div>
                 <span className="text-[9px] font-sans text-text-dim text-right">Toque em qualquer ficha de sermão para abrir a mesa de controle</span>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {/* Password expansion input for sermon cards */}
+              <AnimatePresence>
+                {showCardsLockInput && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="bg-black/60 rounded-xl p-3 border border-white/10 flex gap-2 relative z-10 w-full max-w-xs shadow-lg mb-2"
+                  >
+                    <input 
+                      type="password" 
+                      value={cardsLockInput}
+                      onChange={(e) => setCardsLockInput(e.target.value)}
+                      placeholder="Código de Acesso"
+                      className="flex-1 bg-white/80 border-none rounded-md p-1.5 text-[12px] outline-none text-[#222]" 
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          checkCardsUnlock();
+                        }
+                      }}
+                    />
+                    <button 
+                      onClick={checkCardsUnlock}
+                      className="bg-[#ff5e00] hover:bg-[#e05300] border-none text-white rounded-md px-3.5 py-1 text-[10px] font-bold cursor-pointer transition-colors"
+                    >
+                      OK
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <div className="flex flex-wrap gap-6 justify-center">
                 {filteredSermoes.length === 0 ? (
-                  <div className="col-span-full py-20 px-6 bg-[#162127]/20 border border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center text-center gap-5">
+                  <div className="w-full py-20 px-6 bg-[#162127]/20 border border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center text-center gap-5">
                     <div className="w-14 h-14 rounded-full bg-[#CF9D7B]/10 border border-[#CF9D7B]/20 flex items-center justify-center text-[#CF9D7B] shadow-[0_0_15px_rgba(207,157,123,0.1)]">
                       <Search className="w-6 h-6 animate-pulse" />
                     </div>
@@ -3137,8 +3314,20 @@ export default function App() {
                       <motion.div 
                         layout
                         key={s.id}
-                        onClick={() => setSelectedSermonId(s.id!)}
-                        className="group relative bg-[#162127]/30 border border-white/5 hover:border-[#CF9D7B]/40 rounded-xl overflow-hidden cursor-pointer hover:shadow-[0_0_30px_rgba(207,157,123,0.15)] flex flex-col h-96 justify-between transition-all duration-300"
+                        onClick={() => {
+                          if (!cardsUnlocked) {
+                            setShowCardsLockInput(true);
+                            alert("Fichas de sermão bloqueadas! Digite o código de liberação no terminal acima.");
+                            return;
+                          }
+                          setSelectedSermonId(s.id!);
+                        }}
+                        className={cn(
+                          "group relative bg-[#162127]/30 border rounded-xl overflow-hidden cursor-pointer flex flex-col h-96 justify-between transition-all duration-300 w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] xl:w-[calc(25%-18px)] max-w-sm",
+                          cardsUnlocked 
+                            ? "border-white/5 hover:border-[#CF9D7B]/40 hover:shadow-[0_0_30px_rgba(207,157,123,0.15)]"
+                            : "border-red-500/10 hover:border-red-500/30 hover:shadow-[0_0_20px_rgba(239,68,68,0.06)]"
+                        )}
                       >
                         {/* Favorite trigger (Sermão do Dia heart icon) */}
                         <button 
