@@ -1334,27 +1334,27 @@ export default function App() {
                     .evt-custom-track {
                       flex: 1;
                       height: 38px;
-                      background: #0f1011;
+                      background: #0d0d10;
                       border-radius: 19px;
-                      padding: 3px;
-                      box-shadow: inset 0 3px 12px rgba(0,0,0,0.95), 0 1px 1px rgba(255,255,255,0.03);
+                      padding: 4px;
+                      box-shadow: inset 0 3px 10px rgba(0,0,0,0.95), 0 1px 1px rgba(255,255,255,0.02);
                       position: relative;
                       display: flex;
                       align-items: center;
-                      border: 1px solid rgba(255,255,255,0.01);
+                      border: 1px solid rgba(255,255,255,0.03);
                       overflow: hidden;
                     }
                     .evt-custom-fill {
                       height: 100%;
-                      border-radius: 16px;
-                      background: linear-gradient(90deg, #81a415 0%, #aee30d 100%);
+                      border-radius: 14px;
+                      background: linear-gradient(90deg, #CF9D7B 0%, #ff6a00 100%);
                       position: relative;
                       display: flex;
                       align-items: center;
                       justify-content: flex-end;
-                      padding-right: 3px;
+                      padding-right: 2px;
                       min-width: 32px;
-                      box-shadow: 0 0 20px rgba(174,227,13,0.5);
+                      box-shadow: 0 0 16px rgba(255,106,0,0.45);
                       transition: width 0.8s cubic-bezier(0.1,0.8,0.25,1);
                       overflow: hidden;
                     }
@@ -1362,129 +1362,32 @@ export default function App() {
                       content: '';
                       position: absolute;
                       inset: 0;
-                      background: repeating-linear-gradient(90deg, transparent, transparent 10px, rgba(255,255,255,0.45) 15px, rgba(255,255,255,0.6) 20px, rgba(255,255,255,0.45) 25px, transparent 30px);
+                      background: repeating-linear-gradient(90deg, transparent, transparent 10px, rgba(255,255,255,0.25) 15px, rgba(255,255,255,0.4) 20px, rgba(255,255,255,0.25) 25px, transparent 30px);
                       background-size: 150px 100%;
-                      animation: evtElectricSparks 1s infinite linear;
-                      filter: drop-shadow(0 0 10px rgba(255,255,255,0.9));
+                      animation: evtElectricSparks 1.2s infinite linear;
+                      filter: drop-shadow(0 0 5px rgba(255,255,255,0.7));
                     }
                     @keyframes evtElectricSparks {
                       0% { background-position: -150px 0; }
                       100% { background-position: 150% 0; }
                     }
-                    .evt-custom-fill::after {
-                      content: '';
-                      position: absolute;
-                      inset: 0;
-                      background: radial-gradient(circle at var(--evt-x, 50%) var(--evt-y, 50%), rgba(255,255,255,0.8), transparent 30%);
-                      mix-blend-mode: overlay;
-                      opacity: 0.9;
-                      animation: evtLightningCrack 1.8s infinite steps(2);
-                    }
-                    @keyframes evtLightningCrack {
-                      0%,100%{--evt-x:10%;--evt-y:20%;opacity:.2}
-                      25%{--evt-x:80%;--evt-y:70%;opacity:.9}
-                      50%{--evt-x:40%;--evt-y:30%;opacity:.4}
-                      75%{--evt-x:95%;--evt-y:10%;opacity:.85}
-                    }
                     .evt-custom-plane-btn {
-                      width: 26px;
-                      height: 26px;
+                      width: 24px;
+                      height: 24px;
                       background: #ffffff;
                       border-radius: 50%;
                       display: flex;
                       align-items: center;
                       justify-content: center;
-                      box-shadow: 0 4px 14px rgba(0,0,0,0.55), 0 0 15px rgba(174,227,13,0.8);
+                      box-shadow: 0 4px 12px rgba(0,0,0,0.6), 0 0 15px rgba(255,106,0,0.7);
                       z-index: 2;
                       flex-shrink: 0;
-                      border: 1px solid rgba(174,227,13,0.4);
+                      border: 1px solid rgba(255,106,0,0.3);
                       animation: evtPlaneThrob 1.5s ease-in-out infinite alternate;
                     }
                     @keyframes evtPlaneThrob {
-                      0%{transform:scale(1);box-shadow:0 4px 14px rgba(0,0,0,0.55),0 0 10px rgba(174,227,13,0.6)}
-                      100%{transform:scale(1.08);box-shadow:0 4px 16px rgba(0,0,0,0.55),0 0 25px rgba(174,227,13,1)}
-                    }
-                    /* Custom Airport LED Dot Matrix Grid Overlay Styles */
-                    .evt-led-big-white {
-                      font-family: "Outfit", sans-serif !important;
-                      font-size: 22px !important;
-                      font-weight: 900 !important;
-                      letter-spacing: 1px !important;
-                      color: #ffffff !important;
-                      line-height: 1 !important;
-                      position: relative !important;
-                      display: inline-block !important;
-                      text-shadow: 0 0 10px rgba(255, 255, 255, 0.4), 0 0 20px rgba(255, 255, 255, 0.15) !important;
-                    }
-                    @media (min-width: 400px) {
-                      .evt-led-big-white {
-                        font-size: 28px !important;
-                      }
-                    }
-                    @media (min-width: 480px) {
-                      .evt-led-big-white {
-                        font-size: 34px !important;
-                      }
-                    }
-                    .evt-led-big-white::after {
-                      content: "";
-                      position: absolute;
-                      inset: 0;
-                      background-image: radial-gradient(rgba(12,12,14,0.95) 40%, transparent 45%) !important;
-                      background-size: 2.2px 2.2px !important;
-                      pointer-events: none;
-                      z-index: 10;
-                    }
-                    .evt-led-small-dim {
-                      font-family: "Outfit", sans-serif !important;
-                      font-size: 11px !important;
-                      font-weight: 700 !important;
-                      letter-spacing: 1.5px !important;
-                      color: rgba(255, 255, 255, 0.38) !important;
-                      text-transform: lowercase !important;
-                      line-height: 1 !important;
-                      position: relative !important;
-                      display: inline-block !important;
-                      text-shadow: 0 0 5px rgba(255, 255, 255, 0.1) !important;
-                    }
-                    .evt-led-small-dim::after {
-                      content: "";
-                      position: absolute;
-                      inset: 0;
-                      background-image: radial-gradient(rgba(12,12,14,0.95) 40%, transparent 45%) !important;
-                      background-size: 1.4px 1.4px !important;
-                      pointer-events: none;
-                      z-index: 10;
-                    }
-                    .evt-led-big-green {
-                      font-family: "Outfit", sans-serif !important;
-                      font-size: 13px !important;
-                      font-weight: 950 !important;
-                      letter-spacing: 1px !important;
-                      color: #ccff00 !important;
-                      line-height: 1 !important;
-                      position: relative !important;
-                      display: inline-block !important;
-                      text-shadow: 0 0 12px rgba(204, 255, 0, 0.65), 0 0 20px rgba(204, 255, 0, 0.25) !important;
-                    }
-                    @media (min-width: 400px) {
-                      .evt-led-big-green {
-                        font-size: 15px !important;
-                      }
-                    }
-                    @media (min-width: 480px) {
-                      .evt-led-big-green {
-                        font-size: 18px !important;
-                      }
-                    }
-                    .evt-led-big-green::after {
-                      content: "";
-                      position: absolute;
-                      inset: 0;
-                      background-image: radial-gradient(rgba(12,12,14,0.95) 43%, transparent 48%) !important;
-                      background-size: 2.4px 2.4px !important;
-                      pointer-events: none;
-                      z-index: 10;
+                      0%{transform:scale(1);box-shadow:0 4px 12px rgba(0,0,0,0.6),0 0 8px rgba(255,106,0,0.5)}
+                      100%{transform:scale(1.08);box-shadow:0 4px 14px rgba(0,0,0,0.6),0 0 20px rgba(255,106,0,0.9)}
                     }
                   `}</style>
 
@@ -1522,204 +1425,222 @@ export default function App() {
                     )}
                   </AnimatePresence>
 
-                  <div className="flex items-center justify-between mb-3 border-b border-white/5 pb-2">
+                   <div className="flex items-center justify-between mb-3 border-b border-white/5 pb-2">
                     <div 
                       contentEditable={editMode}
                       onBlur={(e) => updateSystemField('id7', e.currentTarget.innerText)}
                       suppressContentEditableWarning
                       className={cn(
-                        "font-outfit text-[11px] font-bold text-[#d4af37]/80 tracking-[3px] uppercase outline-none transition-all",
-                        editMode && "border-b border-dashed border-[#ff5e00]"
+                        "font-space-grotesk text-[10px] sm:text-[11px] font-bold text-[#e5c1a7] tracking-[2.5px] uppercase outline-none transition-all",
+                        editMode && "border-b border-dashed border-[#ff5e00] bg-white/5 px-1 rounded"
                       )}
                     >
                       {systemFields.id7 || 'CONFERENCISTA // JIMMY ROGERS'}
                     </div>
-                    <div className="flex items-center gap-1.5 text-[8.5px] text-[#25d366]/85 tracking-[1.5px] uppercase font-bold pr-6">
+                    <div className="flex items-center gap-1.5 text-[8.0px] sm:text-[8.5px] text-[#25d366]/85 tracking-[1.5px] uppercase font-bold pr-1">
                       <div className="w-[5px] h-[5px] rounded-full bg-[#25d366] shadow-[0_0_8px_#25d366] animate-pulse" />
                       Sincronizado
                     </div>
                   </div>
 
                   {/* Flight Widget Main Panel Container */}
-                  <div className="w-full bg-gradient-to-br from-[#101010] to-[#0c0c0c] border border-white/[0.05] rounded-[24px] p-3.5 xs:p-4 sm:p-5 relative overflow-hidden shadow-inner">
-                    {/* Dot grid decoration pattern */}
-                    <div className="absolute top-0 left-0 w-[130px] h-[120px] pointer-events-none opacity-[0.18] [mask-image:radial-gradient(circle_at_0_0,white,transparent_80%)]" 
-                         style={{ backgroundImage: 'radial-gradient(#6c8511 15%, transparent 20%)', backgroundSize: '4px 4px' }} />
-                    <div className="absolute -top-5 -left-5 w-[140px] h-[140px] bg-[radial-gradient(circle,rgba(173,255,47,0.08)_0%,transparent_70%)] pointer-events-none" />
+                  <div className="w-full bg-gradient-to-br from-[#0c0c0e]/95 via-[#0e0e12]/95 to-[#050507]/98 border border-white/[0.06] rounded-[24px] p-4 sm:p-5 relative overflow-hidden shadow-[inset_0_1px_1px_rgba(255,255,255,0.05),0_15px_30px_rgba(0,0,0,0.8)]">
+                    {/* Glowing golden mesh highlights */}
+                    <div className="absolute top-0 right-0 w-[120px] h-[120px] bg-[radial-gradient(circle_at_100%_0%,rgba(255,106,0,0.08)_0%,transparent_75%)] pointer-events-none" />
+                    <div className="absolute bottom-0 left-0 w-[120px] h-[120px] bg-[radial-gradient(circle_at_0%_100%,rgba(207,157,123,0.06)_0%,transparent_75%)] pointer-events-none" />
 
-                    <div className="flex justify-between items-start gap-2 sm:gap-4 mb-5">
-                      {/* Left: Origin and Destination Column */}
-                      <div className="flex flex-col gap-4 flex-1">
-                        {/* ORIGEM */}
-                        <div className="flex flex-col items-start text-left">
-                          <div className="flex items-baseline leading-none">
-                            <span className="evt-led-small-dim mr-1.5">setor</span>
-                            <span 
-                              contentEditable={editMode}
-                              onBlur={(e) => updateSystemField('id1', e.currentTarget.innerText)}
-                              suppressContentEditableWarning
-                              className={cn(
-                                "evt-led-big-white outline-none transition-all",
-                                editMode && "border-b border-dashed border-[#ff5e00]"
-                              )}
-                            >
-                              {systemFields.id1}
-                            </span>
-                          </div>
-                          <span 
-                            contentEditable={editMode}
-                            onBlur={(e) => updateSystemField('id3', e.currentTarget.innerText)}
-                            suppressContentEditableWarning
-                            className={cn(
-                              "font-space-grotesk text-[11px] sm:text-[13px] font-bold text-white mt-1 leading-tight outline-none transition-all block",
-                              editMode && "border-b border-dashed border-[#ff5e00]"
-                            )}
-                          >
-                            {systemFields.id3}
-                          </span>
-                          <span 
-                            contentEditable={editMode}
-                            onBlur={(e) => updateSystemField('id4', e.currentTarget.innerText)}
-                            suppressContentEditableWarning
-                            className={cn(
-                              "font-space-grotesk text-[8.5px] sm:text-[10px] text-white/35 mt-0.5 uppercase tracking-[0.5px] block outline-none transition-all",
-                              editMode && "border-b border-dashed border-[#ff5e00]"
-                            )}
-                          >
-                            {systemFields.id4}
-                          </span>
+                    {/* Horizontal Boarding System Layout */}
+                    <div className="flex justify-between items-center gap-2 mb-4 bg-black/45 border border-white/[0.03] p-3 rounded-2xl">
+                      {/* ORIGEM (Departure Station) */}
+                      <div className="flex flex-col items-start text-left min-w-[70px] flex-1">
+                        <span className="text-[6.5px] sm:text-[7.5px] text-[#CF9D7B] font-extrabold tracking-[1.5px] uppercase bg-[#CF9D7B]/10 px-1.5 py-0.5 rounded border border-[#CF9D7B]/20 font-mono mb-1.5 select-none">
+                          Setor
+                        </span>
+                        <div 
+                          contentEditable={editMode}
+                          onBlur={(e) => updateSystemField('id1', e.currentTarget.innerText)}
+                          suppressContentEditableWarning
+                          className={cn(
+                            "font-space-grotesk text-2xl sm:text-3xl font-extrabold tracking-tight text-white outline-none leading-none transition-all drop-shadow-[0_0_12px_rgba(255,255,255,0.1)]",
+                            editMode && "border-b border-dashed border-[#ff5e00] bg-white/5"
+                          )}
+                        >
+                          {systemFields.id1 || '48'}
                         </div>
+                        <span 
+                          contentEditable={editMode}
+                          onBlur={(e) => updateSystemField('id3', e.currentTarget.innerText)}
+                          suppressContentEditableWarning
+                          className={cn(
+                            "font-space-grotesk text-[10px] sm:text-[11px] font-bold text-[#e5c1a7] mt-1 leading-tight outline-none transition-all truncate max-w-[100px] block",
+                            editMode && "border-b border-dashed border-[#ff5e00] bg-white/5"
+                          )}
+                          title={systemFields.id3}
+                        >
+                          {systemFields.id3 || 'VIVA LARES'}
+                        </span>
+                        <span 
+                          contentEditable={editMode}
+                          onBlur={(e) => updateSystemField('id4', e.currentTarget.innerText)}
+                          suppressContentEditableWarning
+                          className={cn(
+                            "font-space-grotesk text-[8.5px] text-white/40 mt-0.5 uppercase tracking-[0.5px] block outline-none transition-all",
+                            editMode && "border-b border-dashed border-[#ff5e00] bg-white/5"
+                          )}
+                        >
+                          {systemFields.id4 || 'SÁB, 19:30'}
+                        </span>
+                      </div>
 
-                        {/* Arrow separator */}
-                        <div className="text-[15px] text-[#ff9100] drop-shadow-[0_0_10px_rgba(255,145,0,0.4)] font-bold pl-3 leading-none select-none">
-                          ↓
-                        </div>
-
-                        {/* DESTINO */}
-                        <div className="flex flex-col items-start text-left">
-                          <div className="flex items-baseline leading-none">
-                            <span className="evt-led-small-dim mr-1.5">setor</span>
-                            <span 
-                              contentEditable={editMode}
-                              onBlur={(e) => updateSystemField('id2', e.currentTarget.innerText)}
-                              suppressContentEditableWarning
-                              className={cn(
-                                "evt-led-big-white outline-none transition-all",
-                                editMode && "border-b border-dashed border-[#ff5e00]"
-                              )}
-                            >
-                              {systemFields.id2}
-                            </span>
+                      {/* FLIGHT TRAJECTORY GRAPHIC HEADER */}
+                      <div className="flex-[0.8] flex flex-col items-center justify-center px-1">
+                        <span className="text-[6.5px] text-white/30 tracking-[1.5px] uppercase font-mono mb-1.5 leading-none select-none">// TRAJETÓRIA</span>
+                        <div className="w-full flex items-center justify-center relative">
+                          <div className="absolute inset-x-0 h-[1.5px] bg-gradient-to-r from-[#CF9D7B]/20 via-[#ff6a00]/30 to-[#CF9D7B]/20" />
+                          <div className="absolute inset-x-0 h-[1px] border-b border-dashed border-white/15" />
+                          <div className="relative bg-[#0d0d10] p-1.5 rounded-full border border-white/10 shadow-[0_0_10px_rgba(255,106,0,0.25)] animate-pulse">
+                            <Plane className="w-3 h-3 text-[#ff7700] rotate-90" />
                           </div>
+                        </div>
+                        <span className="text-[7.5px] text-[#ff9100]/85 font-space-grotesk font-extrabold mt-1.5 leading-none tracking-[0.5px]">{flightProgress}% VOADO</span>
+                      </div>
+
+                      {/* DESTINO (Arrival Station) */}
+                      <div className="flex flex-col items-end text-right min-w-[70px] flex-1">
+                        <span className="text-[6.5px] sm:text-[7.5px] text-[#ff7700] font-extrabold tracking-[1.5px] uppercase bg-[#ff7700]/10 px-1.5 py-0.5 rounded border border-[#ff7700]/20 font-mono mb-1.5 select-none">
+                          Setor
+                        </span>
+                        <div 
+                          contentEditable={editMode}
+                          onBlur={(e) => updateSystemField('id2', e.currentTarget.innerText)}
+                          suppressContentEditableWarning
+                          className={cn(
+                            "font-space-grotesk text-2xl sm:text-3xl font-extrabold tracking-tight text-white outline-none leading-none transition-all drop-shadow-[0_0_12px_rgba(255,255,255,0.1)]",
+                            editMode && "border-b border-dashed border-[#ff5e00] bg-white/5"
+                          )}
+                        >
+                          {systemFields.id2 || '27'}
+                        </div>
+                        <span 
+                          contentEditable={editMode}
+                          onBlur={(e) => updateSystemField('id5', e.currentTarget.innerText)}
+                          suppressContentEditableWarning
+                          className={cn(
+                            "font-space-grotesk text-[10px] sm:text-[11px] font-bold text-[#e5c1a7] mt-1 leading-tight outline-none transition-all truncate max-w-[100px] block",
+                            editMode && "border-b border-dashed border-[#ff5e00] bg-white/5"
+                          )}
+                          title={systemFields.id5}
+                        >
+                          {systemFields.id5 || 'BETEL'}
+                        </span>
+                        <span 
+                          contentEditable={editMode}
+                          onBlur={(e) => updateSystemField('id6', e.currentTarget.innerText)}
+                          suppressContentEditableWarning
+                          className={cn(
+                            "font-space-grotesk text-[8.5px] text-white/40 mt-0.5 uppercase tracking-[0.5px] block outline-none transition-all",
+                            editMode && "border-b border-dashed border-[#ff5e00] bg-white/5"
+                          )}
+                        >
+                          {systemFields.id6 || 'SÁB, 19:30'}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* High-Tech Bento Information Grid */}
+                    <div className="grid grid-cols-2 gap-2.5 mb-4">
+                      {/* Left Block: Event Date & Class */}
+                      <div className="bg-[#121215]/80 border border-white/[0.04] rounded-2xl p-3 shadow-inner flex flex-col justify-between relative overflow-hidden group">
+                        <div className="absolute top-0 right-0 w-10 h-10 bg-gradient-to-bl from-[#ff6a00]/5 to-transparent pointer-events-none" />
+                        <div className="flex items-center gap-1.5 text-white/40 text-[7.5px] tracking-[1px] uppercase font-mono mb-2">
+                          <Clock className="w-2.5 h-2.5 text-[#ffaa00]" />
+                          <span>Programado</span>
+                        </div>
+                        <div className="flex flex-col gap-1.5">
                           <span 
                             contentEditable={editMode}
-                            onBlur={(e) => updateSystemField('id5', e.currentTarget.innerText)}
+                            onBlur={(e) => updateSystemField('id8', e.currentTarget.innerText)}
                             suppressContentEditableWarning
                             className={cn(
-                              "font-space-grotesk text-[11px] sm:text-[13px] font-bold text-white mt-1 leading-tight outline-none transition-all block",
-                              editMode && "border-b border-dashed border-[#ff5e00]"
+                              "font-space-grotesk text-[18px] sm:text-[20px] font-extrabold text-[#e5c1a7] leading-none tracking-tight outline-none transition-all block",
+                              editMode && "border-b border-dashed border-[#ff5e00] bg-white/5"
                             )}
                           >
-                            {systemFields.id5}
+                            {(() => {
+                              const val = systemFields.id8 || '20/06';
+                              if (val.toLowerCase().startsWith('data')) return val;
+                              return `Dia ${val}`;
+                            })()}
                           </span>
                           <span 
                             contentEditable={editMode}
-                            onBlur={(e) => updateSystemField('id6', e.currentTarget.innerText)}
+                            onBlur={(e) => updateSystemField('id10', e.currentTarget.innerText)}
                             suppressContentEditableWarning
                             className={cn(
-                              "font-space-grotesk text-[8.5px] sm:text-[10px] text-white/35 mt-0.5 uppercase tracking-[0.5px] block outline-none transition-all",
-                              editMode && "border-b border-dashed border-[#ff5e00]"
+                              "font-space-grotesk text-[9.5px]/none text-[#ff7700] font-extrabold tracking-wider outline-none transition-all",
+                              editMode && "border-b border-dashed border-[#ff5e00] bg-white/5"
                             )}
                           >
-                            {systemFields.id6}
+                            {systemFields.id10 || 'CULT 19:30'}
                           </span>
                         </div>
                       </div>
 
-                      {/* Right side: ETA panel & Event Date */}
-                      <div className="flex flex-col gap-4 items-end justify-between self-stretch text-right min-w-[110px] sm:min-w-[135px] max-w-[140px] shrink-0">
-                        {/* Event yellow Date Stamp on led matrix */}
-                        <span 
-                          contentEditable={editMode}
-                          onBlur={(e) => updateSystemField('id8', e.currentTarget.innerText)}
-                          suppressContentEditableWarning
-                          className={cn(
-                            "evt-led-big-green outline-none transition-all leading-none",
-                            editMode && "border-b border-dashed border-[#ff5e00]"
-                          )}
-                        >
-                          {(() => {
-                            const val = systemFields.id8 || '20/06';
-                            if (val.toLowerCase().startsWith('data')) {
-                              return val;
-                            }
-                            return `Data-${val}`;
-                          })()}
-                        </span>
-
-                        {/* ETA Card Panel */}
-                        <div className="bg-[#101010]/85 border-[1.5px] border-white/[0.04] rounded-[18px] p-2.5 sm:p-3 w-full shadow-[inset_0_2px_5px_rgba(0,0,0,0.5),0_4px_10px_rgba(0,0,0,0.3)] relative text-left">
-                          <div className="flex items-center justify-between gap-1">
-                            <span 
-                              contentEditable={editMode}
-                              onBlur={(e) => updateSystemField('id10', e.currentTarget.innerText)}
-                              suppressContentEditableWarning
-                              className={cn(
-                                "font-space-grotesk text-[10px] sm:text-[13px] font-bold text-white outline-none transition-all leading-none uppercase truncate",
-                                editMode && "border-b border-dashed border-[#ff5e00]"
-                              )}
-                            >
-                              {systemFields.id10 || 'CULT 19:30'}
-                            </span>
-                            <div className="w-4 h-4 sm:w-[18px] sm:h-[18px] bg-[#1c1c1e] rounded-full flex items-center justify-center text-[#ff9100]/60 shrink-0">
-                              <Clock className="w-2.5 h-2.5" />
-                            </div>
-                          </div>
-                          <div className="font-space-grotesk text-[9.5px] sm:text-[11px] text-[#ff9100] mt-1.5 mb-2 font-bold drop-shadow-[0_0_8px_rgba(255,145,0,0.25)] tracking-wider">
-                            {brasiliaTime}
-                          </div>
-                          <div 
-                            className="font-space-grotesk text-[8px] sm:text-[9px] font-bold tracking-[0.5px] leading-tight"
-                            style={{ color: alertColor }}
-                          >
-                            {alertText}
-                          </div>
+                      {/* Right Block: Dynamic Mission Countdown Indicator */}
+                      <div className="bg-[#121215]/80 border border-white/[0.04] rounded-2xl p-3 shadow-inner flex flex-col justify-between relative overflow-hidden group">
+                        <div className="absolute top-0 right-0 w-10 h-10 bg-gradient-to-bl from-[#10b981]/5 to-transparent pointer-events-none" />
+                        <div className="flex items-center gap-1.5 text-white/40 text-[7.5px] tracking-[1px] uppercase font-mono mb-2">
+                          <div className="w-[4px] h-[4px] rounded-full bg-[#ff7700] animate-ping" />
+                          <span style={{ color: alertColor }}>{alertText}</span>
+                        </div>
+                        
+                        <div className="flex flex-col gap-1">
+                          <span className={cn(
+                            "font-space-grotesk text-[18px] sm:text-[20px] font-extrabold tracking-tight leading-none transition-all",
+                            countdownText === "EM CULTO" 
+                              ? "text-green-400 drop-shadow-[0_0_10px_rgba(74,222,128,0.45)]" 
+                              : "text-white"
+                          )}>
+                            {countdownText}
+                          </span>
+                          <span className="font-mono text-[7.5px] text-white/30 uppercase tracking-[0.5px]">
+                            fuso SP: {brasiliaTime}
+                          </span>
                         </div>
                       </div>
                     </div>
 
-                    {/* Progress slider track */}
-                    <div className="flex items-center justify-between gap-4 mt-2">
-                      <div 
-                        onClick={handleProgressClick}
-                        className="evt-custom-track cursor-pointer group/track"
-                        title="Ajustar o progresso em tempo real"
-                      >
+                    {/* Tactile Progress Slider Track & Active Countdown State */}
+                    <div className="flex flex-col gap-2 mt-2 bg-black/45 border border-white/[0.03] p-3 rounded-2xl">
+                      <div className="flex items-center justify-between text-white/30 font-mono text-[7px] uppercase tracking-wider font-extrabold mb-1 select-none">
+                        <span>ESTIMATIVA DE CHEGADA AO DESTINO</span>
+                        <span className="text-[#CF9D7B]">{flightProgress}% VOADO</span>
+                      </div>
+
+                      <div className="flex items-center justify-between gap-4">
                         <div 
-                          style={{ width: `${flightProgress}%` }} 
-                          className="evt-custom-fill"
+                          onClick={handleProgressClick}
+                          className="evt-custom-track cursor-pointer group/track"
+                          title="Ajustar o progresso em tempo real"
                         >
-                          <div className="evt-custom-plane-btn">
-                            <Plane className="w-3.5 h-3.5 text-[#aee30d] transform rotate-90 animate-pulse" />
+                          <div 
+                            style={{ width: `${flightProgress}%` }} 
+                            className="evt-custom-fill"
+                          >
+                            <div className="evt-custom-plane-btn">
+                              <Plane className="w-3 h-3 text-[#ff7700] transform rotate-90 animate-pulse" />
+                            </div>
                           </div>
                         </div>
-                      </div>
-                      
-                      {/* Countdown and admin edit dot vertical container */}
-                      <div className="flex flex-col items-center justify-center min-w-[80px]">
-                        <span className={cn(
-                          "font-space-grotesk text-[12.5px] font-bold select-none text-white/40 tracking-[0.5px] leading-none transition-colors",
-                          countdownText === "EM CULTO" && "text-[#bfff00] drop-shadow-[0_0_8px_rgba(191,255,0,0.3)]"
-                        )}>
-                          {countdownText}
-                        </span>
                         
-                        {/* Little orange edit dot (Acesso Administrador) centered below countdown text */}
-                        <div 
-                          onClick={() => setShowMiniLogin(!showMiniLogin)}
-                          className="w-1.5 h-1.5 bg-[#ff5e00] rounded-full mt-2 cursor-pointer shadow-[0_0_8px_#ff5e00] animate-pulse z-20" 
-                          title="Acesso Administrador"
-                        />
+                        {/* Little orange edit dot (Acesso Administrador) */}
+                        <div className="flex flex-col items-center justify-center shrink-0 pr-1">
+                          <div 
+                            onClick={() => setShowMiniLogin(!showMiniLogin)}
+                            className="w-2.5 h-2.5 bg-[#ff5e00] rounded-full cursor-pointer shadow-[0_0_8px_#ff5e00] hover:scale-125 transition-transform animate-pulse z-20" 
+                            title="Acesso Administrador"
+                          />
+                        </div>
                       </div>
                     </div>
 
@@ -2212,7 +2133,7 @@ export default function App() {
                     <div className="relative w-full mb-5 pb-1">
                       <div 
                          ref={topScrollRef}
-                        className="flex justify-center gap-2 relative overflow-x-auto scrollbar-none snap-x snap-mandatory py-1 px-0.5"
+                        className="grid grid-cols-5 gap-1.5 sm:gap-2 relative py-1 px-0.5 justify-center justify-items-center w-full"
                         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
                       >
                         {[1, 2, 3, 4, 5].map((idx) => {
@@ -2223,13 +2144,13 @@ export default function App() {
                           return (
                             <div 
                               key={`top-card-wrapper-${idx}`}
-                              className="flex flex-col items-center gap-1 shrink-0 snap-start"
+                              className="flex flex-col items-center gap-1 w-full max-w-[46px] xs:max-w-[50px] sm:max-w-[54px] md:max-w-[58px]"
                             >
                               <div 
                                 ref={el => { topCardsRef.current[idx - 1] = el; }}
                                 onClick={() => handleCardToggle(idx - 1, 'top')}
                                 className={cn(
-                                  "w-[46px] xs:w-[50px] sm:w-[54px] md:w-[58px] h-[135px] xs:h-[145px] sm:h-[155px] md:h-[165px]",
+                                  "w-full h-[135px] xs:h-[145px] sm:h-[155px] md:h-[165px]",
                                   "bg-[#111114]/90 border transition-all duration-300 relative rounded-xl flex flex-col justify-center p-2 overflow-hidden shadow-lg cursor-pointer select-none",
                                   isExpanded 
                                     ? "border-[#E5C1A7] shadow-[0_0_15px_rgba(207,157,123,0.4)] ring-1 ring-[#CF9D7B]/20" 
@@ -2587,7 +2508,7 @@ export default function App() {
                     <div className="relative w-full mb-2.5 pt-1">
                       <div 
                         ref={bottomScrollRef}
-                        className="flex justify-center gap-2 relative overflow-x-auto scrollbar-none snap-x snap-mandatory py-1 px-0.5"
+                        className="grid grid-cols-5 gap-1.5 sm:gap-2 relative py-1 px-0.5 justify-center justify-items-center w-full"
                         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
                       >
                         {[1, 2, 3, 4, 5].map((idx) => {
@@ -2598,13 +2519,13 @@ export default function App() {
                           return (
                             <div 
                               key={`bottom-card-wrapper-${idx}`}
-                              className="flex flex-col items-center gap-1 shrink-0 snap-start"
+                              className="flex flex-col items-center gap-1 w-full max-w-[46px] xs:max-w-[50px] sm:max-w-[54px] md:max-w-[58px]"
                             >
                               <div 
                                 ref={el => { bottomCardsRef.current[idx - 1] = el; }}
                                 onClick={() => handleCardToggle(idx - 1, 'bottom')}
                                 className={cn(
-                                  "w-[46px] xs:w-[50px] sm:w-[54px] md:w-[58px] h-[135px] xs:h-[145px] sm:h-[155px] md:h-[165px]",
+                                  "w-full h-[135px] xs:h-[145px] sm:h-[155px] md:h-[165px]",
                                   "bg-[#111114]/90 border transition-all duration-300 relative rounded-xl flex flex-col justify-center p-2 overflow-hidden shadow-lg cursor-pointer select-none",
                                   isExpanded 
                                     ? "border-[#E5C1A7] shadow-[0_0_15px_rgba(207,157,123,0.4)] ring-1 ring-[#CF9D7B]/20" 
