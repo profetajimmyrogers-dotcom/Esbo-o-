@@ -305,69 +305,6 @@ export default function App() {
   const [showRightSidebar, setShowRightSidebar] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [blockedDates, setBlockedDates] = useState<string[]>([]);
-
-  // Gallery Carousel Refs and Active States
-  const topScrollRef = useRef<HTMLDivElement>(null);
-  const bottomScrollRef = useRef<HTMLDivElement>(null);
-  const topCardsRef = useRef<(HTMLDivElement | null)[]>([]);
-  const bottomCardsRef = useRef<(HTMLDivElement | null)[]>([]);
-  const [activeTopCard, setActiveTopCard] = useState<number | null>(null);
-  const [activeBottomCard, setActiveBottomCard] = useState<number | null>(null);
-  const [topGalleryExpanded, setTopGalleryExpanded] = useState(false);
-  const [bottomGalleryExpanded, setBottomGalleryExpanded] = useState(false);
-
-  // Reset expansion states when calendar modal is closed
-  useEffect(() => {
-    if (!moonMode) {
-      setTopGalleryExpanded(false);
-      setBottomGalleryExpanded(false);
-      setActiveTopCard(null);
-      setActiveBottomCard(null);
-    }
-  }, [moonMode]);
-
-  const centerCard = (index: number, type: 'top' | 'bottom') => {
-    const container = type === 'top' ? topScrollRef.current : bottomScrollRef.current;
-    const cardList = type === 'top' ? topCardsRef.current : bottomCardsRef.current;
-    const card = cardList[index];
-    if (container && card) {
-      const containerWidth = container.clientWidth;
-      const cardLeft = card.offsetLeft;
-      const cardWidth = card.clientWidth;
-      const targetScrollLeft = cardLeft - (containerWidth / 2) + (cardWidth / 2);
-      container.scrollTo({
-        left: targetScrollLeft,
-        behavior: 'smooth'
-      });
-    }
-  };
-
-  const handleCardToggle = (index: number, type: 'top' | 'bottom') => {
-    if (type === 'top') {
-      const isAlreadyActive = activeTopCard === index;
-      setActiveTopCard(isAlreadyActive ? null : index);
-      if (!isAlreadyActive) {
-        setTimeout(() => centerCard(index, 'top'), 100);
-      }
-    } else {
-      const isAlreadyActive = activeBottomCard === index;
-      setActiveBottomCard(isAlreadyActive ? null : index);
-      if (!isAlreadyActive) {
-        setTimeout(() => centerCard(index, 'bottom'), 100);
-      }
-    }
-  };
-
-  const scrollGallery = (direction: 'left' | 'right', ref: React.RefObject<HTMLDivElement>) => {
-    if (ref.current) {
-      const scrollAmount = ref.current.clientWidth / 2;
-      ref.current.scrollBy({
-        left: direction === 'left' ? -scrollAmount : scrollAmount,
-        behavior: 'smooth'
-      });
-    }
-  };
-
   const defaultFields = {
     id1: '48',
     id2: '27',
@@ -378,69 +315,7 @@ export default function App() {
     id7: 'CONFERENCISTA // JIMMY ROGERS',
     id8: '20/06',
     id9: '2026-06-20T19:30',
-    id10: 'CULT 19:30',
-    
-    // Top Gallery Cards (gt1 to gt5)
-    gt1_title: 'Templo Sede',
-    gt1_church: 'AD Templo Central Sede',
-    gt1_sector: 'Setor Autônomo',
-    gt1_datetime: '25/06 às 19:30',
-    gt1_city: 'São Paulo - SP',
-
-    gt2_title: 'Adolescentes',
-    gt2_church: 'AD Templo da Unidade',
-    gt2_sector: 'Setor 12',
-    gt2_datetime: '27/06 às 18:00',
-    gt2_city: 'Campinas - SP',
-
-    gt3_title: 'Círculo Oração',
-    gt3_church: 'AD Jardim das Flores',
-    gt3_sector: 'Setor 45',
-    gt3_datetime: '28/06 às 14:00',
-    gt3_city: 'Rio de Janeiro - RJ',
-
-    gt4_title: 'Congresso Varões',
-    gt4_church: 'AD Boas Novas',
-    gt4_sector: 'Setor Norte',
-    gt4_datetime: '02/07 às 19:00',
-    gt4_city: 'Belo Horizonte - MG',
-
-    gt5_title: 'Grande Campanha',
-    gt5_church: 'AD Betel Central',
-    gt5_sector: 'Setor Central',
-    gt5_datetime: '05/07 às 19:30',
-    gt5_city: 'Curitiba - PR',
-
-    // Bottom Gallery Cards (gb1 to gb5)
-    gb1_title: 'Culto Missões',
-    gb1_church: 'AD Missionária Peniel',
-    gb1_sector: 'Setor Leste',
-    gb1_datetime: '10/07 às 19:00',
-    gb1_city: 'Porto Alegre - RS',
-
-    gb2_title: 'Vigília Milagres',
-    gb2_church: 'AD Monte Sinai',
-    gb2_sector: 'Setor Oeste',
-    gb2_datetime: '12/07 às 23:00',
-    gb2_city: 'Goiânia - GO',
-
-    gb3_title: 'Festa Jovens',
-    gb3_church: 'AD Ebenézer',
-    gb3_sector: 'Setor Sul',
-    gb3_datetime: '18/07 às 18:30',
-    gb3_city: 'Salvador - BA',
-
-    gb4_title: 'Aniversário AD',
-    gb4_church: 'AD Amigos de Cristo',
-    gb4_sector: 'Setor Novo Horizonte',
-    gb4_datetime: '20/07 às 19:00',
-    gb4_city: 'Fortaleza - CE',
-
-    gb5_title: 'Culto Família',
-    gb5_church: 'AD Manancial de Vida',
-    gb5_sector: 'Setor Alvorada',
-    gb5_datetime: '25/07 às 19:00',
-    gb5_city: 'Manaus - AM'
+    id10: 'CULT 19:30'
   };
   const [systemFields, setSystemFields] = useState<Record<string, string>>(defaultFields);
 
@@ -886,38 +761,6 @@ export default function App() {
   const [showMiniLogin, setShowMiniLogin] = useState(false);
   const [showLockMessage, setShowLockMessage] = useState(false);
 
-  const [cardsLockInput, setCardsLockInput] = useState('');
-  const [showCardsLockInput, setShowCardsLockInput] = useState(false);
-  const [cardsUnlocked, setCardsUnlocked] = useState(false);
-
-  const [calendarCardsLockInput, setCalendarCardsLockInput] = useState('');
-  const [showCalendarCardsLockInput, setShowCalendarCardsLockInput] = useState(false);
-  const [calendarCardsUnlocked, setCalendarCardsUnlocked] = useState(false);
-
-  const checkCalendarCardsUnlock = () => {
-    if (systemHashConfirm(calendarCardsLockInput) === '47671') {
-      const nextState = !calendarCardsUnlocked;
-      setCalendarCardsUnlocked(nextState);
-      alert(nextState ? "Cards do Calendário Liberados! Agora você pode expandi-los normalmente." : "Cards do Calendário Bloqueados!");
-      setShowCalendarCardsLockInput(false);
-    } else {
-      alert("Senha inválida!");
-    }
-    setCalendarCardsLockInput('');
-  };
-
-  const checkCardsUnlock = () => {
-    if (systemHashConfirm(cardsLockInput) === '47671') {
-      const nextState = !cardsUnlocked;
-      setCardsUnlocked(nextState);
-      alert(nextState ? "Cards Liberados! Agora você pode expandir os sermões normalmente." : "Cards Bloqueados!");
-      setShowCardsLockInput(false);
-    } else {
-      alert("Senha inválida!");
-    }
-    setCardsLockInput('');
-  };
-
   const checkEditAuth = () => {
     if (systemHashConfirm(editPassInput) === '1570946') {
       setEditMode(true);
@@ -1334,27 +1177,27 @@ export default function App() {
                     .evt-custom-track {
                       flex: 1;
                       height: 38px;
-                      background: #0d0d10;
+                      background: #0f1011;
                       border-radius: 19px;
-                      padding: 4px;
-                      box-shadow: inset 0 3px 10px rgba(0,0,0,0.95), 0 1px 1px rgba(255,255,255,0.02);
+                      padding: 3px;
+                      box-shadow: inset 0 3px 12px rgba(0,0,0,0.95), 0 1px 1px rgba(255,255,255,0.03);
                       position: relative;
                       display: flex;
                       align-items: center;
-                      border: 1px solid rgba(255,255,255,0.03);
+                      border: 1px solid rgba(255,255,255,0.01);
                       overflow: hidden;
                     }
                     .evt-custom-fill {
                       height: 100%;
-                      border-radius: 14px;
-                      background: linear-gradient(90deg, #CF9D7B 0%, #ff6a00 100%);
+                      border-radius: 16px;
+                      background: linear-gradient(90deg, #81a415 0%, #aee30d 100%);
                       position: relative;
                       display: flex;
                       align-items: center;
                       justify-content: flex-end;
-                      padding-right: 2px;
+                      padding-right: 3px;
                       min-width: 32px;
-                      box-shadow: 0 0 16px rgba(255,106,0,0.45);
+                      box-shadow: 0 0 20px rgba(174,227,13,0.5);
                       transition: width 0.8s cubic-bezier(0.1,0.8,0.25,1);
                       overflow: hidden;
                     }
@@ -1362,32 +1205,129 @@ export default function App() {
                       content: '';
                       position: absolute;
                       inset: 0;
-                      background: repeating-linear-gradient(90deg, transparent, transparent 10px, rgba(255,255,255,0.25) 15px, rgba(255,255,255,0.4) 20px, rgba(255,255,255,0.25) 25px, transparent 30px);
+                      background: repeating-linear-gradient(90deg, transparent, transparent 10px, rgba(255,255,255,0.45) 15px, rgba(255,255,255,0.6) 20px, rgba(255,255,255,0.45) 25px, transparent 30px);
                       background-size: 150px 100%;
-                      animation: evtElectricSparks 1.2s infinite linear;
-                      filter: drop-shadow(0 0 5px rgba(255,255,255,0.7));
+                      animation: evtElectricSparks 1s infinite linear;
+                      filter: drop-shadow(0 0 10px rgba(255,255,255,0.9));
                     }
                     @keyframes evtElectricSparks {
                       0% { background-position: -150px 0; }
                       100% { background-position: 150% 0; }
                     }
+                    .evt-custom-fill::after {
+                      content: '';
+                      position: absolute;
+                      inset: 0;
+                      background: radial-gradient(circle at var(--evt-x, 50%) var(--evt-y, 50%), rgba(255,255,255,0.8), transparent 30%);
+                      mix-blend-mode: overlay;
+                      opacity: 0.9;
+                      animation: evtLightningCrack 1.8s infinite steps(2);
+                    }
+                    @keyframes evtLightningCrack {
+                      0%,100%{--evt-x:10%;--evt-y:20%;opacity:.2}
+                      25%{--evt-x:80%;--evt-y:70%;opacity:.9}
+                      50%{--evt-x:40%;--evt-y:30%;opacity:.4}
+                      75%{--evt-x:95%;--evt-y:10%;opacity:.85}
+                    }
                     .evt-custom-plane-btn {
-                      width: 24px;
-                      height: 24px;
+                      width: 26px;
+                      height: 26px;
                       background: #ffffff;
                       border-radius: 50%;
                       display: flex;
                       align-items: center;
                       justify-content: center;
-                      box-shadow: 0 4px 12px rgba(0,0,0,0.6), 0 0 15px rgba(255,106,0,0.7);
+                      box-shadow: 0 4px 14px rgba(0,0,0,0.55), 0 0 15px rgba(174,227,13,0.8);
                       z-index: 2;
                       flex-shrink: 0;
-                      border: 1px solid rgba(255,106,0,0.3);
+                      border: 1px solid rgba(174,227,13,0.4);
                       animation: evtPlaneThrob 1.5s ease-in-out infinite alternate;
                     }
                     @keyframes evtPlaneThrob {
-                      0%{transform:scale(1);box-shadow:0 4px 12px rgba(0,0,0,0.6),0 0 8px rgba(255,106,0,0.5)}
-                      100%{transform:scale(1.08);box-shadow:0 4px 14px rgba(0,0,0,0.6),0 0 20px rgba(255,106,0,0.9)}
+                      0%{transform:scale(1);box-shadow:0 4px 14px rgba(0,0,0,0.55),0 0 10px rgba(174,227,13,0.6)}
+                      100%{transform:scale(1.08);box-shadow:0 4px 16px rgba(0,0,0,0.55),0 0 25px rgba(174,227,13,1)}
+                    }
+                    /* Custom Airport LED Dot Matrix Grid Overlay Styles */
+                    .evt-led-big-white {
+                      font-family: "Outfit", sans-serif !important;
+                      font-size: 22px !important;
+                      font-weight: 900 !important;
+                      letter-spacing: 1px !important;
+                      color: #ffffff !important;
+                      line-height: 1 !important;
+                      position: relative !important;
+                      display: inline-block !important;
+                      text-shadow: 0 0 10px rgba(255, 255, 255, 0.4), 0 0 20px rgba(255, 255, 255, 0.15) !important;
+                    }
+                    @media (min-width: 400px) {
+                      .evt-led-big-white {
+                        font-size: 28px !important;
+                      }
+                    }
+                    @media (min-width: 480px) {
+                      .evt-led-big-white {
+                        font-size: 34px !important;
+                      }
+                    }
+                    .evt-led-big-white::after {
+                      content: "";
+                      position: absolute;
+                      inset: 0;
+                      background-image: radial-gradient(rgba(12,12,14,0.95) 40%, transparent 45%) !important;
+                      background-size: 2.2px 2.2px !important;
+                      pointer-events: none;
+                      z-index: 10;
+                    }
+                    .evt-led-small-dim {
+                      font-family: "Outfit", sans-serif !important;
+                      font-size: 11px !important;
+                      font-weight: 700 !important;
+                      letter-spacing: 1.5px !important;
+                      color: rgba(255, 255, 255, 0.38) !important;
+                      text-transform: lowercase !important;
+                      line-height: 1 !important;
+                      position: relative !important;
+                      display: inline-block !important;
+                      text-shadow: 0 0 5px rgba(255, 255, 255, 0.1) !important;
+                    }
+                    .evt-led-small-dim::after {
+                      content: "";
+                      position: absolute;
+                      inset: 0;
+                      background-image: radial-gradient(rgba(12,12,14,0.95) 40%, transparent 45%) !important;
+                      background-size: 1.4px 1.4px !important;
+                      pointer-events: none;
+                      z-index: 10;
+                    }
+                    .evt-led-big-green {
+                      font-family: "Outfit", sans-serif !important;
+                      font-size: 13px !important;
+                      font-weight: 950 !important;
+                      letter-spacing: 1px !important;
+                      color: #ccff00 !important;
+                      line-height: 1 !important;
+                      position: relative !important;
+                      display: inline-block !important;
+                      text-shadow: 0 0 12px rgba(204, 255, 0, 0.65), 0 0 20px rgba(204, 255, 0, 0.25) !important;
+                    }
+                    @media (min-width: 400px) {
+                      .evt-led-big-green {
+                        font-size: 15px !important;
+                      }
+                    }
+                    @media (min-width: 480px) {
+                      .evt-led-big-green {
+                        font-size: 18px !important;
+                      }
+                    }
+                    .evt-led-big-green::after {
+                      content: "";
+                      position: absolute;
+                      inset: 0;
+                      background-image: radial-gradient(rgba(12,12,14,0.95) 43%, transparent 48%) !important;
+                      background-size: 2.4px 2.4px !important;
+                      pointer-events: none;
+                      z-index: 10;
                     }
                   `}</style>
 
@@ -1425,222 +1365,204 @@ export default function App() {
                     )}
                   </AnimatePresence>
 
-                   <div className="flex items-center justify-between mb-3 border-b border-white/5 pb-2">
+                  <div className="flex items-center justify-between mb-3 border-b border-white/5 pb-2">
                     <div 
                       contentEditable={editMode}
                       onBlur={(e) => updateSystemField('id7', e.currentTarget.innerText)}
                       suppressContentEditableWarning
                       className={cn(
-                        "font-space-grotesk text-[10px] sm:text-[11px] font-bold text-[#e5c1a7] tracking-[2.5px] uppercase outline-none transition-all",
-                        editMode && "border-b border-dashed border-[#ff5e00] bg-white/5 px-1 rounded"
+                        "font-outfit text-[11px] font-bold text-[#d4af37]/80 tracking-[3px] uppercase outline-none transition-all",
+                        editMode && "border-b border-dashed border-[#ff5e00]"
                       )}
                     >
                       {systemFields.id7 || 'CONFERENCISTA // JIMMY ROGERS'}
                     </div>
-                    <div className="flex items-center gap-1.5 text-[8.0px] sm:text-[8.5px] text-[#25d366]/85 tracking-[1.5px] uppercase font-bold pr-1">
+                    <div className="flex items-center gap-1.5 text-[8.5px] text-[#25d366]/85 tracking-[1.5px] uppercase font-bold pr-6">
                       <div className="w-[5px] h-[5px] rounded-full bg-[#25d366] shadow-[0_0_8px_#25d366] animate-pulse" />
                       Sincronizado
                     </div>
                   </div>
 
                   {/* Flight Widget Main Panel Container */}
-                  <div className="w-full bg-gradient-to-br from-[#0c0c0e]/95 via-[#0e0e12]/95 to-[#050507]/98 border border-white/[0.06] rounded-[24px] p-4 sm:p-5 relative overflow-hidden shadow-[inset_0_1px_1px_rgba(255,255,255,0.05),0_15px_30px_rgba(0,0,0,0.8)]">
-                    {/* Glowing golden mesh highlights */}
-                    <div className="absolute top-0 right-0 w-[120px] h-[120px] bg-[radial-gradient(circle_at_100%_0%,rgba(255,106,0,0.08)_0%,transparent_75%)] pointer-events-none" />
-                    <div className="absolute bottom-0 left-0 w-[120px] h-[120px] bg-[radial-gradient(circle_at_0%_100%,rgba(207,157,123,0.06)_0%,transparent_75%)] pointer-events-none" />
+                  <div className="w-full bg-gradient-to-br from-[#101010] to-[#0c0c0c] border border-white/[0.05] rounded-[24px] p-3.5 xs:p-4 sm:p-5 relative overflow-hidden shadow-inner">
+                    {/* Dot grid decoration pattern */}
+                    <div className="absolute top-0 left-0 w-[130px] h-[120px] pointer-events-none opacity-[0.18] [mask-image:radial-gradient(circle_at_0_0,white,transparent_80%)]" 
+                         style={{ backgroundImage: 'radial-gradient(#6c8511 15%, transparent 20%)', backgroundSize: '4px 4px' }} />
+                    <div className="absolute -top-5 -left-5 w-[140px] h-[140px] bg-[radial-gradient(circle,rgba(173,255,47,0.08)_0%,transparent_70%)] pointer-events-none" />
 
-                    {/* Horizontal Boarding System Layout */}
-                    <div className="flex justify-between items-center gap-2 mb-4 bg-black/45 border border-white/[0.03] p-3 rounded-2xl">
-                      {/* ORIGEM (Departure Station) */}
-                      <div className="flex flex-col items-start text-left min-w-[70px] flex-1">
-                        <span className="text-[6.5px] sm:text-[7.5px] text-[#CF9D7B] font-extrabold tracking-[1.5px] uppercase bg-[#CF9D7B]/10 px-1.5 py-0.5 rounded border border-[#CF9D7B]/20 font-mono mb-1.5 select-none">
-                          Setor
-                        </span>
-                        <div 
-                          contentEditable={editMode}
-                          onBlur={(e) => updateSystemField('id1', e.currentTarget.innerText)}
-                          suppressContentEditableWarning
-                          className={cn(
-                            "font-space-grotesk text-2xl sm:text-3xl font-extrabold tracking-tight text-white outline-none leading-none transition-all drop-shadow-[0_0_12px_rgba(255,255,255,0.1)]",
-                            editMode && "border-b border-dashed border-[#ff5e00] bg-white/5"
-                          )}
-                        >
-                          {systemFields.id1 || '48'}
-                        </div>
-                        <span 
-                          contentEditable={editMode}
-                          onBlur={(e) => updateSystemField('id3', e.currentTarget.innerText)}
-                          suppressContentEditableWarning
-                          className={cn(
-                            "font-space-grotesk text-[10px] sm:text-[11px] font-bold text-[#e5c1a7] mt-1 leading-tight outline-none transition-all truncate max-w-[100px] block",
-                            editMode && "border-b border-dashed border-[#ff5e00] bg-white/5"
-                          )}
-                          title={systemFields.id3}
-                        >
-                          {systemFields.id3 || 'VIVA LARES'}
-                        </span>
-                        <span 
-                          contentEditable={editMode}
-                          onBlur={(e) => updateSystemField('id4', e.currentTarget.innerText)}
-                          suppressContentEditableWarning
-                          className={cn(
-                            "font-space-grotesk text-[8.5px] text-white/40 mt-0.5 uppercase tracking-[0.5px] block outline-none transition-all",
-                            editMode && "border-b border-dashed border-[#ff5e00] bg-white/5"
-                          )}
-                        >
-                          {systemFields.id4 || 'SÁB, 19:30'}
-                        </span>
-                      </div>
-
-                      {/* FLIGHT TRAJECTORY GRAPHIC HEADER */}
-                      <div className="flex-[0.8] flex flex-col items-center justify-center px-1">
-                        <span className="text-[6.5px] text-white/30 tracking-[1.5px] uppercase font-mono mb-1.5 leading-none select-none">// TRAJETÓRIA</span>
-                        <div className="w-full flex items-center justify-center relative">
-                          <div className="absolute inset-x-0 h-[1.5px] bg-gradient-to-r from-[#CF9D7B]/20 via-[#ff6a00]/30 to-[#CF9D7B]/20" />
-                          <div className="absolute inset-x-0 h-[1px] border-b border-dashed border-white/15" />
-                          <div className="relative bg-[#0d0d10] p-1.5 rounded-full border border-white/10 shadow-[0_0_10px_rgba(255,106,0,0.25)] animate-pulse">
-                            <Plane className="w-3 h-3 text-[#ff7700] rotate-90" />
+                    <div className="flex justify-between items-start gap-2 sm:gap-4 mb-5">
+                      {/* Left: Origin and Destination Column */}
+                      <div className="flex flex-col gap-4 flex-1">
+                        {/* ORIGEM */}
+                        <div className="flex flex-col items-start text-left">
+                          <div className="flex items-baseline leading-none">
+                            <span className="evt-led-small-dim mr-1.5">setor</span>
+                            <span 
+                              contentEditable={editMode}
+                              onBlur={(e) => updateSystemField('id1', e.currentTarget.innerText)}
+                              suppressContentEditableWarning
+                              className={cn(
+                                "evt-led-big-white outline-none transition-all",
+                                editMode && "border-b border-dashed border-[#ff5e00]"
+                              )}
+                            >
+                              {systemFields.id1}
+                            </span>
                           </div>
-                        </div>
-                        <span className="text-[7.5px] text-[#ff9100]/85 font-space-grotesk font-extrabold mt-1.5 leading-none tracking-[0.5px]">{flightProgress}% VOADO</span>
-                      </div>
-
-                      {/* DESTINO (Arrival Station) */}
-                      <div className="flex flex-col items-end text-right min-w-[70px] flex-1">
-                        <span className="text-[6.5px] sm:text-[7.5px] text-[#ff7700] font-extrabold tracking-[1.5px] uppercase bg-[#ff7700]/10 px-1.5 py-0.5 rounded border border-[#ff7700]/20 font-mono mb-1.5 select-none">
-                          Setor
-                        </span>
-                        <div 
-                          contentEditable={editMode}
-                          onBlur={(e) => updateSystemField('id2', e.currentTarget.innerText)}
-                          suppressContentEditableWarning
-                          className={cn(
-                            "font-space-grotesk text-2xl sm:text-3xl font-extrabold tracking-tight text-white outline-none leading-none transition-all drop-shadow-[0_0_12px_rgba(255,255,255,0.1)]",
-                            editMode && "border-b border-dashed border-[#ff5e00] bg-white/5"
-                          )}
-                        >
-                          {systemFields.id2 || '27'}
-                        </div>
-                        <span 
-                          contentEditable={editMode}
-                          onBlur={(e) => updateSystemField('id5', e.currentTarget.innerText)}
-                          suppressContentEditableWarning
-                          className={cn(
-                            "font-space-grotesk text-[10px] sm:text-[11px] font-bold text-[#e5c1a7] mt-1 leading-tight outline-none transition-all truncate max-w-[100px] block",
-                            editMode && "border-b border-dashed border-[#ff5e00] bg-white/5"
-                          )}
-                          title={systemFields.id5}
-                        >
-                          {systemFields.id5 || 'BETEL'}
-                        </span>
-                        <span 
-                          contentEditable={editMode}
-                          onBlur={(e) => updateSystemField('id6', e.currentTarget.innerText)}
-                          suppressContentEditableWarning
-                          className={cn(
-                            "font-space-grotesk text-[8.5px] text-white/40 mt-0.5 uppercase tracking-[0.5px] block outline-none transition-all",
-                            editMode && "border-b border-dashed border-[#ff5e00] bg-white/5"
-                          )}
-                        >
-                          {systemFields.id6 || 'SÁB, 19:30'}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* High-Tech Bento Information Grid */}
-                    <div className="grid grid-cols-2 gap-2.5 mb-4">
-                      {/* Left Block: Event Date & Class */}
-                      <div className="bg-[#121215]/80 border border-white/[0.04] rounded-2xl p-3 shadow-inner flex flex-col justify-between relative overflow-hidden group">
-                        <div className="absolute top-0 right-0 w-10 h-10 bg-gradient-to-bl from-[#ff6a00]/5 to-transparent pointer-events-none" />
-                        <div className="flex items-center gap-1.5 text-white/40 text-[7.5px] tracking-[1px] uppercase font-mono mb-2">
-                          <Clock className="w-2.5 h-2.5 text-[#ffaa00]" />
-                          <span>Programado</span>
-                        </div>
-                        <div className="flex flex-col gap-1.5">
                           <span 
                             contentEditable={editMode}
-                            onBlur={(e) => updateSystemField('id8', e.currentTarget.innerText)}
+                            onBlur={(e) => updateSystemField('id3', e.currentTarget.innerText)}
                             suppressContentEditableWarning
                             className={cn(
-                              "font-space-grotesk text-[18px] sm:text-[20px] font-extrabold text-[#e5c1a7] leading-none tracking-tight outline-none transition-all block",
-                              editMode && "border-b border-dashed border-[#ff5e00] bg-white/5"
+                              "font-space-grotesk text-[11px] sm:text-[13px] font-bold text-white mt-1 leading-tight outline-none transition-all block",
+                              editMode && "border-b border-dashed border-[#ff5e00]"
                             )}
                           >
-                            {(() => {
-                              const val = systemFields.id8 || '20/06';
-                              if (val.toLowerCase().startsWith('data')) return val;
-                              return `Dia ${val}`;
-                            })()}
+                            {systemFields.id3}
                           </span>
                           <span 
                             contentEditable={editMode}
-                            onBlur={(e) => updateSystemField('id10', e.currentTarget.innerText)}
+                            onBlur={(e) => updateSystemField('id4', e.currentTarget.innerText)}
                             suppressContentEditableWarning
                             className={cn(
-                              "font-space-grotesk text-[9.5px]/none text-[#ff7700] font-extrabold tracking-wider outline-none transition-all",
-                              editMode && "border-b border-dashed border-[#ff5e00] bg-white/5"
+                              "font-space-grotesk text-[8.5px] sm:text-[10px] text-white/35 mt-0.5 uppercase tracking-[0.5px] block outline-none transition-all",
+                              editMode && "border-b border-dashed border-[#ff5e00]"
                             )}
                           >
-                            {systemFields.id10 || 'CULT 19:30'}
+                            {systemFields.id4}
                           </span>
                         </div>
-                      </div>
 
-                      {/* Right Block: Dynamic Mission Countdown Indicator */}
-                      <div className="bg-[#121215]/80 border border-white/[0.04] rounded-2xl p-3 shadow-inner flex flex-col justify-between relative overflow-hidden group">
-                        <div className="absolute top-0 right-0 w-10 h-10 bg-gradient-to-bl from-[#10b981]/5 to-transparent pointer-events-none" />
-                        <div className="flex items-center gap-1.5 text-white/40 text-[7.5px] tracking-[1px] uppercase font-mono mb-2">
-                          <div className="w-[4px] h-[4px] rounded-full bg-[#ff7700] animate-ping" />
-                          <span style={{ color: alertColor }}>{alertText}</span>
+                        {/* Arrow separator */}
+                        <div className="text-[15px] text-[#ff9100] drop-shadow-[0_0_10px_rgba(255,145,0,0.4)] font-bold pl-3 leading-none select-none">
+                          ↓
                         </div>
-                        
-                        <div className="flex flex-col gap-1">
-                          <span className={cn(
-                            "font-space-grotesk text-[18px] sm:text-[20px] font-extrabold tracking-tight leading-none transition-all",
-                            countdownText === "EM CULTO" 
-                              ? "text-green-400 drop-shadow-[0_0_10px_rgba(74,222,128,0.45)]" 
-                              : "text-white"
-                          )}>
-                            {countdownText}
-                          </span>
-                          <span className="font-mono text-[7.5px] text-white/30 uppercase tracking-[0.5px]">
-                            fuso SP: {brasiliaTime}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
 
-                    {/* Tactile Progress Slider Track & Active Countdown State */}
-                    <div className="flex flex-col gap-2 mt-2 bg-black/45 border border-white/[0.03] p-3 rounded-2xl">
-                      <div className="flex items-center justify-between text-white/30 font-mono text-[7px] uppercase tracking-wider font-extrabold mb-1 select-none">
-                        <span>ESTIMATIVA DE CHEGADA AO DESTINO</span>
-                        <span className="text-[#CF9D7B]">{flightProgress}% VOADO</span>
-                      </div>
-
-                      <div className="flex items-center justify-between gap-4">
-                        <div 
-                          onClick={handleProgressClick}
-                          className="evt-custom-track cursor-pointer group/track"
-                          title="Ajustar o progresso em tempo real"
-                        >
-                          <div 
-                            style={{ width: `${flightProgress}%` }} 
-                            className="evt-custom-fill"
+                        {/* DESTINO */}
+                        <div className="flex flex-col items-start text-left">
+                          <div className="flex items-baseline leading-none">
+                            <span className="evt-led-small-dim mr-1.5">setor</span>
+                            <span 
+                              contentEditable={editMode}
+                              onBlur={(e) => updateSystemField('id2', e.currentTarget.innerText)}
+                              suppressContentEditableWarning
+                              className={cn(
+                                "evt-led-big-white outline-none transition-all",
+                                editMode && "border-b border-dashed border-[#ff5e00]"
+                              )}
+                            >
+                              {systemFields.id2}
+                            </span>
+                          </div>
+                          <span 
+                            contentEditable={editMode}
+                            onBlur={(e) => updateSystemField('id5', e.currentTarget.innerText)}
+                            suppressContentEditableWarning
+                            className={cn(
+                              "font-space-grotesk text-[11px] sm:text-[13px] font-bold text-white mt-1 leading-tight outline-none transition-all block",
+                              editMode && "border-b border-dashed border-[#ff5e00]"
+                            )}
                           >
-                            <div className="evt-custom-plane-btn">
-                              <Plane className="w-3 h-3 text-[#ff7700] transform rotate-90 animate-pulse" />
+                            {systemFields.id5}
+                          </span>
+                          <span 
+                            contentEditable={editMode}
+                            onBlur={(e) => updateSystemField('id6', e.currentTarget.innerText)}
+                            suppressContentEditableWarning
+                            className={cn(
+                              "font-space-grotesk text-[8.5px] sm:text-[10px] text-white/35 mt-0.5 uppercase tracking-[0.5px] block outline-none transition-all",
+                              editMode && "border-b border-dashed border-[#ff5e00]"
+                            )}
+                          >
+                            {systemFields.id6}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Right side: ETA panel & Event Date */}
+                      <div className="flex flex-col gap-4 items-end justify-between self-stretch text-right min-w-[110px] sm:min-w-[135px] max-w-[140px] shrink-0">
+                        {/* Event yellow Date Stamp on led matrix */}
+                        <span 
+                          contentEditable={editMode}
+                          onBlur={(e) => updateSystemField('id8', e.currentTarget.innerText)}
+                          suppressContentEditableWarning
+                          className={cn(
+                            "evt-led-big-green outline-none transition-all leading-none",
+                            editMode && "border-b border-dashed border-[#ff5e00]"
+                          )}
+                        >
+                          {(() => {
+                            const val = systemFields.id8 || '20/06';
+                            if (val.toLowerCase().startsWith('data')) {
+                              return val;
+                            }
+                            return `Data-${val}`;
+                          })()}
+                        </span>
+
+                        {/* ETA Card Panel */}
+                        <div className="bg-[#101010]/85 border-[1.5px] border-white/[0.04] rounded-[18px] p-2.5 sm:p-3 w-full shadow-[inset_0_2px_5px_rgba(0,0,0,0.5),0_4px_10px_rgba(0,0,0,0.3)] relative text-left">
+                          <div className="flex items-center justify-between gap-1">
+                            <span 
+                              contentEditable={editMode}
+                              onBlur={(e) => updateSystemField('id10', e.currentTarget.innerText)}
+                              suppressContentEditableWarning
+                              className={cn(
+                                "font-space-grotesk text-[10px] sm:text-[13px] font-bold text-white outline-none transition-all leading-none uppercase truncate",
+                                editMode && "border-b border-dashed border-[#ff5e00]"
+                              )}
+                            >
+                              {systemFields.id10 || 'CULT 19:30'}
+                            </span>
+                            <div className="w-4 h-4 sm:w-[18px] sm:h-[18px] bg-[#1c1c1e] rounded-full flex items-center justify-center text-[#ff9100]/60 shrink-0">
+                              <Clock className="w-2.5 h-2.5" />
                             </div>
                           </div>
-                        </div>
-                        
-                        {/* Little orange edit dot (Acesso Administrador) */}
-                        <div className="flex flex-col items-center justify-center shrink-0 pr-1">
+                          <div className="font-space-grotesk text-[9.5px] sm:text-[11px] text-[#ff9100] mt-1.5 mb-2 font-bold drop-shadow-[0_0_8px_rgba(255,145,0,0.25)] tracking-wider">
+                            {brasiliaTime}
+                          </div>
                           <div 
-                            onClick={() => setShowMiniLogin(!showMiniLogin)}
-                            className="w-2.5 h-2.5 bg-[#ff5e00] rounded-full cursor-pointer shadow-[0_0_8px_#ff5e00] hover:scale-125 transition-transform animate-pulse z-20" 
-                            title="Acesso Administrador"
-                          />
+                            className="font-space-grotesk text-[8px] sm:text-[9px] font-bold tracking-[0.5px] leading-tight"
+                            style={{ color: alertColor }}
+                          >
+                            {alertText}
+                          </div>
                         </div>
+                      </div>
+                    </div>
+
+                    {/* Progress slider track */}
+                    <div className="flex items-center justify-between gap-4 mt-2">
+                      <div 
+                        onClick={handleProgressClick}
+                        className="evt-custom-track cursor-pointer group/track"
+                        title="Ajustar o progresso em tempo real"
+                      >
+                        <div 
+                          style={{ width: `${flightProgress}%` }} 
+                          className="evt-custom-fill"
+                        >
+                          <div className="evt-custom-plane-btn">
+                            <Plane className="w-3.5 h-3.5 text-[#aee30d] transform rotate-90 animate-pulse" />
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Countdown and admin edit dot vertical container */}
+                      <div className="flex flex-col items-center justify-center min-w-[80px]">
+                        <span className={cn(
+                          "font-space-grotesk text-[12.5px] font-bold select-none text-white/40 tracking-[0.5px] leading-none transition-colors",
+                          countdownText === "EM CULTO" && "text-[#bfff00] drop-shadow-[0_0_8px_rgba(191,255,0,0.3)]"
+                        )}>
+                          {countdownText}
+                        </span>
+                        
+                        {/* Little orange edit dot (Acesso Administrador) centered below countdown text */}
+                        <div 
+                          onClick={() => setShowMiniLogin(!showMiniLogin)}
+                          className="w-1.5 h-1.5 bg-[#ff5e00] rounded-full mt-2 cursor-pointer shadow-[0_0_8px_#ff5e00] animate-pulse z-20" 
+                          title="Acesso Administrador"
+                        />
                       </div>
                     </div>
 
@@ -1668,34 +1590,32 @@ export default function App() {
             </>
           )}
         </AnimatePresence>
-          {/* Elegant Menu Drawer Toggle in place of 'Minha Agenda' */}
-          {!moonMode && (
-            <button 
-              onClick={() => setShowRightSidebar(!showRightSidebar)}
-              className={cn(
-                "fixed top-5 right-5 group flex items-center gap-2.5 pl-2 pr-4.5 py-1.5 rounded-full bg-black/60 backdrop-blur-xl border border-white/10 z-[1001] transition-all duration-150 hover:scale-[1.02] active:scale-95 cursor-pointer outline-none select-none text-left shadow-[0_0_15px_rgba(0,245,255,0.15)] hover:shadow-[0_0_20px_rgba(0,245,255,0.25)]",
-                showRightSidebar ? "border-[#00f5ff]/50 shadow-[0_0_25px_rgba(0,245,255,0.3)] bg-black/85" : "hover:border-[#00f5ff]/40"
-              )}
-            >
-              <div className="w-6 h-6 rounded-full flex items-center justify-center transition-all duration-200 text-xs bg-[#0c0c0e]/80 border border-white/15 shadow-inner group-hover:border-[#00f5ff]/60">
-                {showRightSidebar ? (
-                  <X className="w-3 h-3 text-[#00f5ff]" />
-                ) : (
-                  <Menu className="w-3 h-3 text-[#00f5ff]" />
-                )}
-              </div>
-              <div className="flex flex-col select-none pr-1">
-                <span className="text-[7.5px] text-[#00f5ff] font-extrabold uppercase tracking-[0.14em] leading-none mb-0.5 animate-pulse">MENU & LOGIN</span>
-                <span className="text-white text-[9px] font-orbitron font-extrabold uppercase tracking-[1.3px] leading-none">CONFERENCISTA</span>
-              </div>
-              {/* Glowing cursor ring helper on hover */}
-              <span className="absolute -inset-0.5 rounded-full bg-gradient-to-r from-[#00f5ff]/20 to-[#ffffff]/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200 -z-10" />
-            </button>
+         {/* Elegant Menu Drawer Toggle in place of 'Minha Agenda' */}
+        <button 
+          onClick={() => setShowRightSidebar(!showRightSidebar)}
+          className={cn(
+            "fixed top-5 right-5 group flex items-center gap-2.5 pl-2 pr-4.5 py-1.5 rounded-full bg-black/60 backdrop-blur-xl border border-white/10 z-[1001] transition-all duration-150 hover:scale-[1.02] active:scale-95 cursor-pointer outline-none select-none text-left shadow-[0_0_15px_rgba(0,245,255,0.15)] hover:shadow-[0_0_20px_rgba(0,245,255,0.25)]",
+            showRightSidebar ? "border-[#00f5ff]/50 shadow-[0_0_25px_rgba(0,245,255,0.3)] bg-black/85" : "hover:border-[#00f5ff]/40"
           )}
+        >
+          <div className="w-6 h-6 rounded-full flex items-center justify-center transition-all duration-200 text-xs bg-[#0c0c0e]/80 border border-white/15 shadow-inner group-hover:border-[#00f5ff]/60">
+            {showRightSidebar ? (
+              <X className="w-3 h-3 text-[#00f5ff]" />
+            ) : (
+              <Menu className="w-3 h-3 text-[#00f5ff]" />
+            )}
+          </div>
+          <div className="flex flex-col select-none pr-1">
+            <span className="text-[7.5px] text-[#00f5ff] font-extrabold uppercase tracking-[0.14em] leading-none mb-0.5 animate-pulse">MENU & LOGIN</span>
+            <span className="text-white text-[9px] font-orbitron font-extrabold uppercase tracking-[1.3px] leading-none">CONFERENCISTA</span>
+          </div>
+          {/* Glowing cursor ring helper on hover */}
+          <span className="absolute -inset-0.5 rounded-full bg-gradient-to-r from-[#00f5ff]/20 to-[#ffffff]/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200 -z-10" />
+        </button>
 
         {/* Right Discrete Thin Drawer (Gaveta Sanfonada Compacta) */}
         <AnimatePresence>
-          {showRightSidebar && !moonMode && (
+          {showRightSidebar && (
             <>
               {/* Invisible Click-Outside Overlay */}
               <motion.div 
@@ -2093,24 +2013,18 @@ export default function App() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 bg-black/50 backdrop-blur-md z-[499] pointer-events-none"
+                onClick={() => setMoonMode(false)}
+                className="fixed inset-0 bg-black/50 backdrop-blur-md z-[499]"
               />
 
-              {/* Robust Centering & Scrollable Container for Viewport Safety */}
-              <div 
-                onClick={(e) => {
-                  if (e.target === e.currentTarget) {
-                    setMoonMode(false);
-                  }
-                }}
-                className="fixed inset-0 overflow-y-auto pointer-events-auto flex justify-center items-start sm:items-center p-4 z-[500]"
-              >
+              {/* Robust Centering Container for Viewport Safety */}
+              <div className="fixed inset-0 pointer-events-none flex items-center justify-center p-4 z-[500]">
                 <motion.div 
                   initial={{ opacity: 0, scale: 0.95, y: -20 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95, y: -20 }}
                   transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                  className="my-auto p-4 rounded-[24px] w-[92vw] xs:w-full max-w-[340px] sm:max-w-[360px] md:max-w-[370px] bg-[#0e0e11]/98 border border-[#CF9D7B]/20 shadow-[0_15px_45px_rgba(0,0,0,0.85),0_0_45px_rgba(207,157,123,0.15)] backdrop-blur-3xl relative overflow-visible flex flex-col"
+                  className="pointer-events-auto p-5 rounded-[28px] w-full max-w-[290px] bg-[#0e0e11]/98 border border-[#CF9D7B]/20 shadow-[0_15px_45px_rgba(0,0,0,0.85),0_0_35px_rgba(207,157,123,0.12)] backdrop-blur-3xl relative overflow-visible"
                 >
                   {/* Admin Mode Floating Badge */}
                   {editMode && (
@@ -2119,265 +2033,8 @@ export default function App() {
                     </div>
                   )}
 
-                  {/* Top Gallery Row - 5 Cards (above the calendar) - Collapsible */}
-                  <motion.div
-                    initial={false}
-                    animate={{ 
-                      height: topGalleryExpanded ? "auto" : 0, 
-                      opacity: topGalleryExpanded ? 1 : 0,
-                      marginBottom: topGalleryExpanded ? 12 : 0
-                    }}
-                    transition={{ duration: 0.35, ease: "easeInOut" }}
-                    className="relative w-full overflow-hidden"
-                  >
-                    <div className="relative w-full mb-5 pb-1">
-                      <div 
-                         ref={topScrollRef}
-                        className="grid grid-cols-5 gap-1.5 sm:gap-2 relative py-1 px-0.5 justify-center justify-items-center w-full"
-                        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-                      >
-                        {[1, 2, 3, 4, 5].map((idx) => {
-                          const idPrefix = `gt${idx}`;
-                          const title = systemFields[`${idPrefix}_title`] || defaultFields[`${idPrefix}_title` as keyof typeof defaultFields] || '';
-                          const isExpanded = activeTopCard === idx - 1;
-
-                          return (
-                            <div 
-                              key={`top-card-wrapper-${idx}`}
-                              className="flex flex-col items-center gap-1 w-full max-w-[46px] xs:max-w-[50px] sm:max-w-[54px] md:max-w-[58px]"
-                            >
-                              <div 
-                                ref={el => { topCardsRef.current[idx - 1] = el; }}
-                                onClick={() => handleCardToggle(idx - 1, 'top')}
-                                className={cn(
-                                  "w-full h-[135px] xs:h-[145px] sm:h-[155px] md:h-[165px]",
-                                  "bg-[#111114]/90 border transition-all duration-300 relative rounded-xl flex flex-col justify-center p-2 overflow-hidden shadow-lg cursor-pointer select-none",
-                                  isExpanded 
-                                    ? "border-[#E5C1A7] shadow-[0_0_15px_rgba(207,157,123,0.4)] ring-1 ring-[#CF9D7B]/20" 
-                                    : "border-[#CF9D7B]/15 hover:border-[#CF9D7B]/35 hover:shadow-[0_0_8px_rgba(207,157,123,0.15)]"
-                                )}
-                              >
-                                {/* Vertically Rotated Text Title */}
-                                <div className="absolute inset-0 flex items-center justify-center overflow-hidden pointer-events-none p-1">
-                                  <span className="font-orbitron text-[6.5px] xs:text-[7px] sm:text-[7.5px] md:text-[8px] font-black tracking-[1px] text-[#E5C1A7] uppercase -rotate-90 origin-center whitespace-nowrap block">
-                                    {title}
-                                  </span>
-                                </div>
-                              </div>
-
-                              {/* Sequence Number Header below the card */}
-                              <div className="bg-red-950/70 border border-red-500/60 rounded px-1.5 py-[2px] pointer-events-none shadow-[0_0_6px_rgba(239,68,68,0.25)] flex items-center justify-center">
-                                <span className="font-orbitron text-[6.5px] xs:text-[7.5px] font-bold text-red-500 leading-none">
-                                  #{idx}
-                                </span>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-
-                      {/* Left & Right custom modern arrow slide controllers below */}
-                      <div className="flex justify-center items-center gap-3 mt-1 select-none">
-                        <button 
-                          onClick={() => scrollGallery('left', topScrollRef)}
-                          className="w-4 h-4 rounded-full border border-[#CF9D7B]/15 bg-[#CF9D7B]/3 flex items-center justify-center cursor-pointer transition-all hover:bg-[#CF9D7B]/10 hover:border-[#CF9D7B]/40 text-[#E5C1A7]/60 hover:text-white pb-[1px]"
-                        >
-                          <ChevronLeft className="w-2.5 h-2.5" />
-                        </button>
-                        <button 
-                          onClick={() => scrollGallery('right', topScrollRef)}
-                          className="w-4 h-4 rounded-full border border-[#CF9D7B]/15 bg-[#CF9D7B]/3 flex items-center justify-center cursor-pointer transition-all hover:bg-[#CF9D7B]/10 hover:border-[#CF9D7B]/40 text-[#E5C1A7]/60 hover:text-white pb-[1px]"
-                        >
-                          <ChevronRight className="w-2.5 h-2.5" />
-                        </button>
-                      </div>
-
-                      {/* Expansion details - "calcule para nunca se abrir para laterais sempre para meio" */}
-                      <AnimatePresence>
-                        {activeTopCard !== null && (
-                          <motion.div
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.95 }}
-                            className="absolute inset-0 z-30 bg-[#08080a]/98 backdrop-blur-2xl rounded-2xl p-3.5 flex flex-col justify-between border border-[#CF9D7B]/40 shadow-[0_0_20px_#CF9D7B] text-left"
-                          >
-                            <div className="flex justify-between items-start">
-                              <div>
-                                <span className="text-[6px] font-mono text-[#CF9D7B]/60 tracking-[1.5px] uppercase block">MINI GALERIA TOP (EVENTO #{activeTopCard + 1})</span>
-                                <h4 
-                                  contentEditable={editMode}
-                                  onBlur={(e) => updateSystemField(`gt${activeTopCard + 1}_title`, e.currentTarget.innerText)}
-                                  suppressContentEditableWarning
-                                  className={cn(
-                                    "font-orbitron font-black text-[11px] sm:text-[12px] text-white tracking-[0.5px] uppercase outline-none mt-0.5",
-                                    editMode && "border-b border-dashed border-[#ff5e00]"
-                                  )}
-                                >
-                                  {systemFields[`gt${activeTopCard + 1}_title`] || defaultFields[`gt${activeTopCard + 1}_title` as keyof typeof defaultFields]}
-                                </h4>
-                              </div>
-                            </div>
-
-                            <div className="flex flex-col gap-1 my-1.5 bg-white/[0.01] border border-white/[0.03] p-2 rounded-xl">
-                              <div>
-                                <span className="text-[5.5px] text-[#CF9D7B]/65 font-mono uppercase tracking-[0.5px] block">Nome da Igreja:</span>
-                                <span 
-                                  contentEditable={editMode}
-                                  onBlur={(e) => updateSystemField(`gt${activeTopCard + 1}_church`, e.currentTarget.innerText)}
-                                  suppressContentEditableWarning
-                                  className={cn(
-                                    "text-[9.5px] sm:text-[10px] font-bold text-white/90 leading-tight outline-none block",
-                                    editMode && "border-b border-dashed border-[#ff5e00]"
-                                  )}
-                                >
-                                  {systemFields[`gt${activeTopCard + 1}_church`] || defaultFields[`gt${activeTopCard + 1}_church` as keyof typeof defaultFields]}
-                                </span>
-                              </div>
-
-                              <div>
-                                <span className="text-[5.5px] text-[#CF9D7B]/65 font-mono uppercase tracking-[0.5px] block">Setor de Atuação:</span>
-                                <span 
-                                  contentEditable={editMode}
-                                  onBlur={(e) => updateSystemField(`gt${activeTopCard + 1}_sector`, e.currentTarget.innerText)}
-                                  suppressContentEditableWarning
-                                  className={cn(
-                                    "text-[9.5px] sm:text-[10px] font-bold text-white/75 leading-tight outline-none block",
-                                    editMode && "border-b border-dashed border-[#ff5e00]"
-                                  )}
-                                >
-                                  {systemFields[`gt${activeTopCard + 1}_sector`] || defaultFields[`gt${activeTopCard + 1}_sector` as keyof typeof defaultFields]}
-                                </span>
-                              </div>
-
-                              <div>
-                                <span className="text-[5.5px] text-[#CF9D7B]/65 font-mono uppercase tracking-[0.5px] block">Data e Horário:</span>
-                                <span 
-                                  contentEditable={editMode}
-                                  onBlur={(e) => updateSystemField(`gt${activeTopCard + 1}_datetime`, e.currentTarget.innerText)}
-                                  suppressContentEditableWarning
-                                  className={cn(
-                                    "text-[9.5px] sm:text-[10px] font-bold text-[#E5C1A7] leading-tight outline-none block",
-                                    editMode && "border-b border-dashed border-[#ff5e00]"
-                                  )}
-                                >
-                                  {systemFields[`gt${activeTopCard + 1}_datetime`] || defaultFields[`gt${activeTopCard + 1}_datetime` as keyof typeof defaultFields]}
-                                </span>
-                              </div>
-
-                              <div>
-                                <span className="text-[5.5px] text-[#CF9D7B]/65 font-mono uppercase tracking-[0.5px] block">Cidade / UF:</span>
-                                <span 
-                                  contentEditable={editMode}
-                                  onBlur={(e) => updateSystemField(`gt${activeTopCard + 1}_city`, e.currentTarget.innerText)}
-                                  suppressContentEditableWarning
-                                  className={cn(
-                                    "text-[9.5px] sm:text-[10px] font-bold text-white/80 leading-tight outline-none block",
-                                    editMode && "border-b border-dashed border-[#ff5e00]"
-                                  )}
-                                >
-                                  {systemFields[`gt${activeTopCard + 1}_city`] || defaultFields[`gt${activeTopCard + 1}_city` as keyof typeof defaultFields]}
-                                </span>
-                              </div>
-                            </div>
-
-                            <div className="w-full h-0.5 relative overflow-hidden rounded-full mb-1.5">
-                              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#CF9D7B] to-transparent shadow-[0_0_6px_#CF9D7B] animate-pulse" />
-                            </div>
-
-                            <button
-                              onClick={() => setActiveTopCard(null)}
-                              className="w-full py-1.5 px-3 rounded-xl bg-red-950/40 hover:bg-red-900/40 border border-red-500/40 hover:border-red-500/80 text-red-400 hover:text-white font-orbitron font-black text-[8px] tracking-[2px] transition-all flex items-center justify-center gap-1.5 cursor-pointer mt-1"
-                            >
-                              <X className="w-2.5 h-2.5" />
-                              FECHAR DETALHES
-                            </button>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
-                  </motion.div>
-
-                  {/* Toggle Button for Top Gallery */}
-                  <div className="relative flex flex-col items-center mb-4 mt-2">
-                    <div className="absolute inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-[#CF9D7B]/20 to-transparent top-1/2 -translate-y-1/2" />
-                    <div className="flex items-center gap-2 relative z-10">
-                      <button
-                        onClick={() => {
-                          if (!topGalleryExpanded && !calendarCardsUnlocked) {
-                            setShowCalendarCardsLockInput(true);
-                            alert("Fichas de Atividades bloqueadas! Digite o código de liberação no terminal expandido abaixo.");
-                            return;
-                          }
-                          const nextState = !topGalleryExpanded;
-                          setTopGalleryExpanded(nextState);
-                          if (nextState) {
-                            setTimeout(() => {
-                              topScrollRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                            }, 380);
-                          }
-                        }}
-                        className={cn(
-                          "flex items-center justify-center gap-1.5 bg-[#111114] border rounded-full px-4 py-1.5 cursor-pointer transition-all duration-300 shadow-md",
-                          topGalleryExpanded 
-                            ? "border-red-500/50 text-red-400 hover:bg-red-950/20 shadow-[0_0_8px_rgba(239,68,68,0.2)]" 
-                            : "border-[#CF9D7B]/30 text-[#E5C1A7]/90 hover:bg-[#CF9D7B]/5 hover:border-[#CF9D7B] shadow-[0_0_8px_rgba(207,157,123,0.1)]"
-                        )}
-                      >
-                        <span className="font-orbitron font-extrabold text-[8px] tracking-[2px] uppercase">
-                          {topGalleryExpanded ? "Recolher Atividades " : "Atividades #1 a #5 "}
-                        </span>
-                        <span className="font-sans font-bold text-xs -mt-[1px]">
-                          {topGalleryExpanded ? "−" : "+"}
-                        </span>
-                      </button>
-
-                      {/* Orange dot "•" */}
-                      <div 
-                        onClick={() => setShowCalendarCardsLockInput(!showCalendarCardsLockInput)}
-                        className={cn(
-                          "w-1.5 h-1.5 rounded-full cursor-pointer transition-all duration-300 animate-pulse",
-                          calendarCardsUnlocked 
-                            ? "bg-green-500 shadow-[0_0_8px_#10b981]" 
-                            : "bg-[#ff5e00] shadow-[0_0_8px_#ff5e00]"
-                        )}
-                        title={calendarCardsUnlocked ? "Atividades Desbloqueadas" : "Liberar Atividades (Acesso Protegido)"}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Password input for calendar activities (Top) */}
-                  <AnimatePresence>
-                    {showCalendarCardsLockInput && (
-                      <motion.div 
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        className="bg-black/80 rounded-xl p-3 border border-white/10 flex gap-2 relative z-50 w-full mb-3 shadow-[0_4px_20px_rgba(0,0,0,0.5)] self-center"
-                      >
-                        <input 
-                          type="password" 
-                          value={calendarCardsLockInput}
-                          onChange={(e) => setCalendarCardsLockInput(e.target.value)}
-                          placeholder="Código de Acesso"
-                          className="flex-1 bg-white/80 border-none rounded-md p-1.5 text-[12px] outline-none text-[#222]" 
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                              checkCalendarCardsUnlock();
-                            }
-                          }}
-                        />
-                        <button 
-                          onClick={checkCalendarCardsUnlock}
-                          className="bg-[#ff5e00] hover:bg-[#e05300] border-none text-white rounded-md px-3.5 py-1 text-[10px] font-bold cursor-pointer transition-colors"
-                        >
-                          OK
-                        </button>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-
                   {/* Header with Navigation */}
-                  <div className="flex justify-between items-center mb-3 px-1 pt-4 border-t border-[#CF9D7B]/20">
+                  <div className="flex justify-between items-center mb-4 px-1">
                     <button 
                       onClick={handlePrevMonth}
                       className="w-7 h-7 rounded-full border border-[#CF9D7B]/15 bg-[#CF9D7B]/3 flex items-center justify-center cursor-pointer transition-all duration-300 hover:border-[#CF9D7B]/45 hover:bg-[#CF9D7B]/10 hover:text-[#CF9D7B] text-[#CF9D7B]/70 active:scale-90 outline-none"
@@ -2402,7 +2059,7 @@ export default function App() {
                   </div>
 
                   {/* Calendar Days Table */}
-                  <div className="grid grid-cols-7 gap-1 text-center mb-1">
+                  <div className="grid grid-cols-7 gap-1 text-center">
                     {["D", "S", "T", "Q", "Q", "S", "S"].map((d, i) => (
                       <div 
                         key={`${d}-${i}`} 
@@ -2414,266 +2071,8 @@ export default function App() {
                     {calendarDays}
                   </div>
 
-                  {/* Toggle Button for Bottom Gallery */}
-                  <div className="relative flex flex-col items-center mt-5 mb-2">
-                    <div className="absolute inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-[#CF9D7B]/20 to-transparent top-1/2 -translate-y-1/2" />
-                    <div className="flex items-center gap-2 relative z-10">
-                      <button
-                        onClick={() => {
-                          if (!bottomGalleryExpanded && !calendarCardsUnlocked) {
-                            setShowCalendarCardsLockInput(true);
-                            alert("Fichas de Atividades bloqueadas! Digite o código de liberação no terminal expandido.");
-                            return;
-                          }
-                          const nextState = !bottomGalleryExpanded;
-                          setBottomGalleryExpanded(nextState);
-                          if (nextState) {
-                            setTimeout(() => {
-                              bottomScrollRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                            }, 380);
-                          }
-                        }}
-                        className={cn(
-                          "flex items-center justify-center gap-1.5 bg-[#111114] border rounded-full px-4 py-1.5 cursor-pointer transition-all duration-300 shadow-md",
-                          bottomGalleryExpanded 
-                            ? "border-red-500/50 text-red-500 hover:bg-red-950/20 shadow-[0_0_8px_rgba(239,68,68,0.2)]" 
-                            : "border-[#CF9D7B]/30 text-[#E5C1A7]/90 hover:bg-[#CF9D7B]/5 hover:border-[#CF9D7B] shadow-[0_0_8px_rgba(207,157,123,0.1)]"
-                        )}
-                      >
-                        <span className="font-orbitron font-extrabold text-[8px] tracking-[2px] uppercase">
-                          {bottomGalleryExpanded ? "Recolher Atividades " : "Atividades #6 a #10 "}
-                        </span>
-                        <span className="font-sans font-bold text-xs -mt-[1px]">
-                          {bottomGalleryExpanded ? "−" : "+"}
-                        </span>
-                      </button>
-
-                      {/* Orange dot "•" */}
-                      <div 
-                        onClick={() => setShowCalendarCardsLockInput(!showCalendarCardsLockInput)}
-                        className={cn(
-                          "w-1.5 h-1.5 rounded-full cursor-pointer transition-all duration-300 animate-pulse",
-                          calendarCardsUnlocked 
-                            ? "bg-green-500 shadow-[0_0_8px_#10b981]" 
-                            : "bg-[#ff5e00] shadow-[0_0_8px_#ff5e00]"
-                        )}
-                        title={calendarCardsUnlocked ? "Atividades Desbloqueadas" : "Liberar Atividades (Acesso Protegido)"}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Password input for calendar activities (Bottom) */}
-                  <AnimatePresence>
-                    {showCalendarCardsLockInput && (
-                      <motion.div 
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        className="bg-black/80 rounded-xl p-3 border border-white/10 flex gap-2 relative z-50 w-full mt-3 mb-2 shadow-[0_4px_20px_rgba(0,0,0,0.5)] self-center"
-                      >
-                        <input 
-                          type="password" 
-                          value={calendarCardsLockInput}
-                          onChange={(e) => setCalendarCardsLockInput(e.target.value)}
-                          placeholder="Código de Acesso"
-                          className="flex-1 bg-white/80 border-none rounded-md p-1.5 text-[12px] outline-none text-[#222]" 
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                              checkCalendarCardsUnlock();
-                            }
-                          }}
-                        />
-                        <button 
-                          onClick={checkCalendarCardsUnlock}
-                          className="bg-[#ff5e00] hover:bg-[#e05300] border-none text-white rounded-md px-3.5 py-1 text-[10px] font-bold cursor-pointer transition-colors"
-                        >
-                          OK
-                        </button>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-
-                  {/* Bottom Gallery Row - 5 Cards (below the calendar) - Collapsible */}
-                  <motion.div
-                    initial={false}
-                    animate={{ 
-                      height: bottomGalleryExpanded ? "auto" : 0, 
-                      opacity: bottomGalleryExpanded ? 1 : 0,
-                      marginTop: bottomGalleryExpanded ? 12 : 0,
-                      marginBottom: bottomGalleryExpanded ? 10 : 0
-                    }}
-                    transition={{ duration: 0.35, ease: "easeInOut" }}
-                    className="relative w-full overflow-hidden"
-                  >
-                    <div className="relative w-full mb-2.5 pt-1">
-                      <div 
-                        ref={bottomScrollRef}
-                        className="grid grid-cols-5 gap-1.5 sm:gap-2 relative py-1 px-0.5 justify-center justify-items-center w-full"
-                        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-                      >
-                        {[1, 2, 3, 4, 5].map((idx) => {
-                          const idPrefix = `gb${idx}`;
-                          const title = systemFields[`${idPrefix}_title`] || defaultFields[`${idPrefix}_title` as keyof typeof defaultFields] || '';
-                          const isExpanded = activeBottomCard === idx - 1;
-
-                          return (
-                            <div 
-                              key={`bottom-card-wrapper-${idx}`}
-                              className="flex flex-col items-center gap-1 w-full max-w-[46px] xs:max-w-[50px] sm:max-w-[54px] md:max-w-[58px]"
-                            >
-                              <div 
-                                ref={el => { bottomCardsRef.current[idx - 1] = el; }}
-                                onClick={() => handleCardToggle(idx - 1, 'bottom')}
-                                className={cn(
-                                  "w-full h-[135px] xs:h-[145px] sm:h-[155px] md:h-[165px]",
-                                  "bg-[#111114]/90 border transition-all duration-300 relative rounded-xl flex flex-col justify-center p-2 overflow-hidden shadow-lg cursor-pointer select-none",
-                                  isExpanded 
-                                    ? "border-[#E5C1A7] shadow-[0_0_15px_rgba(207,157,123,0.4)] ring-1 ring-[#CF9D7B]/20" 
-                                    : "border-[#CF9D7B]/15 hover:border-[#CF9D7B]/35 hover:shadow-[0_0_8px_rgba(207,157,123,0.15)]"
-                                )}
-                              >
-                                {/* Vertically Rotated Text Title */}
-                                <div className="absolute inset-0 flex items-center justify-center overflow-hidden pointer-events-none p-1">
-                                  <span className="font-orbitron text-[6.5px] xs:text-[7px] sm:text-[7.5px] md:text-[8px] font-black tracking-[1px] text-[#E5C1A7] uppercase -rotate-90 origin-center whitespace-nowrap block">
-                                    {title}
-                                  </span>
-                                </div>
-                              </div>
-
-                              {/* Sequence Number Header below the card (Numbered 6-10) */}
-                              <div className="bg-red-950/70 border border-red-500/60 rounded px-1.5 py-[2px] pointer-events-none shadow-[0_0_6px_rgba(239,68,68,0.25)] flex items-center justify-center">
-                                <span className="font-orbitron text-[6.5px] xs:text-[7.5px] font-bold text-red-500 leading-none">
-                                  #{idx + 5}
-                                </span>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-
-                      {/* Left & Right custom modern arrow slide controllers below */}
-                      <div className="flex justify-center items-center gap-3 mt-1 select-none">
-                        <button 
-                          onClick={() => scrollGallery('left', bottomScrollRef)}
-                          className="w-4 h-4 rounded-full border border-[#CF9D7B]/15 bg-[#CF9D7B]/3 flex items-center justify-center cursor-pointer transition-all hover:bg-[#CF9D7B]/10 hover:border-[#CF9D7B]/40 text-[#E5C1A7]/60 hover:text-white pb-[1px]"
-                        >
-                          <ChevronLeft className="w-2.5 h-2.5" />
-                        </button>
-                        <button 
-                          onClick={() => scrollGallery('right', bottomScrollRef)}
-                          className="w-4 h-4 rounded-full border border-[#CF9D7B]/15 bg-[#CF9D7B]/3 flex items-center justify-center cursor-pointer transition-all hover:bg-[#CF9D7B]/10 hover:border-[#CF9D7B]/40 text-[#E5C1A7]/60 hover:text-white pb-[1px]"
-                        >
-                          <ChevronRight className="w-2.5 h-2.5" />
-                        </button>
-                      </div>
-
-                      {/* Expansion details - "calcule para nunca se abrir para laterais sempre para meio" */}
-                      <AnimatePresence>
-                        {activeBottomCard !== null && (
-                          <motion.div
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.95 }}
-                            className="absolute inset-0 z-30 bg-[#08080a]/98 backdrop-blur-2xl rounded-2xl p-3.5 flex flex-col justify-between border border-[#CF9D7B]/40 shadow-[0_0_20px_#CF9D7B] text-left"
-                          >
-                            <div className="flex justify-between items-start">
-                              <div>
-                                <span className="text-[6px] font-mono text-[#CF9D7B]/60 tracking-[1.5px] uppercase block">MINI GALERIA INFERIOR (EVENTO #{activeBottomCard + 6})</span>
-                                <h4 
-                                  contentEditable={editMode}
-                                  onBlur={(e) => updateSystemField(`gb${activeBottomCard + 1}_title`, e.currentTarget.innerText)}
-                                  suppressContentEditableWarning
-                                  className={cn(
-                                    "font-orbitron font-black text-[11px] sm:text-[12px] text-white tracking-[0.5px] uppercase outline-none mt-0.5",
-                                    editMode && "border-b border-dashed border-[#ff5e00]"
-                                  )}
-                                >
-                                  {systemFields[`gb${activeBottomCard + 1}_title`] || defaultFields[`gb${activeBottomCard + 1}_title` as keyof typeof defaultFields]}
-                                </h4>
-                              </div>
-                            </div>
-
-                            <div className="flex flex-col gap-1 my-1.5 bg-white/[0.01] border border-white/[0.03] p-2 rounded-xl">
-                              <div>
-                                <span className="text-[5.5px] text-[#CF9D7B]/65 font-mono uppercase tracking-[0.5px] block">Nome da Igreja:</span>
-                                <span 
-                                  contentEditable={editMode}
-                                  onBlur={(e) => updateSystemField(`gb${activeBottomCard + 1}_church`, e.currentTarget.innerText)}
-                                  suppressContentEditableWarning
-                                  className={cn(
-                                    "text-[9.5px] sm:text-[10px] font-bold text-white/90 leading-tight outline-none block",
-                                    editMode && "border-b border-dashed border-[#ff5e00]"
-                                  )}
-                                >
-                                  {systemFields[`gb${activeBottomCard + 1}_church`] || defaultFields[`gb${activeBottomCard + 1}_church` as keyof typeof defaultFields]}
-                                </span>
-                              </div>
-
-                              <div>
-                                <span className="text-[5.5px] text-[#CF9D7B]/65 font-mono uppercase tracking-[0.5px] block">Setor de Atuação:</span>
-                                <span 
-                                  contentEditable={editMode}
-                                  onBlur={(e) => updateSystemField(`gb${activeBottomCard + 1}_sector`, e.currentTarget.innerText)}
-                                  suppressContentEditableWarning
-                                  className={cn(
-                                    "text-[9.5px] sm:text-[10px] font-bold text-white/75 leading-tight outline-none block",
-                                    editMode && "border-b border-dashed border-[#ff5e00]"
-                                  )}
-                                >
-                                  {systemFields[`gb${activeBottomCard + 1}_sector`] || defaultFields[`gb${activeBottomCard + 1}_sector` as keyof typeof defaultFields]}
-                                </span>
-                              </div>
-
-                              <div>
-                                <span className="text-[5.5px] text-[#CF9D7B]/65 font-mono uppercase tracking-[0.5px] block">Data e Horário:</span>
-                                <span 
-                                  contentEditable={editMode}
-                                  onBlur={(e) => updateSystemField(`gb${activeBottomCard + 1}_datetime`, e.currentTarget.innerText)}
-                                  suppressContentEditableWarning
-                                  className={cn(
-                                    "text-[9.5px] sm:text-[10px] font-bold text-[#E5C1A7] leading-tight outline-none block",
-                                    editMode && "border-b border-dashed border-[#ff5e00]"
-                                  )}
-                                >
-                                  {systemFields[`gb${activeBottomCard + 1}_datetime`] || defaultFields[`gb${activeBottomCard + 1}_datetime` as keyof typeof defaultFields]}
-                                </span>
-                              </div>
-
-                              <div>
-                                <span className="text-[5.5px] text-[#CF9D7B]/65 font-mono uppercase tracking-[0.5px] block">Cidade / UF:</span>
-                                <span 
-                                  contentEditable={editMode}
-                                  onBlur={(e) => updateSystemField(`gb${activeBottomCard + 1}_city`, e.currentTarget.innerText)}
-                                  suppressContentEditableWarning
-                                  className={cn(
-                                    "text-[9.5px] sm:text-[10px] font-bold text-white/80 leading-tight outline-none block",
-                                    editMode && "border-b border-dashed border-[#ff5e00]"
-                                  )}
-                                >
-                                  {systemFields[`gb${activeBottomCard + 1}_city`] || defaultFields[`gb${activeBottomCard + 1}_city` as keyof typeof defaultFields]}
-                                </span>
-                              </div>
-                            </div>
-
-                            <div className="w-full h-0.5 relative overflow-hidden rounded-full mb-1.5">
-                              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#CF9D7B] to-transparent shadow-[0_0_6px_#CF9D7B] animate-pulse" />
-                            </div>
-
-                            <button
-                              onClick={() => setActiveBottomCard(null)}
-                              className="w-full py-1.5 px-3 rounded-xl bg-red-950/40 hover:bg-red-900/40 border border-red-500/40 hover:border-red-500/80 text-red-400 hover:text-white font-orbitron font-black text-[8px] tracking-[2px] transition-all flex items-center justify-center gap-1.5 cursor-pointer mt-1"
-                            >
-                              <X className="w-2.5 h-2.5" />
-                              FECHAR DETALHES
-                            </button>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
-                  </motion.div>
-
                   {/* Minimalist Visual Legend / Footer info */}
-                  <div className="mt-3 pt-2.5 border-t border-[#CF9D7B]/10 flex justify-center items-center gap-4 text-[7px] font-mono tracking-[1.5px] text-[#CF9D7B]/70 select-none uppercase">
+                  <div className="mt-4 pt-3 border-t border-[#CF9D7B]/10 flex justify-center items-center gap-4 text-[7px] font-mono tracking-[1.5px] text-[#CF9D7B]/70 select-none uppercase">
                     <div className="flex items-center gap-1.5">
                       <span className="w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)]" />
                       <span>Vago</span>
@@ -2700,24 +2099,7 @@ export default function App() {
   }
 
   const filteredSermoes = sermoes.filter(s => {
-    const buscaLower = busca.toLowerCase().trim();
-    if (!buscaLower) {
-      if (showOnlyDownloaded) {
-        return s.id && downloadedSermonIds.includes(s.id);
-      }
-      return true;
-    }
-    
-    const matchesTema = (s.tema || '').toLowerCase().includes(buscaLower);
-    const matchesTexto = (s.texto || '').toLowerCase().includes(buscaLower);
-    const matchesSetores = (s.setores || []).some(sec => sec.toLowerCase().includes(buscaLower));
-    const matchesIntroduction = (s.intro || '').toLowerCase().includes(buscaLower);
-    const matchesAgradecimento = (s.agr || '').toLowerCase().includes(buscaLower);
-    const matchesPontos = (s.pontos || []).some(p => 
-      (p || '').toLowerCase().includes(buscaLower)
-    );
-    
-    const matchesSearch = matchesTema || matchesTexto || matchesSetores || matchesIntroduction || matchesAgradecimento || matchesPontos;
+    const matchesSearch = s.tema.toLowerCase().includes(busca.toLowerCase());
     if (showOnlyDownloaded) {
       return matchesSearch && s.id && downloadedSermonIds.includes(s.id);
     }
@@ -3155,221 +2537,142 @@ export default function App() {
 
             {/* Contemporary Elegant Sermon Catalog Grid Gallery */}
             <div className="space-y-4">
-              <div className="flex items-center justify-between flex-wrap gap-2">
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-orbitron font-bold tracking-[0.25em] text-[#CF9D7B] uppercase">// EXPEDIENTE DE PREGAÇÕES ({filteredSermoes.length})</span>
-                  
-                  {/* Little orange edit dot (Acesso Administrador para os Cards) */}
-                  <div 
-                    onClick={() => setShowCardsLockInput(!showCardsLockInput)}
-                    className={cn(
-                      "w-1.5 h-1.5 rounded-full cursor-pointer transition-all duration-300 animate-pulse z-20",
-                      cardsUnlocked 
-                        ? "bg-green-500 shadow-[0_0_8px_#10b981]" 
-                        : "bg-[#ff5e00] shadow-[0_0_8px_#ff5e00]"
-                    )}
-                    title={cardsUnlocked ? "Cards Desbloqueados" : "Acesso Administrador - Liberar Cards"}
-                  />
-                </div>
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-orbitron font-bold tracking-[0.25em] text-[#CF9D7B] uppercase">// EXPEDIENTE DE PREGAÇÕES ({filteredSermoes.length})</span>
                 <span className="text-[9px] font-sans text-text-dim text-right">Toque em qualquer ficha de sermão para abrir a mesa de controle</span>
               </div>
 
-              {/* Password expansion input for sermon cards */}
-              <AnimatePresence>
-                {showCardsLockInput && (
-                  <motion.div 
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    className="bg-black/60 rounded-xl p-3 border border-white/10 flex gap-2 relative z-10 w-full max-w-xs shadow-lg mb-2"
-                  >
-                    <input 
-                      type="password" 
-                      value={cardsLockInput}
-                      onChange={(e) => setCardsLockInput(e.target.value)}
-                      placeholder="Código de Acesso"
-                      className="flex-1 bg-white/80 border-none rounded-md p-1.5 text-[12px] outline-none text-[#222]" 
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          checkCardsUnlock();
-                        }
-                      }}
-                    />
-                    <button 
-                      onClick={checkCardsUnlock}
-                      className="bg-[#ff5e00] hover:bg-[#e05300] border-none text-white rounded-md px-3.5 py-1 text-[10px] font-bold cursor-pointer transition-colors"
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {filteredSermoes.map((s, index) => {
+                  const hasImage = !!s.img;
+                  const pointsCount = s.pontos?.length || 0;
+                  const randomID = (s.id || '').substring(0, 5).toUpperCase();
+                  return (
+                    <motion.div 
+                      layout
+                      key={s.id}
+                      onClick={() => setSelectedSermonId(s.id!)}
+                      className="group relative bg-[#162127]/30 border border-white/5 hover:border-[#CF9D7B]/40 rounded-xl overflow-hidden cursor-pointer hover:shadow-[0_0_30px_rgba(207,157,123,0.15)] flex flex-col h-96 justify-between transition-all duration-300"
                     >
-                      OK
-                    </button>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
-              <div className="flex flex-wrap gap-6 justify-center">
-                {filteredSermoes.length === 0 ? (
-                  <div className="w-full py-20 px-6 bg-[#162127]/20 border border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center text-center gap-5">
-                    <div className="w-14 h-14 rounded-full bg-[#CF9D7B]/10 border border-[#CF9D7B]/20 flex items-center justify-center text-[#CF9D7B] shadow-[0_0_15px_rgba(207,157,123,0.1)]">
-                      <Search className="w-6 h-6 animate-pulse" />
-                    </div>
-                    <div className="space-y-2 max-w-sm">
-                      <h4 className="font-orbitron font-extrabold text-xs text-white/95 uppercase tracking-[2px]">NENHUM SERMÃO ENCONTRADO</h4>
-                      <p className="font-sans text-[11px] text-text-dim leading-relaxed">
-                        Não encontramos registros para <span className="text-[#CF9D7B] font-mono">"{busca}"</span>. Experimente pesquisar por outras palavras-chaves, referências bíblicas, setores ou tópicos.
-                      </p>
-                    </div>
-                    {busca && (
-                      <button
-                        onClick={() => setBusca('')}
-                        className="mt-1 px-4 py-1.5 rounded-full border border-[#CF9D7B]/30 hover:border-[#CF9D7B] bg-[#CF9D7B]/5 hover:bg-[#CF9D7B]/10 text-[#E5C1A7] hover:text-white transition-all font-orbitron font-extrabold text-[8px] tracking-[1.5px] uppercase cursor-pointer"
-                      >
-                        Limpar Termo de Busca
-                      </button>
-                    )}
-                  </div>
-                ) : (
-                  filteredSermoes.map((s, index) => {
-                    const hasImage = !!s.img;
-                    const pointsCount = s.pontos?.length || 0;
-                    const randomID = (s.id || '').substring(0, 5).toUpperCase();
-                    return (
-                      <motion.div 
-                        layout
-                        key={s.id}
-                        onClick={() => {
-                          if (!cardsUnlocked) {
-                            setShowCardsLockInput(true);
-                            alert("Fichas de sermão bloqueadas! Digite o código de liberação no terminal acima.");
-                            return;
-                          }
-                          setSelectedSermonId(s.id!);
+                      {/* Favorite trigger (Sermão do Dia heart icon) */}
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleToggleFavorite(s.id!);
                         }}
                         className={cn(
-                          "group relative bg-[#162127]/30 border rounded-xl overflow-hidden cursor-pointer flex flex-col h-96 justify-between transition-all duration-300 w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] xl:w-[calc(25%-18px)] max-w-sm",
-                          cardsUnlocked 
-                            ? "border-white/5 hover:border-[#CF9D7B]/40 hover:shadow-[0_0_30px_rgba(207,157,123,0.15)]"
-                            : "border-red-500/10 hover:border-red-500/30 hover:shadow-[0_0_20px_rgba(239,68,68,0.06)]"
+                          "absolute top-3 left-3 z-20 w-8 h-8 flex items-center justify-center rounded-lg bg-black/75 border transition-all shadow-md transform active:scale-95 duration-200 cursor-pointer",
+                          s.isFavorite 
+                            ? "border-[#ff2a5f] text-[#ff144f] bg-[#ff2a5f]/15 opacity-100 shadow-[0_0_15px_rgba(255,42,95,0.4)]" 
+                            : "border-white/10 text-white/30 hover:text-[#ff2a5f] hover:border-[#ff2a5f]/30 hover:bg-black/90 opacity-0 group-hover:opacity-100"
                         )}
+                        title={s.isFavorite ? "Remover de Sermão do Dia" : "Definir como Sermão do Dia"}
                       >
-                        {/* Favorite trigger (Sermão do Dia heart icon) */}
-                        <button 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleToggleFavorite(s.id!);
-                          }}
-                          className={cn(
-                            "absolute top-3 left-3 z-20 w-8 h-8 flex items-center justify-center rounded-lg bg-black/75 border transition-all shadow-md transform active:scale-95 duration-200 cursor-pointer",
-                            s.isFavorite 
-                              ? "border-[#ff2a5f] text-[#ff144f] bg-[#ff2a5f]/15 opacity-100 shadow-[0_0_15px_rgba(255,42,95,0.4)]" 
-                              : "border-white/10 text-white/30 hover:text-[#ff2a5f] hover:border-[#ff2a5f]/30 hover:bg-black/90 opacity-0 group-hover:opacity-100"
-                          )}
-                          title={s.isFavorite ? "Remover de Sermão do Dia" : "Definir como Sermão do Dia"}
-                        >
-                          <Heart className={cn("w-4 h-4 transition-transform duration-300", s.isFavorite ? "fill-[#ff2a5f] scale-110 text-[#ff2a5f]" : "")} />
-                        </button>
+                        <Heart className={cn("w-4 h-4 transition-transform duration-300", s.isFavorite ? "fill-[#ff2a5f] scale-110 text-[#ff2a5f]" : "")} />
+                      </button>
 
-                        {/* Download offline trigger (Spotify style) */}
-                        <button 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleToggleDownloadSermon(s.id!);
-                          }}
-                          className={cn(
-                            "absolute top-3 left-12 z-20 w-8 h-8 flex items-center justify-center rounded-lg bg-black/75 border transition-all shadow-md transform active:scale-95 duration-200 cursor-pointer",
-                            downloadedSermonIds.includes(s.id!) 
-                              ? "border-emerald-500 text-emerald-400 bg-emerald-500/15 opacity-100 shadow-[0_0_15px_rgba(16,185,129,0.4)]" 
-                              : "border-white/10 text-white/30 hover:text-emerald-400 hover:border-emerald-500/30 hover:bg-black/90 opacity-0 group-hover:opacity-100"
-                          )}
-                          title={downloadedSermonIds.includes(s.id!) ? "Remover dos Baixados (Offline)" : "Baixar Sermão para Offline"}
-                        >
-                          <Download className={cn("w-4 h-4 transition-transform duration-300", downloadedSermonIds.includes(s.id!) ? "scale-110 text-emerald-400" : "")} />
-                        </button>
+                      {/* Download offline trigger (Spotify style) */}
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleToggleDownloadSermon(s.id!);
+                        }}
+                        className={cn(
+                          "absolute top-3 left-12 z-20 w-8 h-8 flex items-center justify-center rounded-lg bg-black/75 border transition-all shadow-md transform active:scale-95 duration-200 cursor-pointer",
+                          downloadedSermonIds.includes(s.id!) 
+                            ? "border-emerald-500 text-emerald-400 bg-emerald-500/15 opacity-100 shadow-[0_0_15px_rgba(16,185,129,0.4)]" 
+                            : "border-white/10 text-white/30 hover:text-emerald-400 hover:border-emerald-500/30 hover:bg-black/90 opacity-0 group-hover:opacity-100"
+                        )}
+                        title={downloadedSermonIds.includes(s.id!) ? "Remover dos Baixados (Offline)" : "Baixar Sermão para Offline"}
+                      >
+                        <Download className={cn("w-4 h-4 transition-transform duration-300", downloadedSermonIds.includes(s.id!) ? "scale-110 text-emerald-400" : "")} />
+                      </button>
 
-                        {/* Delete trigger */}
-                        <button 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setShowDeleteConfirm(s.id!);
-                          }}
-                          className="absolute top-3 right-3 z-20 w-8 h-8 flex items-center justify-center rounded-lg bg-black/60 border border-red-500/30 text-red-400 hover:bg-red-500 hover:text-white transition-all opacity-0 group-hover:opacity-100 shadow-md transform"
-                          title="Deletar Sermão"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                      {/* Delete trigger */}
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setShowDeleteConfirm(s.id!);
+                        }}
+                        className="absolute top-3 right-3 z-20 w-8 h-8 flex items-center justify-center rounded-lg bg-black/60 border border-red-500/30 text-red-400 hover:bg-red-500 hover:text-white transition-all opacity-0 group-hover:opacity-100 shadow-md transform"
+                        title="Deletar Sermão"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
 
-                        {/* Cover Area */}
-                        <div className="relative w-full h-44 bg-[#0C1519] overflow-hidden shrink-0 border-b border-white/5">
-                          {hasImage ? (
-                            <img 
-                              src={s.img} 
-                              className="w-full h-full object-cover opacity-70 group-hover:opacity-90 group-hover:scale-105 transition-all duration-500" 
-                              alt={s.tema}
-                              loading="lazy"
-                            />
-                          ) : (
-                            <div className="w-full h-full bg-gradient-to-tr from-[#0C1519]/90 to-[#162127]/90 flex items-center justify-center p-4">
-                              <BookOpen className="w-10 h-10 text-[#CF9D7B]/30 group-hover:scale-110 duration-300" />
-                            </div>
-                          )}
-
-                          {/* Interactive "Start Preaching" Floating Play Tag */}
-                          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 duration-300 flex items-center justify-center gap-2">
-                            <div className="w-10 h-10 rounded-full bg-[#CF9D7B] flex items-center justify-center text-white scale-75 group-hover:scale-100 border border-white/20 shadow-lg transform duration-300">
-                              <Play className="w-5 h-5 ml-0.5 fill-current" />
-                            </div>
+                      {/* Cover Area */}
+                      <div className="relative w-full h-44 bg-[#0C1519] overflow-hidden shrink-0 border-b border-white/5">
+                        {hasImage ? (
+                          <img 
+                            src={s.img} 
+                            className="w-full h-full object-cover opacity-70 group-hover:opacity-90 group-hover:scale-105 transition-all duration-500" 
+                            alt={s.tema}
+                            loading="lazy"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-tr from-[#0C1519]/90 to-[#162127]/90 flex items-center justify-center p-4">
+                            <BookOpen className="w-10 h-10 text-[#CF9D7B]/30 group-hover:scale-110 duration-300" />
                           </div>
+                        )}
 
-                          {/* Badged Sectors */}
-                          {s.setores && s.setores.length > 0 && (
-                            <div className="absolute bottom-2 left-2 flex flex-wrap gap-1 max-w-[85%] z-10">
-                              {s.setores.slice(0, 2).map((setor, idx) => (
-                                <span key={idx} className="bg-black/80 border border-[#CF9D7B]/40 text-[#CF9D7B] text-[8px] font-mono font-bold px-1.5 py-0.5 rounded-sm shadow-[0_0_5px_rgba(207,157,123,0.3)] uppercase">
-                                  {setor}
-                                </span>
-                              ))}
-                              {s.setores.length > 2 && (
-                                <span className="bg-black/80 text-[#CF9D7B] text-[8px] font-mono font-bold px-1.5 py-0.5 rounded-sm">
-                                  +{s.setores.length - 2}
-                                </span>
-                              )}
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Card Content & Meta */}
-                        <div className="flex-1 p-4 flex flex-col justify-between">
-                          <div>
-                            {/* Code Serial / Visual Grid Detail */}
-                            <div className="flex justify-between items-center text-[9px] font-mono tracking-widest text-text-dim mb-1">
-                              <span>REG_KEY: #{randomID}</span>
-                              <span>ORD: {(index+1).toString().padStart(2, '0')}</span>
-                            </div>
-
-                            <h3 className="font-orbitron font-bold text-base text-white/95 group-hover:text-[#CF9D7B] transition-colors leading-snug line-clamp-2" translate="no">
-                              {s.tema}
-                            </h3>
-                          </div>
-
-                          {/* Card Footer Bible and point statistics */}
-                          <div className="border-t border-white/5 pt-3">
-                            <p className="text-[10px] text-[#CF9D7B] font-mono uppercase truncate mb-1" translate="no">
-                              📖 {s.texto || '// SEM BASE CADASTRADA'}
-                            </p>
-
-                            <div className="flex justify-between items-center text-[10px] text-text-dim font-mono">
-                              <span className="flex items-center gap-1">
-                                <Layers size={10} />
-                                {pointsCount} {pointsCount === 1 ? 'tópico' : 'tópicos'}
-                              </span>
-                              <span className="text-[9px] opacity-75">
-                                {s.createdAt ? new Date(s.createdAt.seconds * 1000).toLocaleDateString('pt-BR') : 'Recente'}
-                              </span>
-                            </div>
+                        {/* Interactive "Start Preaching" Floating Play Tag */}
+                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 duration-300 flex items-center justify-center gap-2">
+                          <div className="w-10 h-10 rounded-full bg-[#CF9D7B] flex items-center justify-center text-white scale-75 group-hover:scale-100 border border-white/20 shadow-lg transform duration-300">
+                            <Play className="w-5 h-5 ml-0.5 fill-current" />
                           </div>
                         </div>
-                      </motion.div>
-                    );
-                  })
-                )}
+
+                        {/* Badged Sectors */}
+                        {s.setores && s.setores.length > 0 && (
+                          <div className="absolute bottom-2 left-2 flex flex-wrap gap-1 max-w-[85%] z-10">
+                            {s.setores.slice(0, 2).map((setor, idx) => (
+                              <span key={idx} className="bg-black/80 border border-[#CF9D7B]/40 text-[#CF9D7B] text-[8px] font-mono font-bold px-1.5 py-0.5 rounded-sm shadow-[0_0_5px_rgba(207,157,123,0.3)] uppercase">
+                                {setor}
+                              </span>
+                            ))}
+                            {s.setores.length > 2 && (
+                              <span className="bg-black/80 text-[#CF9D7B] text-[8px] font-mono font-bold px-1.5 py-0.5 rounded-sm">
+                                +{s.setores.length - 2}
+                              </span>
+                            )}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Card Content & Meta */}
+                      <div className="flex-1 p-4 flex flex-col justify-between">
+                        <div>
+                          {/* Code Serial / Visual Grid Detail */}
+                          <div className="flex justify-between items-center text-[9px] font-mono tracking-widest text-text-dim mb-1">
+                            <span>REG_KEY: #{randomID}</span>
+                            <span>ORD: {(index+1).toString().padStart(2, '0')}</span>
+                          </div>
+
+                          <h3 className="font-orbitron font-bold text-base text-white/95 group-hover:text-[#CF9D7B] transition-colors leading-snug line-clamp-2" translate="no">
+                            {s.tema}
+                          </h3>
+                        </div>
+
+                        {/* Card Footer Bible and point statistics */}
+                        <div className="border-t border-white/5 pt-3">
+                          <p className="text-[10px] text-[#CF9D7B] font-mono uppercase truncate mb-1" translate="no">
+                            📖 {s.texto || '// SEM BASE CADASTRADA'}
+                          </p>
+
+                          <div className="flex justify-between items-center text-[10px] text-text-dim font-mono">
+                            <span className="flex items-center gap-1">
+                              <Layers size={10} />
+                              {pointsCount} {pointsCount === 1 ? 'tópico' : 'tópicos'}
+                            </span>
+                            <span className="text-[9px] opacity-75">
+                              {s.createdAt ? new Date(s.createdAt.seconds * 1000).toLocaleDateString('pt-BR') : 'Recente'}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  );
+                })}
               </div>
             </div>
           </>
