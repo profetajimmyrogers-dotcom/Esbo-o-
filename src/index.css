@@ -766,6 +766,50 @@
   .sys-init-luxury { top: 10%; right: 5%; font-size: 7px; }
 }
 
+/* Custom Cyber Runway & Jet Beacon Animations */
+@keyframes jetPulse {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(0, 245, 255, 0.4), 0 0 20px rgba(0, 245, 255, 0.2), inset 0 1px 4px rgba(255, 255, 255, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 18px rgba(0, 245, 255, 0.9), 0 0 35px rgba(0, 245, 255, 0.6), inset 0 1px 6px rgba(255, 255, 255, 0.4);
+  }
+}
+
+@keyframes jetEngineFire {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 0.95; transform: scale(1.3); }
+}
+
+@keyframes runwayScan {
+  0% { background-position: -200px 0; }
+  100% { background-position: 800px 0; }
+}
+
+@keyframes planeVibe {
+  0%, 100% { transform: translateY(0) rotate(90deg); }
+  50% { transform: translateY(-1.5px) rotate(91deg); }
+}
+
+.animate-jet-pulse {
+  animation: jetPulse 1.5s infinite ease-in-out;
+}
+
+.animate-engine-fire {
+  animation: jetEngineFire 0.1s infinite alternate;
+}
+
+.animate-plane-vibe {
+  animation: planeVibe 0.8s infinite ease-in-out;
+}
+
+.runway-light-strip {
+  background: linear-gradient(90deg, transparent, rgba(0, 245, 255, 0.15) 25%, rgba(255, 170, 0, 0.25) 50%, rgba(0, 245, 255, 0.15) 75%, transparent);
+  background-size: 400px 100%;
+  animation: runwayScan 3s infinite linear;
+}
+
+
 
 
 

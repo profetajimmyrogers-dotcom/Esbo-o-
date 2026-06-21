@@ -210,6 +210,116 @@ const systemHashConfirm = (input: string) => {
   return hash.toString();
 };
 
+function SplitFlapDigit({ digit, glowColor = "#ffea00" }: { digit: string, glowColor?: string }) {
+  const safeChar = (digit || ' ').toUpperCase();
+  return (
+    <div 
+      className="relative w-[19px] h-[28px] min-[350px]:w-[24px] min-[350px]:h-[35px] sm:w-[32px] sm:h-[44px] bg-gradient-to-b from-[#141419] to-[#08080a] border border-white/10 rounded-[4px] sm:rounded-[6px] flex items-center justify-center overflow-hidden font-mono shadow-[0_3px_6px_rgba(0,0,0,0.95)] select-none shrink-0"
+    >
+      {/* Real single crisp character rendered EXACTLY once to prevent distortion and duplications */}
+      <span 
+        className="text-[12px] min-[350px]:text-[15px] sm:text-[20px] font-extrabold tracking-normal leading-none" 
+        style={{ 
+          color: glowColor, 
+          textShadow: `0 0 6px ${glowColor}30, 0 0 12px ${glowColor}15`
+        }}
+      >
+        {safeChar}
+      </span>
+
+      {/* Airport board panel card horizontal split shadow lines */}
+      <div className="absolute inset-x-0 top-0 bottom-1/2 bg-white/[0.02] border-b border-black/80 pointer-events-none" />
+      <div className="absolute inset-x-0 top-1/2 bottom-0 bg-black/[0.15] border-t border-white/[0.03] pointer-events-none" />
+      
+      {/* 3D Central Groove shadow line */}
+      <div className="absolute left-0 right-0 top-[50%] -translate-y-1/2 h-[1.5px] bg-black/95 z-10" />
+      
+      {/* Grid glass reflection pattern for luxury feel */}
+      <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/[0.01] to-white/[0.05] pointer-events-none" />
+    </div>
+  );
+}
+
+function SplitFlapText({ text, glowColor = "#00f5ff" }: { text: string, glowColor?: string }) {
+  const chars = (text || '').toUpperCase().split('');
+  const containerRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(1);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (containerRef.current && contentRef.current) {
+        const containerWidth = containerRef.current.clientWidth;
+        const contentWidth = contentRef.current.scrollWidth;
+        if (contentWidth > containerWidth && containerWidth > 0) {
+          // Calculate scale ratio and allow a safe margin
+          setScale(Math.max(0.45, (containerWidth - 4) / contentWidth));
+        } else {
+          setScale(1);
+        }
+      }
+    };
+
+    handleResize();
+    
+    const observer = new ResizeObserver(() => handleResize());
+    if (containerRef.current) {
+      observer.observe(containerRef.current);
+    }
+    return () => observer.disconnect();
+  }, [text]);
+
+  return (
+    <div ref={containerRef} className="w-full flex justify-center items-center overflow-visible py-1">
+      <div 
+        ref={contentRef}
+        style={{ 
+          transform: `scale(${scale})`, 
+          transformOrigin: 'center center',
+          transition: 'transform 0.15s cubic-bezier(0.16, 1, 0.3, 1)'
+        }}
+        className="flex gap-[1.5px] min-[360px]:gap-[2px] sm:gap-[2.5px] items-center flex-nowrap select-none overflow-visible whitespace-nowrap shrink-0"
+      >
+        {chars.map((char, index) => {
+          // If it's a space, render a blank tile
+          if (char === ' ') {
+            return (
+              <div 
+                key={index} 
+                className="w-[11px] h-[20px] min-[360px]:w-[13.5px] min-[360px]:h-[23px] min-[400px]:w-[15px] min-[400px]:h-[26px] sm:w-[18px] sm:h-[30px] bg-[#070709] border border-white/5 rounded-[4px] shadow-md select-none shrink-0"
+              />
+            );
+          }
+          return (
+            <div 
+              key={index} 
+              className="relative w-[11px] h-[20px] min-[360px]:w-[13.5px] min-[360px]:h-[23px] min-[400px]:w-[15px] min-[400px]:h-[26px] sm:w-[18px] sm:h-[30px] bg-gradient-to-b from-[#141418] to-[#070709] border border-white/5 rounded-[4px] flex items-center justify-center overflow-hidden font-mono shadow-[0_3px_6px_rgba(0,0,0,0.94)] select-none shrink-0"
+            >
+              {/* Real single crisp character rendered EXACTLY once to prevent distortion and duplications */}
+              <span 
+                className="text-[9px] min-[360px]:text-[11px] min-[400px]:text-[13px] sm:text-[15px] font-black leading-none tracking-normal select-none relative z-10" 
+                style={{ 
+                  color: glowColor,
+                  textShadow: `0 0 5px ${glowColor}35`
+                }}
+              >
+                {char}
+              </span>
+
+              {/* Airport board panel card horizontal split shadow lines */}
+              <div className="absolute inset-x-0 top-0 bottom-1/2 bg-white/[0.01] border-b border-black/75 pointer-events-none z-20" />
+              <div className="absolute inset-x-0 top-1/2 bottom-0 bg-black/[0.1] border-t border-white/[0.02] pointer-events-none z-20" />
+              
+              {/* 3D Central Groove shadow line */}
+              <div className="absolute left-0 right-0 top-[50%] -translate-y-1/2 h-[1px] bg-black/95 z-20" />
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function HeaderClock() {
   const [currentTime, setCurrentTime] = useState(() => new Date());
 
@@ -321,6 +431,7 @@ export default function App() {
 
   const [brasiliaTime, setBrasiliaTime] = useState('--:--:--');
   const [countdownText, setCountdownText] = useState('--D --H');
+  const [countdownParts, setCountdownParts] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0, totalSeconds: 0 });
   const [alertText, setAlertText] = useState('MINISTRAÇÃO EM:');
   const [alertColor, setAlertColor] = useState('#ff9100');
 
@@ -356,6 +467,13 @@ export default function App() {
       }
 
       const diffMs = targetDate.getTime() - spDate.getTime();
+      const totalSecsLeft = Math.max(0, Math.floor(diffMs / 1000));
+      const days = Math.floor(totalSecsLeft / 86400);
+      const hours = Math.floor((totalSecsLeft % 86400) / 3600);
+      const minutes = Math.floor((totalSecsLeft % 3600) / 60);
+      const seconds = totalSecsLeft % 60;
+      setCountdownParts({ days, hours, minutes, seconds, totalSeconds: totalSecsLeft });
+
       if (diffMs <= 0) {
         setCountdownText("EM CULTO");
         setAlertText("EVENTO INICIADO");
@@ -363,10 +481,8 @@ export default function App() {
       } else {
         setAlertText("MINISTRAÇÃO EM:");
         setAlertColor("#ff9100");
-        const days = Math.floor(diffMs / 86400000);
-        const hrs = Math.floor((diffMs % 86400000) / 3600000);
         const p2 = (n: number) => n < 10 ? '0' + n : '' + n;
-        setCountdownText(days > 0 ? `-${days}D ${p2(hrs)}H` : `-${p2(hrs)}H`);
+        setCountdownText(days > 0 ? `-${days}D ${p2(hours)}H` : `-${p2(hours)}H`);
       }
     };
 
@@ -1164,14 +1280,19 @@ export default function App() {
                 className="fixed inset-0 bg-black/60 backdrop-blur-md z-[1100]"
               />
 
-              {/* Robust Centering Container for Viewport Safety */}
-              <div className="fixed inset-0 pointer-events-none flex items-center justify-center p-4 z-[1200]">
+              {/* Robust Centering Container for Viewport Safety with scroll support */}
+              <div 
+                onClick={() => setShowSidebar(false)}
+                className="fixed inset-0 pointer-events-auto overflow-y-auto flex items-center justify-center p-2 sm:p-4 z-[1200]"
+                style={{ scrollbarWidth: 'none' }}
+              >
                 <motion.div 
-                  initial={{ opacity: 0, scale: 0.95, y: -20 }}
+                  initial={{ opacity: 0, scale: 0.95, y: -10 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95, y: -20 }}
+                  exit={{ opacity: 0, scale: 0.95, y: -10 }}
                   transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                  className="pointer-events-auto p-4 md:p-5 rounded-[24px] w-full max-w-[440px] bg-[#0c0c0e]/95 border border-white/10 shadow-[0_0_50px_rgba(255,170,0,0.12)] backdrop-blur-2xl relative overflow-visible"
+                  onClick={(e) => e.stopPropagation()}
+                  className="p-3 sm:p-5 rounded-[20px] sm:rounded-[24px] w-full max-w-[420px] bg-[#0c0c0e]/95 border border-white/10 shadow-[0_0_50px_rgba(255,170,0,0.12)] backdrop-blur-2xl relative overflow-visible my-auto shrink-0"
                 >
                   <style>{`
                     .evt-custom-track {
@@ -1365,222 +1486,362 @@ export default function App() {
                     )}
                   </AnimatePresence>
 
-                  <div className="flex items-center justify-between mb-3 border-b border-white/5 pb-2">
+                  {/* Outer Header for Board */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3 border-b border-white/5 pb-2">
                     <div 
                       contentEditable={editMode}
                       onBlur={(e) => updateSystemField('id7', e.currentTarget.innerText)}
                       suppressContentEditableWarning
                       className={cn(
-                        "font-outfit text-[11px] font-bold text-[#d4af37]/80 tracking-[3px] uppercase outline-none transition-all",
-                        editMode && "border-b border-dashed border-[#ff5e00]"
+                        "font-outfit text-[10px] sm:text-xs font-black text-[#ffb000] tracking-[1.5px] sm:tracking-[3px] uppercase outline-none transition-all truncate max-w-full",
+                        editMode && "border-b border-dashed border-[#ff5e00] bg-white/5 px-2 py-0.5 rounded"
                       )}
                     >
                       {systemFields.id7 || 'CONFERENCISTA // JIMMY ROGERS'}
                     </div>
-                    <div className="flex items-center gap-1.5 text-[8.5px] text-[#25d366]/85 tracking-[1.5px] uppercase font-bold pr-6">
-                      <div className="w-[5px] h-[5px] rounded-full bg-[#25d366] shadow-[0_0_8px_#25d366] animate-pulse" />
-                      Sincronizado
+                    <div className="flex items-center gap-1.5 text-[7px] sm:text-[8.5px] text-[#25d366]/85 tracking-[1px] sm:tracking-[1.5px] uppercase font-bold pr-1 sm:pr-6">
+                      <div className="w-[4px] h-[4px] sm:w-[5px] sm:h-[5px] rounded-full bg-[#25d366] shadow-[0_0_8px_#25d366] animate-pulse" />
+                      ROTA ATIVA CONFIRMADA
                     </div>
                   </div>
 
-                  {/* Flight Widget Main Panel Container */}
-                  <div className="w-full bg-gradient-to-br from-[#101010] to-[#0c0c0c] border border-white/[0.05] rounded-[24px] p-3.5 xs:p-4 sm:p-5 relative overflow-hidden shadow-inner">
-                    {/* Dot grid decoration pattern */}
-                    <div className="absolute top-0 left-0 w-[130px] h-[120px] pointer-events-none opacity-[0.18] [mask-image:radial-gradient(circle_at_0_0,white,transparent_80%)]" 
-                         style={{ backgroundImage: 'radial-gradient(#6c8511 15%, transparent 20%)', backgroundSize: '4px 4px' }} />
-                    <div className="absolute -top-5 -left-5 w-[140px] h-[140px] bg-[radial-gradient(circle,rgba(173,255,47,0.08)_0%,transparent_70%)] pointer-events-none" />
+                  {/* Flight Widget Main Panel Container - Improved with Cyber Luxury Airport Terminal Vibe */}
+                  <div className="w-full bg-[#080809]/95 border-b-[3px] border-x border-t border-[#d4af37]/40 rounded-[20px] sm:rounded-[28px] p-2.5 sm:p-5 relative overflow-hidden shadow-[inset_0_2px_12px_rgba(0,0,0,0.9),0_15px_35px_rgba(0,0,0,0.85)]">
+                    {/* Background decorations: grid coordinates, scanning sonar sweep */}
+                    <div className="absolute inset-0 opacity-[0.04] pointer-events-none" 
+                         style={{ backgroundImage: 'radial-gradient(#00f5ff 1px, transparent 1px)', backgroundSize: '16px 16px' }} />
+                    <div className="absolute -top-12 -left-12 w-[200px] h-[200px] bg-[radial-gradient(circle,rgba(212,175,55,0.12)_0%,transparent_70%)] pointer-events-none" />
+                    
+                    {/* Top flight tag header details */}
+                    <div className="flex justify-between items-center text-[7.5px] sm:text-[8.5px] font-mono text-white/30 uppercase tracking-[1px] sm:tracking-[2px] mb-2.5 sm:mb-3 select-none gap-1.5">
+                      <span>DADOS DE EMBARQUE DO CULTO</span>
+                      <span className="text-[#ffee00]/50 font-bold">ACESSO AO TERMINAL #157</span>
+                    </div>
 
-                    <div className="flex justify-between items-start gap-2 sm:gap-4 mb-5">
-                      {/* Left: Origin and Destination Column */}
-                      <div className="flex flex-col gap-4 flex-1">
-                        {/* ORIGEM */}
-                        <div className="flex flex-col items-start text-left">
-                          <div className="flex items-baseline leading-none">
-                            <span className="evt-led-small-dim mr-1.5">setor</span>
-                            <span 
-                              contentEditable={editMode}
-                              onBlur={(e) => updateSystemField('id1', e.currentTarget.innerText)}
-                              suppressContentEditableWarning
-                              className={cn(
-                                "evt-led-big-white outline-none transition-all",
-                                editMode && "border-b border-dashed border-[#ff5e00]"
-                              )}
-                            >
-                              {systemFields.id1}
-                            </span>
+                    {/* Flight Board Row */}
+                    <div className="space-y-2.5 sm:space-y-4 mb-3 sm:mb-5">
+                      {/* 1. DEPARTURE PANEL (ORIGEM) */}
+                      <div className="bg-black/40 border border-white/5 rounded-xl sm:rounded-2xl p-2.5 sm:p-4 relative overflow-hidden flex flex-col gap-1.5 sm:gap-3 shadow-inner">
+                        {/* Top Metadata Row: Label and Sector */}
+                        <div className="flex justify-between items-center w-full z-10 gap-1.5">
+                          <span className="text-[7px] sm:text-[8px] font-orbitron font-extrabold text-white/40 tracking-[1px] sm:tracking-[1.2px] uppercase select-none">ORIGEM DA MINISTRAÇÃO</span>
+                          
+                          <div className="flex items-center gap-1 bg-black/50 px-1 py-0.5 sm:px-2 sm:py-1 rounded-lg border border-white/5">
+                            <span className="text-[6px] sm:text-[7.5px] text-white/35 font-orbitron tracking-wider leading-none uppercase">SETOR</span>
+                            {editMode ? (
+                              <span 
+                                contentEditable={editMode}
+                                onBlur={(e) => updateSystemField('id1', e.currentTarget.innerText)}
+                                suppressContentEditableWarning
+                                className="evt-led-big-white outline-none border-b border-dashed border-[#ff5e00] px-1 font-mono font-bold"
+                              >
+                                {systemFields.id1}
+                              </span>
+                            ) : (
+                              <div className="flex gap-[0.5px] scale-85 sm:scale-100 origin-right transition-transform">
+                                {(systemFields.id1 || '48').toString().split('').map((ch, i) => (
+                                  <SplitFlapDigit key={i} digit={ch} glowColor="#a5b4fc" />
+                                ))}
+                              </div>
+                            )}
                           </div>
-                          <span 
-                            contentEditable={editMode}
-                            onBlur={(e) => updateSystemField('id3', e.currentTarget.innerText)}
-                            suppressContentEditableWarning
-                            className={cn(
-                              "font-space-grotesk text-[11px] sm:text-[13px] font-bold text-white mt-1 leading-tight outline-none transition-all block",
-                              editMode && "border-b border-dashed border-[#ff5e00]"
-                            )}
-                          >
-                            {systemFields.id3}
-                          </span>
-                          <span 
-                            contentEditable={editMode}
-                            onBlur={(e) => updateSystemField('id4', e.currentTarget.innerText)}
-                            suppressContentEditableWarning
-                            className={cn(
-                              "font-space-grotesk text-[8.5px] sm:text-[10px] text-white/35 mt-0.5 uppercase tracking-[0.5px] block outline-none transition-all",
-                              editMode && "border-b border-dashed border-[#ff5e00]"
-                            )}
-                          >
-                            {systemFields.id4}
-                          </span>
                         </div>
 
-                        {/* Arrow separator */}
-                        <div className="text-[15px] text-[#ff9100] drop-shadow-[0_0_10px_rgba(255,145,0,0.4)] font-bold pl-3 leading-none select-none">
-                          ↓
-                        </div>
-
-                        {/* DESTINO */}
-                        <div className="flex flex-col items-start text-left">
-                          <div className="flex items-baseline leading-none">
-                            <span className="evt-led-small-dim mr-1.5">setor</span>
+                        {/* Middle Row: Church Name Split Flap (FULL WIDTH!) */}
+                        <div className="py-0.5 z-10 w-full overflow-hidden">
+                          {editMode ? (
                             <span 
                               contentEditable={editMode}
-                              onBlur={(e) => updateSystemField('id2', e.currentTarget.innerText)}
+                              onBlur={(e) => updateSystemField('id3', e.currentTarget.innerText)}
                               suppressContentEditableWarning
-                              className={cn(
-                                "evt-led-big-white outline-none transition-all",
-                                editMode && "border-b border-dashed border-[#ff5e00]"
-                              )}
+                              className="font-space-grotesk text-sm font-bold text-white outline-none border-b border-dashed border-[#ff5e00] px-1 bg-white/5"
                             >
-                              {systemFields.id2}
+                              {systemFields.id3}
                             </span>
-                          </div>
-                          <span 
-                            contentEditable={editMode}
-                            onBlur={(e) => updateSystemField('id5', e.currentTarget.innerText)}
-                            suppressContentEditableWarning
-                            className={cn(
-                              "font-space-grotesk text-[11px] sm:text-[13px] font-bold text-white mt-1 leading-tight outline-none transition-all block",
-                              editMode && "border-b border-dashed border-[#ff5e00]"
-                            )}
-                          >
-                            {systemFields.id5}
-                          </span>
-                          <span 
-                            contentEditable={editMode}
-                            onBlur={(e) => updateSystemField('id6', e.currentTarget.innerText)}
-                            suppressContentEditableWarning
-                            className={cn(
-                              "font-space-grotesk text-[8.5px] sm:text-[10px] text-white/35 mt-0.5 uppercase tracking-[0.5px] block outline-none transition-all",
-                              editMode && "border-b border-dashed border-[#ff5e00]"
-                            )}
-                          >
-                            {systemFields.id6}
-                          </span>
+                          ) : (
+                            <div className="shadow-inner overflow-x-auto scrollbar-none whitespace-nowrap max-w-full">
+                              <SplitFlapText text={systemFields.id3 || 'VIVA LARES'} glowColor="#ffffff" />
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Bottom Row: Additional Detail */}
+                        <div className="z-10">
+                          {editMode ? (
+                            <span 
+                              contentEditable={editMode}
+                              onBlur={(e) => updateSystemField('id4', e.currentTarget.innerText)}
+                              suppressContentEditableWarning
+                              className="font-space-grotesk text-[10px] text-white/50 block outline-none mt-1 border-b border-dashed border-[#ff5e00]"
+                            >
+                              {systemFields.id4}
+                            </span>
+                          ) : (
+                            <span className="text-[8px] sm:text-[9px] text-white/35 font-mono uppercase tracking-widest leading-none select-none">{systemFields.id4}</span>
+                          )}
                         </div>
                       </div>
 
-                      {/* Right side: ETA panel & Event Date */}
-                      <div className="flex flex-col gap-4 items-end justify-between self-stretch text-right min-w-[110px] sm:min-w-[135px] max-w-[140px] shrink-0">
-                        {/* Event yellow Date Stamp on led matrix */}
-                        <span 
-                          contentEditable={editMode}
-                          onBlur={(e) => updateSystemField('id8', e.currentTarget.innerText)}
-                          suppressContentEditableWarning
-                          className={cn(
-                            "evt-led-big-green outline-none transition-all leading-none",
-                            editMode && "border-b border-dashed border-[#ff5e00]"
-                          )}
-                        >
-                          {(() => {
-                            const val = systemFields.id8 || '20/06';
-                            if (val.toLowerCase().startsWith('data')) {
-                              return val;
-                            }
-                            return `Data-${val}`;
-                          })()}
-                        </span>
+                      {/* FLIGHT INTER-SECTOR RUNWAY VECTOR LINE */}
+                      <div className="flex items-center justify-center gap-1.5 select-none py-0.5 sm:py-1">
+                        <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-[#ffee00]/30 to-[#00f5ff]/30 relative">
+                          <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1 h-1 rounded-full bg-[#00f5ff]/40" />
+                        </div>
+                        <div className="flex items-center gap-1 px-2 py-0.5 sm:px-3 sm:py-1 rounded-full bg-white/[0.02] border border-white/5">
+                          <Plane className="w-3 h-3 text-[#00f5ff] transform rotate-90 animate-pulse" />
+                          <span className="text-[7.5px] font-mono text-white/40 tracking-[0.5px]">VETOR DE MINISTRAÇÃO</span>
+                        </div>
+                        <div className="h-[1px] flex-1 bg-gradient-to-r from-[#00f5ff]/30 via-[#ffee00]/30 to-transparent relative">
+                          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-1 rounded-full bg-[#00f5ff]/40" />
+                        </div>
+                      </div>
 
-                        {/* ETA Card Panel */}
-                        <div className="bg-[#101010]/85 border-[1.5px] border-white/[0.04] rounded-[18px] p-2.5 sm:p-3 w-full shadow-[inset_0_2px_5px_rgba(0,0,0,0.5),0_4px_10px_rgba(0,0,0,0.3)] relative text-left">
-                          <div className="flex items-center justify-between gap-1">
+                      {/* 2. ARRIVAL PORT OF CALL (DESTINAÇÃO PROEMINENTE - LUXURY EMBOSSED LOOK) */}
+                      <div className="bg-[#110e08] border border-[#ffaa00]/30 rounded-xl sm:rounded-2xl p-2.5 sm:p-4 relative overflow-hidden flex flex-col gap-1.5 sm:gap-3 shadow-[0_0_20px_rgba(255,170,0,0.06),inset_0_1px_10px_rgba(255,170,0,0.04)]">
+                        {/* Glow corners */}
+                        <div className="absolute top-0 right-0 w-8 h-8 pointer-events-none bg-[radial-gradient(ellipse_at_top_right,rgba(255,170,0,0.25),transparent_70%)]" />
+                        
+                        {/* Top Metadata Row: Label and Sector */}
+                        <div className="flex justify-between items-center w-full z-10 gap-1 sm:gap-1.5">
+                          <div className="flex items-center gap-1 bg-[#ffaa00]/10 border border-[#ffaa00]/20 rounded-full px-1.5 py-0.5 sm:px-2 select-none">
+                            <span className="w-1 h-1 rounded-full bg-[#ffaa00] animate-pulse" />
+                            <span className="text-[6.5px] sm:text-[8px] font-orbitron font-extrabold text-[#ffb000] tracking-[0.8px] sm:tracking-[1.2px] uppercase">PRÓXIMO DESTINO (CULTO)</span>
+                          </div>
+
+                          <div className="flex items-center gap-1 bg-[#090805] border border-[#ffb000]/10 rounded-xl px-1 py-0.5 sm:px-2 shadow-inner">
+                            <span className="text-[6px] sm:text-[7.5px] text-[#ffc800]/50 font-orbitron tracking-wider leading-none uppercase">SETOR</span>
+                            {editMode ? (
+                              <span 
+                                contentEditable={editMode}
+                                onBlur={(e) => updateSystemField('id2', e.currentTarget.innerText)}
+                                suppressContentEditableWarning
+                                className="evt-led-big-white outline-none border-b border-dashed border-[#ff5e00] px-1 font-mono font-bold"
+                              >
+                                {systemFields.id2}
+                              </span>
+                            ) : (
+                              <div className="flex gap-[0.5px] scale-85 sm:scale-100 origin-right justify-center transition-transform">
+                                {(systemFields.id2 || '27').toString().split('').map((ch, i) => (
+                                  <SplitFlapDigit key={i} digit={ch} glowColor="#ffd700" />
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Middle Row: Church Name Split Flap (FULL WIDTH!) */}
+                        <div className="py-0.5 z-10 w-full overflow-hidden">
+                          {editMode ? (
                             <span 
                               contentEditable={editMode}
-                              onBlur={(e) => updateSystemField('id10', e.currentTarget.innerText)}
+                              onBlur={(e) => updateSystemField('id5', e.currentTarget.innerText)}
                               suppressContentEditableWarning
-                              className={cn(
-                                "font-space-grotesk text-[10px] sm:text-[13px] font-bold text-white outline-none transition-all leading-none uppercase truncate",
-                                editMode && "border-b border-dashed border-[#ff5e00]"
-                              )}
+                              className="font-space-grotesk text-base font-black text-[#ffee00] outline-none border-b border-dashed border-[#ff5e00] px-1 bg-white/5"
                             >
-                              {systemFields.id10 || 'CULT 19:30'}
+                              {systemFields.id5}
                             </span>
-                            <div className="w-4 h-4 sm:w-[18px] sm:h-[18px] bg-[#1c1c1e] rounded-full flex items-center justify-center text-[#ff9100]/60 shrink-0">
-                              <Clock className="w-2.5 h-2.5" />
+                          ) : (
+                            <div className="shadow-inner overflow-x-auto scrollbar-none whitespace-nowrap max-w-full">
+                              <SplitFlapText text={systemFields.id5 || 'BETEL'} glowColor="#ffee00" />
                             </div>
-                          </div>
-                          <div className="font-space-grotesk text-[9.5px] sm:text-[11px] text-[#ff9100] mt-1.5 mb-2 font-bold drop-shadow-[0_0_8px_rgba(255,145,0,0.25)] tracking-wider">
-                            {brasiliaTime}
-                          </div>
-                          <div 
-                            className="font-space-grotesk text-[8px] sm:text-[9px] font-bold tracking-[0.5px] leading-tight"
-                            style={{ color: alertColor }}
-                          >
-                            {alertText}
-                          </div>
+                          )}
+                        </div>
+
+                        {/* Bottom Row: Additional Detail */}
+                        <div className="z-10">
+                          {editMode ? (
+                            <span 
+                              contentEditable={editMode}
+                              onBlur={(e) => updateSystemField('id6', e.currentTarget.innerText)}
+                              suppressContentEditableWarning
+                              className="font-space-grotesk text-[10px] text-white/50 block outline-none mt-1 border-b border-dashed border-[#ff5e00]"
+                            >
+                              {systemFields.id6}
+                            </span>
+                          ) : (
+                            <span className="text-[8.5px] sm:text-[9.5px] text-[#ffbf00]/70 font-mono font-bold tracking-widest leading-none uppercase select-none">{systemFields.id6}</span>
+                          )}
                         </div>
                       </div>
                     </div>
 
-                    {/* Progress slider track */}
-                    <div className="flex items-center justify-between gap-4 mt-2">
-                      <div 
-                        onClick={handleProgressClick}
-                        className="evt-custom-track cursor-pointer group/track"
-                        title="Ajustar o progresso em tempo real"
-                      >
+                    {/* Meta info card header */}
+                    <div className="flex justify-between items-center px-1 mb-2">
+                      <div className="flex items-center gap-1">
+                        <span className="text-[8px] font-mono text-white/35">CULTO DE DESTINO:</span>
+                        {editMode ? (
+                          <span 
+                            contentEditable={editMode}
+                            onBlur={(e) => updateSystemField('id10', e.currentTarget.innerText)}
+                            suppressContentEditableWarning
+                            className="font-mono text-[9px] text-[#ffaa00] font-black border-b border-dashed border-[#ff5e00] inline-block"
+                          >
+                            {systemFields.id10}
+                          </span>
+                        ) : (
+                          <span className="text-[9px] font-black text-[#ffaa00] tracking-wide font-orbitron">{systemFields.id10 || 'CULT 19:30'}</span>
+                        )}
+                      </div>
+
+                      <div className="flex items-center gap-1">
+                        <span className="text-[8px] font-mono text-white/35">DATA DO EVENTO:</span>
+                        {editMode ? (
+                          <span 
+                            contentEditable={editMode}
+                            onBlur={(e) => updateSystemField('id8', e.currentTarget.innerText)}
+                            suppressContentEditableWarning
+                            className="font-mono text-[9px] text-emerald-400 font-bold border-b border-dashed border-[#ff5e00] inline-block"
+                          >
+                            {systemFields.id8}
+                          </span>
+                        ) : (
+                          <span className="text-[9.5px] font-extrabold text-emerald-400 font-orbitron">{systemFields.id8 || '20/06'}</span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* 3. CHRONOS MECHANICAL COUNTDOWN PANEL (THE MAIN SPECTACLE!) */}
+                    <div className="space-y-2 sm:space-y-3 mb-3.5 sm:mb-5">
+                      <div className="flex justify-between items-center px-1 text-[7.5px] sm:text-[8px]">
+                        <span style={{ color: alertColor }} className="font-orbitron font-extrabold tracking-[0.5px] sm:tracking-[1px] uppercase transition-all duration-300">
+                          ⏱ {alertText}
+                        </span>
+                        <span className="font-mono text-white/40">SÃO PAULO: <span className="text-white/60 font-bold font-orbitron">{brasiliaTime}</span></span>
+                      </div>
+
+                      <div className="flex justify-center items-center gap-1 min-[350px]:gap-1.5 sm:gap-2.5 bg-black/85 border border-white/5 rounded-xl sm:rounded-[22px] p-2 sm:p-4 shadow-[inset_0_4px_12px_rgba(0,0,0,0.95)] relative overflow-hidden">
+                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(0,245,255,0.06),transparent_80%)] pointer-events-none" />
+                        
+                        {/* Days Column */}
+                        <div className="flex flex-col items-center gap-0.5 sm:gap-1">
+                          <div className="flex gap-[0.5px] sm:gap-[1px]">
+                            <SplitFlapDigit digit={Math.floor(countdownParts.days / 10).toString()} glowColor="#ffaa00" />
+                            <SplitFlapDigit digit={(countdownParts.days % 10).toString()} glowColor="#ffaa00" />
+                          </div>
+                          <span className="text-[6.5px] min-[350px]:text-[7px] sm:text-[8px] font-orbitron font-extrabold text-white/30 tracking-[0.5px] sm:tracking-[1px] uppercase">Dias</span>
+                        </div>
+                        
+                        <span className="text-[#ffaa00]/60 font-orbitron font-black text-[9px] sm:text-xs animate-pulse pb-3.5 sm:pb-4">:</span>
+
+                        {/* Hours Column */}
+                        <div className="flex flex-col items-center gap-0.5 sm:gap-1">
+                          <div className="flex gap-[0.5px] sm:gap-[1px]">
+                            <SplitFlapDigit digit={Math.floor(countdownParts.hours / 10).toString()} glowColor="#ffaa00" />
+                            <SplitFlapDigit digit={(countdownParts.hours % 10).toString()} glowColor="#ffaa00" />
+                          </div>
+                          <span className="text-[6.5px] min-[350px]:text-[7px] sm:text-[8px] font-orbitron font-extrabold text-white/30 tracking-[0.5px] sm:tracking-[1px] uppercase">Horas</span>
+                        </div>
+
+                        <span className="text-[#ffaa00]/60 font-orbitron font-black text-[9px] sm:text-xs animate-pulse pb-3.5 sm:pb-4">:</span>
+
+                        {/* Minutes Column */}
+                        <div className="flex flex-col items-center gap-0.5 sm:gap-1">
+                          <div className="flex gap-[0.5px] sm:gap-[1px]">
+                            <SplitFlapDigit digit={Math.floor(countdownParts.minutes / 10).toString()} glowColor="#ffaa00" />
+                            <SplitFlapDigit digit={(countdownParts.minutes % 10).toString()} glowColor="#ffaa00" />
+                          </div>
+                          <span className="text-[6.5px] min-[350px]:text-[7px] sm:text-[8px] font-orbitron font-extrabold text-white/30 tracking-[0.5px] sm:tracking-[1px] uppercase">Min</span>
+                        </div>
+
+                        <span className="text-[#ffaa00]/60 font-orbitron font-black text-[9px] sm:text-xs animate-pulse pb-3.5 sm:pb-4">:</span>
+
+                        {/* Seconds Column */}
+                        <div className="flex flex-col items-center gap-0.5 sm:gap-1">
+                          <div className="flex gap-[0.5px] sm:gap-[1px]">
+                            <SplitFlapDigit digit={Math.floor(countdownParts.seconds / 10).toString()} glowColor="#00f5ff" />
+                            <SplitFlapDigit digit={(countdownParts.seconds % 10).toString()} glowColor="#00f5ff" />
+                          </div>
+                          <span className="text-[6.5px] min-[350px]:text-[7px] sm:text-[8px] font-orbitron font-extrabold text-[#00f5ff]/70 tracking-[0.5px] sm:tracking-[1px] uppercase">Seg</span>
+                        </div>
+                      </div>
+
+                      {/* EVIDENCED EVENT DATE BADCE - CENTERED, EXTREMELY POLISHED */}
+                      <div className="flex flex-col items-center justify-center py-1.5 px-3 rounded-lg bg-gradient-to-r from-amber-500/0 via-amber-500/10 to-amber-500/0 border-y border-[#ffee00]/15 select-none relative overflow-hidden">
+                        <span className="text-[7px] sm:text-[8px] font-mono text-[#ffb000]/60 tracking-[1.5px] sm:tracking-[2px] uppercase mb-0.5">DATA DE EMBARQUE CONFIRMADA</span>
+                        <div className="flex items-center gap-1.5">
+                          <span className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-[#ffee00] shadow-[0_0_8px_rgba(255,238,0,0.8)] animate-pulse" />
+                          <span className="font-orbitron font-black text-lg sm:text-2xl text-[#ffee00] tracking-[2px] sm:tracking-[3px] drop-shadow-[0_0_10px_rgba(255,238,0,0.5)]">
+                            {systemFields.id8 || '08/07'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 4. DYNAMIC JETPATHWAY PROGRESS TRACK */}
+                    <div className="space-y-1 sm:space-y-1.5 border-t border-white/5 pt-2.5 sm:pt-4">
+                      <div className="flex justify-between items-center text-[7px] sm:text-[8px] font-mono select-none text-white/40 uppercase tracking-[1px] sm:tracking-[1.5px] gap-2">
+                        <span>MONITORAÇÃO COCKPIT // OPERAÇÃO EM ALTITUDE</span>
+                        <span className="text-[#00f5ff] font-bold shrink-0">{flightProgress}% EM CURSO</span>
+                      </div>
+
+                      <div className="flex items-center justify-between gap-3 sm:gap-4">
+                        {/* Progress slider track styled like runway */}
                         <div 
-                          style={{ width: `${flightProgress}%` }} 
-                          className="evt-custom-fill"
+                          onClick={handleProgressClick}
+                          className="evt-custom-track cursor-pointer group/track flex-1 h-8 sm:h-9 bg-[#040405] p-0.5 border border-white/5 rounded-full relative overflow-hidden"
+                          title="Clique na pista para ajustar o progresso da jornada"
+                          style={{ boxShadow: 'inset 0 4px 10px rgba(0,0,0,0.95)' }}
                         >
-                          <div className="evt-custom-plane-btn">
-                            <Plane className="w-3.5 h-3.5 text-[#aee30d] transform rotate-90 animate-pulse" />
+                          {/* Animated Runway Laser Lights */}
+                          <div className="absolute inset-0 runway-light-strip opacity-30 pointer-events-none z-0" />
+
+                          {/* Runway dashed center line */}
+                          <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-[1px] border-t border-dashed border-[#00f5ff]/20 pointer-events-none z-0" />
+                          
+                          <div 
+                            style={{ width: `${flightProgress}%` }} 
+                            className="bg-gradient-to-r from-indigo-500/10 via-[#00f5ff]/20 to-[#00f5ff]/40 rounded-full h-full transition-all duration-300 relative flex items-center justify-end z-10"
+                          >
+                            {/* Glow jet beacon right behind the plane with fire pulsing */}
+                            <div className="absolute -right-2 top-0 bottom-0 w-8 bg-gradient-to-l from-[#00f5ff]/60 to-transparent blur-md rounded-full pointer-events-none animate-engine-fire" />
+                            
+                            {/* Plane Button Wrapper with hover scales and continuous beacon pulse */}
+                            <div 
+                              className="w-[26px] h-[26px] sm:w-[30px] sm:h-[30px] rounded-full bg-[#0a0a0c] border border-[#00f5ff]/60 flex items-center justify-center text-[#ffc400] shadow-[0_0_12px_rgba(0,245,255,0.5),inset_0_1px_4px_rgba(255,255,255,0.2)] hover:scale-105 active:scale-95 transition-transform duration-150 animate-jet-pulse"
+                              style={{ marginRight: '-2px' }}
+                            >
+                              {/* Airplane vector featuring continuous flight path vibration stability */}
+                              <Plane className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#00f5ff] drop-shadow-[0_0_6px_#00f5ff] transform animate-plane-vibe" />
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* Little Secret Admin Access Node */}
+                        <div className="flex flex-col items-center justify-center shrink-0">
+                          <span className="text-[6px] sm:text-[7px] font-mono text-white/30 uppercase tracking-wider mb-0.5 sm:mb-1">SISTEMA</span>
+                          <div 
+                            onClick={() => setShowMiniLogin(!showMiniLogin)}
+                            className="w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-full bg-[#ff5e00]/20 border border-[#ff5e00]/50 flex items-center justify-center cursor-pointer shadow-[0_0_6px_rgba(255,94,0,0.3)] hover:scale-105 active:scale-95 transition-all z-20" 
+                            title="Acesso Administrador"
+                          >
+                            <div className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-[#ff5e00]" />
                           </div>
                         </div>
                       </div>
-                      
-                      {/* Countdown and admin edit dot vertical container */}
-                      <div className="flex flex-col items-center justify-center min-w-[80px]">
-                        <span className={cn(
-                          "font-space-grotesk text-[12.5px] font-bold select-none text-white/40 tracking-[0.5px] leading-none transition-colors",
-                          countdownText === "EM CULTO" && "text-[#bfff00] drop-shadow-[0_0_8px_rgba(191,255,0,0.3)]"
-                        )}>
-                          {countdownText}
-                        </span>
-                        
-                        {/* Little orange edit dot (Acesso Administrador) centered below countdown text */}
-                        <div 
-                          onClick={() => setShowMiniLogin(!showMiniLogin)}
-                          className="w-1.5 h-1.5 bg-[#ff5e00] rounded-full mt-2 cursor-pointer shadow-[0_0_8px_#ff5e00] animate-pulse z-20" 
-                          title="Acesso Administrador"
-                        />
+
+                      <div className="text-[6.5px] sm:text-[7.5px] font-mono text-white/20 uppercase tracking-[0.5px] sm:tracking-[1px] flex justify-between select-none gap-2 whitespace-nowrap overflow-hidden">
+                        <span className="truncate">PISTA COORD: (24.89, -32.55)</span>
+                        <span className="shrink-0">RADAR ATIVO // VARREDURA 100%</span>
                       </div>
                     </div>
 
                     {/* Quick Config for countdown date */}
                     {editMode && (
-                      <div className="mt-4 p-2 bg-black/40 rounded-xl border border-white/5 space-y-1.5 text-left text-[11px]">
-                        <div className="flex justify-between items-center text-white/60 font-mono text-[9px] uppercase tracking-wider font-bold">
-                          <span>⚙ Ajustes ISO Corrida</span>
+                      <div className="mt-4 p-3 bg-black/60 rounded-xl border border-[#ff9100]/20 space-y-2 text-left text-[11px] animate-fade-in">
+                        <div className="flex justify-between items-center text-[#ff9100] font-mono text-[9px] uppercase tracking-wider font-extrabold border-b border-white/5 pb-1 select-none">
+                          <span>⚙ SISTEMA DE AGENDAMENTO DE CHRONOS</span>
+                          <span className="text-white/40">PORT: LOCALHOST</span>
                         </div>
                         <div className="flex flex-col gap-1">
-                          <label className="text-white/40 text-[9px]">ISO DATA (Para Contagem Regressiva):</label>
+                          <label className="text-white/40 text-[9px] font-mono uppercase font-bold text-white/60">DIGITE DATA DA CHRONOS (FORMATO ISO):</label>
                           <input 
                             type="text" 
                             value={systemFields.id9 || '2026-06-20T19:30'}
                             onChange={(e) => updateSystemField('id9', e.target.value)}
-                            className="bg-white/10 hover:bg-white/15 focus:bg-white/20 border-none rounded px-2 py-1 text-[11px] font-mono text-white outline-none w-full"
+                            className="bg-black/80 hover:bg-black/95 focus:bg-black/100 border border-white/10 rounded-md px-3 py-1.5 text-[11px] font-mono text-white outline-none w-full shadow-inner focus:border-[#ff9100]/60 transition-colors"
                             placeholder="YYYY-MM-DDTHH:MM"
                           />
+                          <p className="text-white/30 text-[8px] font-mono mt-0.5">Use o formato ISO Brasilia (exemplo: '2026-06-20T19:30') para ajustar o marcador de contagem de dias com perfeição.</p>
                         </div>
                       </div>
                     )}
