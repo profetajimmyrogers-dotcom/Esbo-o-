@@ -53,6 +53,7 @@ import {
   WifiOff,
   RefreshCw,
   Download,
+  Calendar,
   Paintbrush,
   Eraser,
   Check,
@@ -642,75 +643,101 @@ const DOT_MATRICES: Record<string, number[][]> = {
 
 function DotMatrixText({ text, glowColor = "#ffffff" }: { text: string, glowColor?: string }) {
   const chars = (text || '').toUpperCase().split('');
-  const containerRef = useRef<HTMLDivElement>(null);
-  const contentRef = useRef<HTMLDivElement>(null);
-  const [scale, setScale] = useState(1);
-
-  useEffect(() => {
-    const handleResize = () => {
-      if (containerRef.current && contentRef.current) {
-        const containerWidth = containerRef.current.clientWidth;
-        const contentWidth = contentRef.current.scrollWidth;
-        if (contentWidth > containerWidth && containerWidth > 0) {
-          setScale(Math.max(0.4, (containerWidth - 6) / contentWidth));
-        } else {
-          setScale(1);
-        }
-      }
-    };
-
-    handleResize();
-    const observer = new ResizeObserver(() => handleResize());
-    if (containerRef.current) {
-      observer.observe(containerRef.current);
-    }
-    return () => observer.disconnect();
-  }, [text]);
+  
+  const colSpacing = 6;  // spacing between dots in columns
+  const rowSpacing = 6;  // spacing between dots in rows
+  const charWidth = 5 * colSpacing; // 30
+  const charHeight = 7 * rowSpacing; // 42
+  const charGap = 8; // spacing between characters
+  
+  const paddingX = 6;
+  const paddingY = 6;
+  
+  const totalWidth = chars.length * charWidth + (chars.length - 1) * charGap + paddingX * 2;
+  const totalHeight = charHeight + paddingY * 2;
 
   return (
-    <div ref={containerRef} className="w-full flex justify-center items-center overflow-visible py-1 select-none">
-      <div 
-        ref={contentRef}
-        style={{ 
-          transform: `scale(${scale})`, 
-          transformOrigin: 'center center',
-          transition: 'transform 0.15s cubic-bezier(0.16, 1, 0.3, 1)'
-        }}
-        className="flex gap-[3.5px] min-[360px]:gap-[4px] sm:gap-[6px] items-center flex-nowrap shrink-0 overflow-visible py-1 px-2.5 bg-black/60 border border-white/5 rounded-xl shadow-[0_4px_12px_rgba(0,0,0,0.5)]"
+    <div className="w-full max-w-full flex justify-center items-center overflow-hidden py-1 select-none">
+      <svg
+        viewBox={`0 0 ${totalWidth} ${totalHeight}`}
+        className="w-full max-h-[32px] sm:max-h-[44px] h-auto object-contain drop-shadow-[0_4px_12px_rgba(0,0,0,0.6)]"
+        style={{ maxWidth: `${totalWidth * 1.5}px` }}
       >
-        {chars.map((char, index) => {
+        <defs>
+          <radialGradient id="charBg" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="#101012" />
+            <stop offset="100%" stopColor="#050505" />
+          </radialGradient>
+        </defs>
+        {chars.map((char, charIdx) => {
           const resolvedChar = normalizeChar(char);
           const matrix = DOT_MATRICES[resolvedChar] || DOT_MATRICES[' '];
+          const charX = paddingX + charIdx * (charWidth + charGap);
+          const charY = paddingY;
 
           return (
-            <div 
-              key={index} 
-              className="grid grid-cols-5 gap-[1px] sm:gap-[1.5px] p-[1.5px] bg-[#050505] border border-white/5 rounded-[4px] shadow-[inset_0_1.5px_4px_rgba(0,0,0,0.9)] shrink-0"
-              style={{
-                background: 'radial-gradient(circle at center, #101012 0%, #050505 100%)'
-              }}
-            >
-              {matrix.map((row, rIdx) => 
-                row.map((active, cIdx) => (
-                  <div 
-                    key={`${rIdx}-${cIdx}`}
-                    className={cn(
-                      "w-[2px] h-[2px] min-[360px]:w-[2.5px] min-[360px]:h-[2.5px] sm:w-[3.5px] sm:h-[3.5px] rounded-full transition-all duration-300",
-                      active === 1 
-                        ? "" 
-                        : "bg-white/[0.03] border border-white/[0.01]"
-                    )}
-                    style={active === 1 ? {
-                      backgroundColor: '#ffffff',
-                      boxShadow: `0 0 5px ${glowColor}, 0 0 10px ${glowColor}, 0 0 15px ${glowColor}`
-                    } : undefined}
-                  />
-                ))
+            <g key={charIdx}>
+              {/* Character box background */}
+              <rect
+                x={charX - 2}
+                y={charY - 2}
+                width={charWidth + 4}
+                height={charHeight + 4}
+                rx={3}
+                fill="url(#charBg)"
+                stroke="rgba(255,255,255,0.06)"
+                strokeWidth={0.5}
+              />
+              {matrix.map((row, rIdx) =>
+                row.map((active, cIdx) => {
+                  const dotX = charX + cIdx * colSpacing + colSpacing / 2;
+                  const dotY = charY + rIdx * rowSpacing + rowSpacing / 2;
+                  
+                  if (active === 1) {
+                    return (
+                      <g key={`${rIdx}-${cIdx}`}>
+                        {/* Glow effect ring 1 */}
+                        <circle
+                          cx={dotX}
+                          cy={dotY}
+                          r={3.8}
+                          fill={glowColor}
+                          opacity={0.15}
+                        />
+                        {/* Glow effect ring 2 */}
+                        <circle
+                          cx={dotX}
+                          cy={dotY}
+                          r={2.4}
+                          fill={glowColor}
+                          opacity={0.4}
+                        />
+                        {/* Core active dot */}
+                        <circle
+                          cx={dotX}
+                          cy={dotY}
+                          r={1.0}
+                          fill="#ffffff"
+                        />
+                      </g>
+                    );
+                  } else {
+                    return (
+                      <circle
+                        key={`${rIdx}-${cIdx}`}
+                        cx={dotX}
+                        cy={dotY}
+                        r={0.8}
+                        fill="rgba(255,255,255,0.03)"
+                      />
+                    );
+                  }
+                })
               )}
-            </div>
+            </g>
           );
         })}
-      </div>
+      </svg>
     </div>
   );
 }
@@ -766,12 +793,13 @@ function SplitFlapText({ text, glowColor = "#00f5ff" }: { text: string, glowColo
     };
 
     handleResize();
-    
-    const observer = new ResizeObserver(() => handleResize());
-    if (containerRef.current) {
-      observer.observe(containerRef.current);
-    }
-    return () => observer.disconnect();
+    const timer = setTimeout(handleResize, 100);
+
+    window.addEventListener('resize', handleResize);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('resize', handleResize);
+    };
   }, [text]);
 
   return (
@@ -921,16 +949,20 @@ export default function App() {
   const [editMode, setEditMode] = useState(false);
   const [blockedDates, setBlockedDates] = useState<string[]>([]);
   const defaultFields = {
-    id1: '48',
+    id1: '40',
     id2: '27',
     id3: 'VIVA LARES',
     id4: 'SÁB, 19:30',
     id5: 'BETEL',
     id6: 'SÁB, 19:30',
-    id7: 'CONFERENCISTA // JIMMY ROGERS',
-    id8: '20/06',
+    id7: 'JIMMY // ROGERS',
+    id8: '08/07',
     id9: '2026-06-20T19:30',
-    id10: 'CULT 19:30'
+    id10: 'CULT 19:30',
+    card1Sector: '40',
+    card2Church: 'RONCO DA AGUA',
+    card2Sector: '29',
+    card2Date: '08/07'
   };
   const [systemFields, setSystemFields] = useState<Record<string, string>>(defaultFields);
 
@@ -1960,7 +1992,7 @@ export default function App() {
                   {/* Close button inside modal container */}
                   <button 
                     onClick={() => setShowSidebar(false)}
-                    className="absolute top-4 right-4 p-1.5 text-white/50 hover:text-white transition-colors cursor-pointer rounded-full hover:bg-white/5 border border-transparent outline-none z-20"
+                    className="absolute -top-3 -right-3 sm:-top-4 sm:-right-4 w-8 h-8 rounded-full bg-[#0c0c0e] border border-white/20 text-white/50 hover:text-white hover:border-[#ffee00]/50 hover:bg-black flex items-center justify-center transition-all cursor-pointer z-[2100] shadow-xl outline-none"
                     title="Fechar Evento"
                   >
                     <X className="w-4 h-4" />
@@ -2016,75 +2048,45 @@ export default function App() {
                     <div className="absolute inset-0 opacity-[0.04] pointer-events-none" 
                          style={{ backgroundImage: 'radial-gradient(#00f5ff 1px, transparent 1px)', backgroundSize: '16px 16px' }} />
                     <div className="absolute -top-12 -left-12 w-[200px] h-[200px] bg-[radial-gradient(circle,rgba(212,175,55,0.12)_0%,transparent_70%)] pointer-events-none" />
-                    
                     {/* Top flight tag header details */}
-                    <div className="flex justify-between items-center text-[7.5px] sm:text-[8.5px] font-mono text-white/30 uppercase tracking-[1px] sm:tracking-[2px] mb-2.5 sm:mb-3 select-none gap-1.5">
+                    <div className="flex justify-between items-center text-[7.5px] sm:text-[8.5px] font-mono text-white/30 uppercase tracking-[1px] sm:tracking-[2px] mb-2 sm:mb-3 select-none gap-1.5">
                       <span>DADOS DE EMBARQUE DO CULTO</span>
                       <span className="text-[#ffee00]/50 font-bold">ACESSO AO TERMINAL #157</span>
                     </div>
 
                     {/* Flight Board Row */}
-                    <div className="space-y-2.5 sm:space-y-4 mb-3 sm:mb-5">
-                      {/* 1. DEPARTURE PANEL (ORIGEM) */}
-                      <div className="bg-black/40 border border-white/5 rounded-xl sm:rounded-2xl p-2.5 sm:p-4 relative overflow-hidden flex flex-col gap-1.5 sm:gap-3 shadow-inner">
-                        {/* Top Metadata Row: Label and Sector */}
-                        <div className="flex justify-between items-center w-full z-10 gap-1.5">
-                          <span className="text-[7px] sm:text-[8px] font-orbitron font-extrabold text-white/40 tracking-[1px] sm:tracking-[1.2px] uppercase select-none">ORIGEM DA MINISTRAÇÃO</span>
-                          
-                          <div className="flex items-center gap-1 bg-black/50 px-1 py-0.5 sm:px-2 sm:py-1 rounded-lg border border-white/5">
-                            <span className="text-[6px] sm:text-[7.5px] text-white/35 font-orbitron tracking-wider leading-none uppercase">SETOR</span>
-                            {editMode ? (
-                              <span 
-                                contentEditable={editMode}
-                                onBlur={(e) => updateSystemField('id1', e.currentTarget.innerText)}
-                                suppressContentEditableWarning
-                                className="evt-led-big-white outline-none border-b border-dashed border-[#ff5e00] px-1 font-mono font-bold"
-                              >
-                                {systemFields.id1}
-                              </span>
-                            ) : (
-                              <div className="flex gap-[0.5px] scale-85 sm:scale-100 origin-right transition-transform">
-                                {(systemFields.id1 || '48').toString().split('').map((ch, i) => (
-                                  <SplitFlapDigit key={i} digit={ch} glowColor="#a5b4fc" />
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Middle Row: Church Name Split Flap (FULL WIDTH!) */}
-                        <div className="py-0.5 z-10 w-full overflow-hidden">
+                    <div className="space-y-3 sm:space-y-4 mb-3">
+                      {/* Membro do Viva Lares - COMPACT AS IN PHOTO */}
+                      <div className="bg-black/40 border border-white/5 rounded-xl sm:rounded-2xl p-2.5 sm:p-3 relative overflow-hidden flex items-center justify-between shadow-inner">
+                        <span className="text-[7.5px] sm:text-[8.5px] font-orbitron font-extrabold text-white/40 tracking-[1px] sm:tracking-[1.2px] uppercase select-none">Membro do Viva Lares</span>
+                        
+                        <div className="flex items-center gap-1 bg-black/50 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-lg border border-white/5">
+                          <span className="text-[6px] sm:text-[7.5px] text-white/35 font-orbitron tracking-wider leading-none uppercase">SETOR</span>
                           {editMode ? (
                             <span 
                               contentEditable={editMode}
-                              onBlur={(e) => updateSystemField('id3', e.currentTarget.innerText)}
+                              onBlur={(e) => updateSystemField('id1', e.currentTarget.innerText)}
                               suppressContentEditableWarning
-                              className="font-space-grotesk text-sm font-bold text-white outline-none border-b border-dashed border-[#ff5e00] px-1 bg-white/5"
+                              className="evt-led-big-white outline-none border-b border-dashed border-[#ff5e00] px-1 font-mono font-bold text-white text-[12px] min-[350px]:text-[15px] sm:text-[20px]"
                             >
-                              {systemFields.id3}
+                              {systemFields.id1 || '40'}
                             </span>
                           ) : (
-                            <div className="shadow-inner overflow-x-auto scrollbar-none whitespace-nowrap max-w-full">
-                              <DotMatrixText text={systemFields.id3 || 'VIVA LARES'} glowColor="#00f5ff" />
+                            <div className="flex gap-[0.5px] scale-85 sm:scale-100 origin-right transition-transform">
+                              {(systemFields.id1 || '40').toString().split('').map((ch, i) => (
+                                <SplitFlapDigit key={i} digit={ch} glowColor="#a5b4fc" />
+                              ))}
                             </div>
                           )}
                         </div>
+                      </div>
 
-                        {/* Bottom Row: Additional Detail */}
-                        <div className="z-10">
-                          {editMode ? (
-                            <span 
-                              contentEditable={editMode}
-                              onBlur={(e) => updateSystemField('id4', e.currentTarget.innerText)}
-                              suppressContentEditableWarning
-                              className="font-space-grotesk text-[10px] text-white/50 block outline-none mt-1 border-b border-dashed border-[#ff5e00]"
-                            >
-                              {systemFields.id4}
-                            </span>
-                          ) : (
-                            <span className="text-[8px] sm:text-[9px] text-white/35 font-mono uppercase tracking-widest leading-none select-none">{systemFields.id4}</span>
-                          )}
-                        </div>
+                      {/* CENTERED TITLES - EVENTOS CONFIRMADOS */}
+                      <div className="flex flex-col items-center justify-center py-1 sm:py-2 select-none">
+                        <DotMatrixText text="EVENTOS CONFIRMADOS" glowColor="#00f5ff" />
+                        <span className="text-[7px] sm:text-[8px] font-mono text-white/45 tracking-[1px] sm:tracking-[2px] uppercase mt-1 sm:mt-1.5">
+                          CONFIRA OS PRÓXIMOS DESTINOS DE MINISTRAÇÃO
+                        </span>
                       </div>
 
                       {/* FLIGHT INTER-SECTOR RUNWAY VECTOR LINE */}
@@ -2101,179 +2103,165 @@ export default function App() {
                         </div>
                       </div>
 
-                      {/* 2. ARRIVAL PORT OF CALL (DESTINAÇÃO PROEMINENTE - LUXURY EMBOSSED LOOK) */}
-                      <div className="bg-[#110e08] border border-[#ffaa00]/30 rounded-xl sm:rounded-2xl p-2.5 sm:p-4 relative overflow-hidden flex flex-col gap-1.5 sm:gap-3 shadow-[0_0_20px_rgba(255,170,0,0.06),inset_0_1px_10px_rgba(255,170,0,0.04)]">
+                      {/* CARD 1: PRÓXIMO DESTINO (CULTO) - Viva Lares (Cyan) */}
+                      <div className="bg-[#060c11]/80 border border-[#00f5ff]/30 rounded-xl sm:rounded-2xl p-2.5 sm:p-4 relative overflow-hidden flex flex-col gap-2.5 sm:gap-3 shadow-[0_0_15px_rgba(0,245,255,0.03),inset_0_1px_10px_rgba(0,245,255,0.02)]">
                         {/* Glow corners */}
-                        <div className="absolute top-0 right-0 w-8 h-8 pointer-events-none bg-[radial-gradient(ellipse_at_top_right,rgba(255,170,0,0.25),transparent_70%)]" />
-                        
+                        <div className="absolute top-0 right-0 w-8 h-8 pointer-events-none bg-[radial-gradient(ellipse_at_top_right,rgba(0,245,255,0.15),transparent_70%)]" />
+
                         {/* Top Metadata Row: Label and Sector */}
-                        <div className="flex justify-between items-center w-full z-10 gap-1 sm:gap-1.5">
-                          <div className="flex items-center gap-1 bg-[#ffaa00]/10 border border-[#ffaa00]/20 rounded-full px-1.5 py-0.5 sm:px-2 select-none">
-                            <span className="w-1 h-1 rounded-full bg-[#ffaa00] animate-pulse" />
-                            <span className="text-[6.5px] sm:text-[8px] font-orbitron font-extrabold text-[#ffb000] tracking-[0.8px] sm:tracking-[1.2px] uppercase">PRÓXIMO DESTINO (CULTO)</span>
+                        <div className="flex justify-between items-center w-full z-10 gap-1.5">
+                          <div className="flex items-center gap-1 bg-[#00f5ff]/10 border border-[#00f5ff]/20 rounded-full px-2 py-0.5 select-none">
+                            <span className="w-1 h-1 rounded-full bg-[#00f5ff] animate-pulse" />
+                            <span className="text-[6.5px] sm:text-[7.5px] font-orbitron font-extrabold text-[#00f5ff] tracking-[0.8px] sm:tracking-[1px] uppercase">PRÓXIMO DESTINO DE MINISTRAÇÃO</span>
                           </div>
 
-                          <div className="flex items-center gap-1 bg-[#090805] border border-[#ffb000]/10 rounded-xl px-1 py-0.5 sm:px-2 shadow-inner">
-                            <span className="text-[6px] sm:text-[7.5px] text-[#ffc800]/50 font-orbitron tracking-wider leading-none uppercase">SETOR</span>
+                          <div className="flex items-center gap-1.5 bg-[#05090c] border border-[#00f5ff]/10 rounded-xl px-1.5 py-0.5 shadow-inner">
+                            <span className="text-[6px] sm:text-[7px] text-[#00f5ff]/50 font-orbitron tracking-wider leading-none uppercase">SETOR</span>
                             {editMode ? (
                               <span 
                                 contentEditable={editMode}
-                                onBlur={(e) => updateSystemField('id2', e.currentTarget.innerText)}
+                                onBlur={(e) => updateSystemField('card1Sector', e.currentTarget.innerText)}
                                 suppressContentEditableWarning
-                                className="evt-led-big-white outline-none border-b border-dashed border-[#ff5e00] px-1 font-mono font-bold"
+                                className="evt-led-big-white outline-none border-b border-dashed border-[#ff5e00] px-1 font-mono font-bold text-[#00f5ff]"
                               >
-                                {systemFields.id2}
+                                {systemFields.card1Sector || '40'}
                               </span>
                             ) : (
-                              <div className="flex gap-[0.5px] scale-85 sm:scale-100 origin-right justify-center transition-transform">
-                                {(systemFields.id2 || '27').toString().split('').map((ch, i) => (
-                                  <SplitFlapDigit key={i} digit={ch} glowColor="#ffd700" />
+                              <div className="flex gap-[0.5px] scale-85 sm:scale-100 origin-right transition-transform">
+                                {(systemFields.card1Sector || '40').toString().split('').map((ch, i) => (
+                                  <SplitFlapDigit key={i} digit={ch} glowColor="#00f5ff" />
                                 ))}
                               </div>
                             )}
                           </div>
                         </div>
 
-                        {/* Middle Row: Church Name Split Flap (FULL WIDTH!) */}
-                        <div className="py-0.5 z-10 w-full overflow-hidden">
+                        {/* Middle Row: Church Name DotMatrixText */}
+                        <div className="py-1 z-10 w-full overflow-hidden">
                           {editMode ? (
                             <span 
                               contentEditable={editMode}
-                              onBlur={(e) => updateSystemField('id5', e.currentTarget.innerText)}
+                              onBlur={(e) => updateSystemField('id3', e.currentTarget.innerText)}
                               suppressContentEditableWarning
-                              className="font-space-grotesk text-base font-black text-[#ffee00] outline-none border-b border-dashed border-[#ff5e00] px-1 bg-white/5"
+                              className="font-space-grotesk text-base font-black text-[#00f5ff] outline-none border-b border-dashed border-[#ff5e00] px-1 bg-white/5 block w-full"
                             >
-                              {systemFields.id5}
+                              {systemFields.id3 || 'VIVA LARES'}
                             </span>
                           ) : (
                             <div className="shadow-inner overflow-x-auto scrollbar-none whitespace-nowrap max-w-full">
-                              <DotMatrixText text={systemFields.id5 || 'BETEL'} glowColor="#ffaa00" />
+                              <DotMatrixText text={systemFields.id3 || 'VIVA LARES'} glowColor="#00f5ff" />
                             </div>
                           )}
                         </div>
 
-                        {/* Bottom Row: Additional Detail */}
-                        <div className="z-10">
+                        {/* Bottom Row: Calendar Info and System Button */}
+                        <div className="flex justify-between items-center w-full z-10 pt-1.5 border-t border-white/[0.04] gap-2">
+                          <div className="flex items-center gap-2">
+                            <div className="w-7 h-7 rounded-lg bg-[#00f5ff]/5 border border-[#00f5ff]/15 flex items-center justify-center text-[#00f5ff] shadow-[0_0_6px_rgba(0,245,255,0.05)]">
+                              <Calendar className="w-3.5 h-3.5" />
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="text-[6px] sm:text-[7px] font-mono text-white/40 tracking-[1px] uppercase">DATA DO EVENTO</span>
+                              {editMode ? (
+                                <span 
+                                  contentEditable={editMode}
+                                  onBlur={(e) => updateSystemField('id8', e.currentTarget.innerText)}
+                                  suppressContentEditableWarning
+                                  className="font-orbitron text-[11px] sm:text-xs font-black text-[#00f5ff] outline-none border-b border-dashed border-[#ff5e00] inline-block"
+                                >
+                                  {systemFields.id8 || '08/07'}
+                                </span>
+                              ) : (
+                                <span className="font-orbitron font-black text-[11px] sm:text-xs text-[#00f5ff] tracking-[1px] drop-shadow-[0_0_6px_rgba(0,245,255,0.4)]">
+                                  {systemFields.id8 || '08/07'}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* CARD 2: PRÓXIMO DESTINO (CULTO) - Ronco da Agua (Yellow/Amber) */}
+                      <div className="bg-[#120d06]/80 border border-[#ffaa00]/30 rounded-xl sm:rounded-2xl p-2.5 sm:p-4 relative overflow-hidden flex flex-col gap-2.5 sm:gap-3 shadow-[0_0_15px_rgba(255,170,0,0.03),inset_0_1px_10px_rgba(255,170,0,0.02)]">
+                        {/* Glow corners */}
+                        <div className="absolute top-0 right-0 w-8 h-8 pointer-events-none bg-[radial-gradient(ellipse_at_top_right,rgba(255,170,0,0.15),transparent_70%)]" />
+
+                        {/* Top Metadata Row: Label and Sector */}
+                        <div className="flex justify-between items-center w-full z-10 gap-1.5">
+                          <div className="flex items-center gap-1 bg-[#ffaa00]/10 border border-[#ffaa00]/20 rounded-full px-2 py-0.5 select-none">
+                            <span className="w-1 h-1 rounded-full bg-[#ffaa00] animate-pulse" />
+                            <span className="text-[6.5px] sm:text-[7.5px] font-orbitron font-extrabold text-[#ffaa00] tracking-[0.8px] sm:tracking-[1px] uppercase">PRÓXIMO DESTINO DE MINISTRAÇÃO</span>
+                          </div>
+
+                          <div className="flex items-center gap-1.5 bg-[#0c0905] border border-[#ffaa00]/10 rounded-xl px-1.5 py-0.5 shadow-inner">
+                            <span className="text-[6px] sm:text-[7px] text-[#ffaa00]/50 font-orbitron tracking-wider leading-none uppercase">SETOR</span>
+                            {editMode ? (
+                              <span 
+                                contentEditable={editMode}
+                                onBlur={(e) => updateSystemField('card2Sector', e.currentTarget.innerText)}
+                                suppressContentEditableWarning
+                                className="evt-led-big-white outline-none border-b border-dashed border-[#ff5e00] px-1 font-mono font-bold text-[#ffaa00]"
+                              >
+                                {systemFields.card2Sector || '29'}
+                              </span>
+                            ) : (
+                              <div className="flex gap-[0.5px] scale-85 sm:scale-100 origin-right transition-transform">
+                                {(systemFields.card2Sector || '29').toString().split('').map((ch, i) => (
+                                  <SplitFlapDigit key={i} digit={ch} glowColor="#ffaa00" />
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Middle Row: Church Name DotMatrixText */}
+                        <div className="py-1 z-10 w-full overflow-hidden">
                           {editMode ? (
                             <span 
                               contentEditable={editMode}
-                              onBlur={(e) => updateSystemField('id6', e.currentTarget.innerText)}
+                              onBlur={(e) => updateSystemField('card2Church', e.currentTarget.innerText)}
                               suppressContentEditableWarning
-                              className="font-space-grotesk text-[10px] text-white/50 block outline-none mt-1 border-b border-dashed border-[#ff5e00]"
+                              className="font-space-grotesk text-base font-black text-[#ffaa00] outline-none border-b border-dashed border-[#ff5e00] px-1 bg-white/5 block w-full"
                             >
-                              {systemFields.id6}
+                              {systemFields.card2Church || 'RONCO DA AGUA'}
                             </span>
                           ) : (
-                            <span className="text-[8.5px] sm:text-[9.5px] text-[#ffbf00]/70 font-mono font-bold tracking-widest leading-none uppercase select-none">{systemFields.id6}</span>
+                            <div className="shadow-inner overflow-x-auto scrollbar-none whitespace-nowrap max-w-full">
+                              <DotMatrixText text={systemFields.card2Church || 'RONCO DA AGUA'} glowColor="#ffaa00" />
+                            </div>
                           )}
                         </div>
-                      </div>
-                    </div>
 
-                    {/* Meta info card header */}
-                    <div className="flex justify-between items-center px-1 mb-2">
-                      <div className="flex items-center gap-1">
-                        <span className="text-[8px] font-mono text-white/35">CULTO DE DESTINO:</span>
-                        {editMode ? (
-                          <span 
-                            contentEditable={editMode}
-                            onBlur={(e) => updateSystemField('id10', e.currentTarget.innerText)}
-                            suppressContentEditableWarning
-                            className="font-mono text-[9px] text-[#ffaa00] font-black border-b border-dashed border-[#ff5e00] inline-block"
-                          >
-                            {systemFields.id10}
-                          </span>
-                        ) : (
-                          <span className="text-[9px] font-black text-[#ffaa00] tracking-wide font-orbitron">{systemFields.id10 || 'CULT 19:30'}</span>
-                        )}
-                      </div>
-
-                      <div className="flex items-center gap-1">
-                        <span className="text-[8px] font-mono text-white/35">DATA DO EVENTO:</span>
-                        {editMode ? (
-                          <span 
-                            contentEditable={editMode}
-                            onBlur={(e) => updateSystemField('id8', e.currentTarget.innerText)}
-                            suppressContentEditableWarning
-                            className="font-mono text-[9px] text-emerald-400 font-bold border-b border-dashed border-[#ff5e00] inline-block"
-                          >
-                            {systemFields.id8}
-                          </span>
-                        ) : (
-                          <span className="text-[9.5px] font-extrabold text-emerald-400 font-orbitron">{systemFields.id8 || '20/06'}</span>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* 3. CHRONOS MECHANICAL COUNTDOWN PANEL (THE MAIN SPECTACLE!) */}
-                    <div className="space-y-2 sm:space-y-3 mb-3.5 sm:mb-5">
-                      <div className="flex justify-between items-center px-1 text-[7.5px] sm:text-[8px]">
-                        <span style={{ color: alertColor }} className="font-orbitron font-extrabold tracking-[0.5px] sm:tracking-[1px] uppercase transition-all duration-300">
-                          ⏱ {alertText}
-                        </span>
-                        <span className="font-mono text-white/40">SÃO PAULO: <span className="text-white/60 font-bold font-orbitron">{brasiliaTime}</span></span>
-                      </div>
-
-                      <div className="flex justify-center items-center gap-1 min-[350px]:gap-1.5 sm:gap-2.5 bg-black/85 border border-white/5 rounded-xl sm:rounded-[22px] p-2 sm:p-4 shadow-[inset_0_4px_12px_rgba(0,0,0,0.95)] relative overflow-hidden">
-                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(0,245,255,0.06),transparent_80%)] pointer-events-none" />
-                        
-                        {/* Days Column */}
-                        <div className="flex flex-col items-center gap-0.5 sm:gap-1">
-                          <div className="flex gap-[0.5px] sm:gap-[1px]">
-                            <SplitFlapDigit digit={Math.floor(countdownParts.days / 10).toString()} glowColor="#ffaa00" />
-                            <SplitFlapDigit digit={(countdownParts.days % 10).toString()} glowColor="#ffaa00" />
+                        {/* Bottom Row: Calendar Info and System Button */}
+                        <div className="flex justify-between items-center w-full z-10 pt-1.5 border-t border-white/[0.04] gap-2">
+                          <div className="flex items-center gap-2">
+                            <div className="w-7 h-7 rounded-lg bg-[#ffaa00]/5 border border-[#ffaa00]/15 flex items-center justify-center text-[#ffaa00] shadow-[0_0_6px_rgba(255,170,0,0.05)]">
+                              <Calendar className="w-3.5 h-3.5" />
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="text-[6px] sm:text-[7px] font-mono text-white/40 tracking-[1px] uppercase">DATA DO EVENTO</span>
+                              {editMode ? (
+                                <span 
+                                  contentEditable={editMode}
+                                  onBlur={(e) => updateSystemField('card2Date', e.currentTarget.innerText)}
+                                  suppressContentEditableWarning
+                                  className="font-orbitron text-[11px] sm:text-xs font-black text-[#ffaa00] outline-none border-b border-dashed border-[#ff5e00] inline-block"
+                                >
+                                  {systemFields.card2Date || '08/07'}
+                                </span>
+                              ) : (
+                                <span className="font-orbitron font-black text-[11px] sm:text-xs text-[#ffaa00] tracking-[1px] drop-shadow-[0_0_6px_rgba(255,170,0,0.4)]">
+                                  {systemFields.card2Date || '08/07'}
+                                </span>
+                              )}
+                            </div>
                           </div>
-                          <span className="text-[6.5px] min-[350px]:text-[7px] sm:text-[8px] font-orbitron font-extrabold text-white/30 tracking-[0.5px] sm:tracking-[1px] uppercase">Dias</span>
-                        </div>
-                        
-                        <span className="text-[#ffaa00]/60 font-orbitron font-black text-[9px] sm:text-xs animate-pulse pb-3.5 sm:pb-4">:</span>
-
-                        {/* Hours Column */}
-                        <div className="flex flex-col items-center gap-0.5 sm:gap-1">
-                          <div className="flex gap-[0.5px] sm:gap-[1px]">
-                            <SplitFlapDigit digit={Math.floor(countdownParts.hours / 10).toString()} glowColor="#ffaa00" />
-                            <SplitFlapDigit digit={(countdownParts.hours % 10).toString()} glowColor="#ffaa00" />
-                          </div>
-                          <span className="text-[6.5px] min-[350px]:text-[7px] sm:text-[8px] font-orbitron font-extrabold text-white/30 tracking-[0.5px] sm:tracking-[1px] uppercase">Horas</span>
-                        </div>
-
-                        <span className="text-[#ffaa00]/60 font-orbitron font-black text-[9px] sm:text-xs animate-pulse pb-3.5 sm:pb-4">:</span>
-
-                        {/* Minutes Column */}
-                        <div className="flex flex-col items-center gap-0.5 sm:gap-1">
-                          <div className="flex gap-[0.5px] sm:gap-[1px]">
-                            <SplitFlapDigit digit={Math.floor(countdownParts.minutes / 10).toString()} glowColor="#ffaa00" />
-                            <SplitFlapDigit digit={(countdownParts.minutes % 10).toString()} glowColor="#ffaa00" />
-                          </div>
-                          <span className="text-[6.5px] min-[350px]:text-[7px] sm:text-[8px] font-orbitron font-extrabold text-white/30 tracking-[0.5px] sm:tracking-[1px] uppercase">Min</span>
-                        </div>
-
-                        <span className="text-[#ffaa00]/60 font-orbitron font-black text-[9px] sm:text-xs animate-pulse pb-3.5 sm:pb-4">:</span>
-
-                        {/* Seconds Column */}
-                        <div className="flex flex-col items-center gap-0.5 sm:gap-1">
-                          <div className="flex gap-[0.5px] sm:gap-[1px]">
-                            <SplitFlapDigit digit={Math.floor(countdownParts.seconds / 10).toString()} glowColor="#00f5ff" />
-                            <SplitFlapDigit digit={(countdownParts.seconds % 10).toString()} glowColor="#00f5ff" />
-                          </div>
-                          <span className="text-[6.5px] min-[350px]:text-[7px] sm:text-[8px] font-orbitron font-extrabold text-[#00f5ff]/70 tracking-[0.5px] sm:tracking-[1px] uppercase">Seg</span>
-                        </div>
-                      </div>
-
-                      {/* EVIDENCED EVENT DATE BADCE - CENTERED, EXTREMELY POLISHED */}
-                      <div className="flex flex-col items-center justify-center py-1.5 px-3 rounded-lg bg-gradient-to-r from-amber-500/0 via-amber-500/10 to-amber-500/0 border-y border-[#ffee00]/15 select-none relative overflow-hidden">
-                        <span className="text-[7px] sm:text-[8px] font-mono text-[#ffb000]/60 tracking-[1.5px] sm:tracking-[2px] uppercase mb-0.5">DATA DE EMBARQUE CONFIRMADA</span>
-                        <div className="flex items-center gap-1.5">
-                          <span className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-[#ffee00] shadow-[0_0_8px_rgba(255,238,0,0.8)] animate-pulse" />
-                          <span className="font-orbitron font-black text-lg sm:text-2xl text-[#ffee00] tracking-[2px] sm:tracking-[3px] drop-shadow-[0_0_10px_rgba(255,238,0,0.5)]">
-                            {systemFields.id8 || '08/07'}
-                          </span>
                         </div>
                       </div>
                     </div>
 
-                    {/* 4. DYNAMIC JETPATHWAY PROGRESS TRACK */}
-                    <div className="space-y-1 sm:space-y-1.5 border-t border-white/5 pt-2.5 sm:pt-4">
+                    {/* DYNAMIC JETPATHWAY PROGRESS TRACK */}
+                    <div className="space-y-1 sm:space-y-1.5 border-t border-white/5 pt-2.5 sm:pt-3">
                       <div className="flex justify-between items-center text-[7px] sm:text-[8px] font-mono select-none text-white/40 uppercase tracking-[1px] sm:tracking-[1.5px] gap-2">
                         <span>MONITORAÇÃO COCKPIT // OPERAÇÃO EM ALTITUDE</span>
                         <span className="text-[#00f5ff] font-bold shrink-0">{flightProgress}% EM CURSO</span>
@@ -2330,24 +2318,16 @@ export default function App() {
                       </div>
                     </div>
 
-                    {/* Quick Config for countdown date */}
+                    {/* Quick Config for Edit Mode */}
                     {editMode && (
-                      <div className="mt-4 p-3 bg-black/60 rounded-xl border border-[#ff9100]/20 space-y-2 text-left text-[11px] animate-fade-in">
-                        <div className="flex justify-between items-center text-[#ff9100] font-mono text-[9px] uppercase tracking-wider font-extrabold border-b border-white/5 pb-1 select-none">
-                          <span>⚙ SISTEMA DE AGENDAMENTO DE CHRONOS</span>
+                      <div className="mt-3 p-2.5 bg-black/60 rounded-xl border border-[#ff9100]/20 space-y-1 text-left text-[10px] animate-fade-in select-none">
+                        <div className="flex justify-between items-center text-[#ff9100] font-mono text-[8px] uppercase tracking-wider font-extrabold border-b border-white/5 pb-1">
+                          <span>⚙ SISTEMA DE AGENDAMENTO DE ROTAS</span>
                           <span className="text-white/40">PORT: LOCALHOST</span>
                         </div>
-                        <div className="flex flex-col gap-1">
-                          <label className="text-white/40 text-[9px] font-mono uppercase font-bold text-white/60">DIGITE DATA DA CHRONOS (FORMATO ISO):</label>
-                          <input 
-                            type="text" 
-                            value={systemFields.id9 || '2026-06-20T19:30'}
-                            onChange={(e) => updateSystemField('id9', e.target.value)}
-                            className="bg-black/80 hover:bg-black/95 focus:bg-black/100 border border-white/10 rounded-md px-3 py-1.5 text-[11px] font-mono text-white outline-none w-full shadow-inner focus:border-[#ff9100]/60 transition-colors"
-                            placeholder="YYYY-MM-DDTHH:MM"
-                          />
-                          <p className="text-white/30 text-[8px] font-mono mt-0.5">Use o formato ISO Brasilia (exemplo: '2026-06-20T19:30') para ajustar o marcador de contagem de dias com perfeição.</p>
-                        </div>
+                        <p className="text-white/35 font-mono text-[7.5px] leading-relaxed">
+                          Dica: Clique diretamente sobre as datas, igrejas e setores mostrados nos cartões para alterar suas informações instantaneamente em tempo real. Os dados são salvos de forma segura em nuvem e persistidos offline.
+                        </p>
                       </div>
                     )}
                   </div>
