@@ -66,6 +66,7 @@ import { PulpitoTopic } from './components/PulpitoTopic';
 import { PulpitoSectors } from './components/PulpitoSectors';
 import { useBrush } from './lib/brushStore';
 import { BrushToolbar } from './components/BrushToolbar';
+import { useHighlightMode } from './lib/highlightStore';
 
 function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
   const message = error instanceof Error ? error.message : String(error);
@@ -941,6 +942,8 @@ export default function App() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
   const [mode, setMode] = useState<'grid' | 'pulpito'>('grid');
   const brush = useBrush();
+  const highlightMode = useHighlightMode();
+  const highlightSaveTimeouts = useRef<Record<string, any>>({});
   
   // New State for Calendar & Sidebar
   const [moonMode, setMoonMode] = useState(false);
@@ -1592,7 +1595,7 @@ export default function App() {
     setSelectedSermonId(null);
   };
 
-  const handleHighlight = async (sermonId: string, key: string, color: string) => {
+  const handleHighlight = (sermonId: string, key: string, color: string) => {
     const sermon = sermoes.find(s => s.id === sermonId);
     if (!sermon) return;
 
@@ -1603,11 +1606,22 @@ export default function App() {
       delete newHighlights[key];
     }
 
-    try {
-      await updateDoc(doc(db, 'sermoes', sermonId), { highlights: newHighlights });
-    } catch (error) {
-      handleFirestoreError(error, OperationType.UPDATE, `sermoes/${sermonId}`);
+    // 1. Instant local optimistic update for 0ms lag-free color cycling
+    setSermoes(prevSermoes => 
+      prevSermoes.map(s => (s.id === sermonId ? { ...s, highlights: newHighlights } : s))
+    );
+
+    // 2. Debounce Firestore write by 350ms to ensure rapid cycling only writes the final state
+    if (highlightSaveTimeouts.current[sermonId]) {
+      clearTimeout(highlightSaveTimeouts.current[sermonId]);
     }
+    highlightSaveTimeouts.current[sermonId] = setTimeout(async () => {
+      try {
+        await updateDoc(doc(db, 'sermoes', sermonId), { highlights: newHighlights });
+      } catch (error) {
+        handleFirestoreError(error, OperationType.UPDATE, `sermoes/${sermonId}`);
+      }
+    }, 350);
   };
 
   const handleToggleFavorite = async (sermonId: string) => {
@@ -3573,6 +3587,48 @@ export default function App() {
                 >
                   A+
                 </button>
+              </div>
+
+              {/* Fast 1-Click Color Cycle Mode & Visual Indicator */}
+              <div className="flex items-center gap-2 border-r border-[#CF9D7B]/20 pr-3 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => highlightMode.toggleMode()}
+                  className={cn(
+                    "px-2.5 py-1.5 rounded-lg border text-[9px] font-orbitron font-bold tracking-wider flex items-center gap-1.5 transition-all duration-300 active:scale-95 cursor-pointer shrink-0",
+                    highlightMode.isCycle
+                      ? "bg-[#ffee00]/15 border-[#ffee00]/50 text-[#ffee00] shadow-[0_0_12px_rgba(255,238,0,0.25)]"
+                      : "bg-white/5 border-white/10 text-white/50 hover:bg-white/10 hover:text-white"
+                  )}
+                  title={
+                    highlightMode.isCycle
+                      ? "Modo Rápido Ativo: Cada toque na palavra cicla as cores até zerar! Clique para modo menu."
+                      : "Modo Menu: 1 clique abre o menu de formatação. Clique para modo 1-clique."
+                  }
+                >
+                  <Sparkles className={cn("w-3.5 h-3.5", highlightMode.isCycle ? "text-[#ffee00] animate-pulse" : "text-white/40")} />
+                  <span>{highlightMode.isCycle ? '1-CLIQUE: CICLAR' : '1-CLIQUE: MENU'}</span>
+                </button>
+
+                {/* Color dots preview showing the cycle order */}
+                {highlightMode.isCycle && (
+                  <div 
+                    className="hidden sm:flex items-center gap-1 bg-black/50 px-2 py-1 rounded-md border border-white/10 text-[10px]"
+                    title="Ordem do Ciclo: Amarelo ➔ Ciano ➔ Branco/Rosa ➔ Verde ➔ Carmim ➔ Zerar"
+                  >
+                    <span className="w-2 h-2 rounded-full bg-[#ffee00] shadow-[0_0_4px_#ffee00]" />
+                    <span className="text-[8px] text-white/30">➔</span>
+                    <span className="w-2 h-2 rounded-full bg-[#00f5ff] shadow-[0_0_4px_#00f5ff]" />
+                    <span className="text-[8px] text-white/30">➔</span>
+                    <span className="w-2 h-2 rounded-full bg-white shadow-[0_0_4px_#fff]" />
+                    <span className="text-[8px] text-white/30">➔</span>
+                    <span className="w-2 h-2 rounded-full bg-[#39ff14] shadow-[0_0_4px_#39ff14]" />
+                    <span className="text-[8px] text-white/30">➔</span>
+                    <span className="w-2 h-2 rounded-full bg-[#dc143c] shadow-[0_0_4px_#dc143c]" />
+                    <span className="text-[8px] text-white/30">➔</span>
+                    <span className="text-[8px] font-mono text-text-dim">✖️</span>
+                  </div>
+                )}
               </div>
 
               {/* Integrated Brush/Pincel Tools */}
