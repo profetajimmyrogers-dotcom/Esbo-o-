@@ -879,7 +879,7 @@ export default function App() {
   const [authorized, setAuthorized] = useState(() => localStorage.getItem('system_auth') === 'true');
   const [passInput, setPassInput] = useState('');
   const [passError, setPassError] = useState(false);
-  const [user, setUser] = useState<any>(authorized ? { uid: 'admin', displayName: 'Conferencista' } : null);
+  const [user, setUser] = useState<any>(authorized ? { uid: 'admin', displayName: 'Ministro' } : null);
   const [loading, setLoading] = useState(false);
   
   // Offline-First: Initialize directly from Local Storage Cache (Hive) for instant load
@@ -1044,7 +1044,7 @@ export default function App() {
     if (e) e.preventDefault();
     if (systemHashConfirm(passInput) === '1570946') {
       setAuthorized(true);
-      setUser({ uid: 'admin', displayName: 'Conferencista' });
+      setUser({ uid: 'admin', displayName: 'Ministro' });
       localStorage.setItem('system_auth', 'true');
       setMoonMode(false);
       setShowSidebar(false);
@@ -1696,7 +1696,7 @@ export default function App() {
     e.preventDefault();
     if (systemHashConfirm(passInput) === '1570946') {
       setAuthorized(true);
-      setUser({ uid: 'admin', displayName: 'Conferencista' });
+      setUser({ uid: 'admin', displayName: 'Ministro' });
       localStorage.setItem('system_auth', 'true');
       setMoonMode(false);
       setShowSidebar(false);
@@ -1799,7 +1799,7 @@ export default function App() {
         {/* Location Corner Tag */}
         <div className="corner-tag-luxury select-none pointer-events-none">
           <span className="footer-year text-neutral-200">2026</span>
-          <span className="footer-main text-neutral-200">CONFERENCISTA &middot; JOINVILLE</span>
+          <span className="footer-main text-neutral-200">JOINVILLE</span>
         </div>
 
         <div className={cn("fixed inset-0 transition-all duration-1000 pointer-events-none z-[3]", moonMode ? "bg-black/85" : "bg-transparent")} />
@@ -2048,7 +2048,7 @@ export default function App() {
                         editMode && "border-b border-dashed border-[#ff5e00] bg-white/5 px-2 py-0.5 rounded"
                       )}
                     >
-                      {systemFields.id7 || 'CONFERENCISTA // JIMMY ROGERS'}
+                      {((systemFields.id7 || 'JIMMY // ROGERS').replace(/^CONFERENCISTAS?\s*\/?\/?\s*/i, ''))}
                     </div>
                     <div className="flex items-center gap-1.5 text-[7px] sm:text-[8.5px] text-[#25d366]/85 tracking-[1px] sm:tracking-[1.5px] uppercase font-bold pr-1 sm:pr-6">
                       <div className="w-[4px] h-[4px] sm:w-[5px] sm:h-[5px] rounded-full bg-[#25d366] shadow-[0_0_8px_#25d366] animate-pulse" />
@@ -2350,30 +2350,29 @@ export default function App() {
             </>
           )}
         </AnimatePresence>
-         {/* Elegant Menu Drawer Toggle in place of 'Minha Agenda' */}
+         {/* Discreet Luxury Menu Button */}
         <button 
           onClick={() => setShowRightSidebar(!showRightSidebar)}
           className={cn(
-            "fixed top-5 right-5 group flex items-center gap-2.5 pl-2 pr-4.5 py-1.5 rounded-full bg-black/60 backdrop-blur-xl border border-white/10 z-[1001] transition-all duration-150 hover:scale-[1.02] active:scale-95 cursor-pointer outline-none select-none text-left shadow-[0_0_15px_rgba(0,245,255,0.15)] hover:shadow-[0_0_20px_rgba(0,245,255,0.25)]",
-            showRightSidebar ? "border-[#00f5ff]/50 shadow-[0_0_25px_rgba(0,245,255,0.3)] bg-black/85" : "hover:border-[#00f5ff]/40"
+            "fixed top-5 right-5 group flex items-center gap-2 pl-2 pr-3.5 py-1.5 rounded-full bg-black/60 backdrop-blur-xl border z-[1001] transition-all duration-200 hover:scale-[1.02] active:scale-95 cursor-pointer outline-none select-none text-left shadow-[0_4px_20px_rgba(0,0,0,0.5)]",
+            showRightSidebar 
+              ? "border-[#CF9D7B]/60 shadow-[0_0_20px_rgba(207,157,123,0.25)] bg-[#0d0d10]/95 text-white" 
+              : "border-white/10 hover:border-white/25 text-white/90 hover:text-white"
           )}
+          title="Menu"
         >
-          <div className="w-6 h-6 rounded-full flex items-center justify-center transition-all duration-200 text-xs bg-[#0c0c0e]/80 border border-white/15 shadow-inner group-hover:border-[#00f5ff]/60">
+          <div className="w-5 h-5 rounded-full flex items-center justify-center transition-all duration-200 text-xs bg-white/5 border border-white/10 group-hover:border-white/25">
             {showRightSidebar ? (
-              <X className="w-3 h-3 text-[#00f5ff]" />
+              <X className="w-2.5 h-2.5 text-[#CF9D7B]" />
             ) : (
-              <Menu className="w-3 h-3 text-[#00f5ff]" />
+              <Menu className="w-2.5 h-2.5 text-white/80 group-hover:text-white" />
             )}
           </div>
-          <div className="flex flex-col select-none pr-1">
-            <span className="text-[7.5px] text-[#00f5ff] font-extrabold uppercase tracking-[0.14em] leading-none mb-0.5 animate-pulse">MENU & LOGIN</span>
-            <span className="text-white text-[9px] font-orbitron font-extrabold uppercase tracking-[1.3px] leading-none">CONFERENCISTA</span>
-          </div>
-          {/* Glowing cursor ring helper on hover */}
-          <span className="absolute -inset-0.5 rounded-full bg-gradient-to-r from-[#00f5ff]/20 to-[#ffffff]/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200 -z-10" />
+          <span className="text-[9px] font-orbitron font-bold text-white/90 tracking-[1.5px] uppercase">MENU</span>
+          <span className="w-1 h-1 rounded-full bg-[#CF9D7B] opacity-80" />
         </button>
 
-        {/* Right Discrete Thin Drawer (Gaveta Sanfonada Compacta) */}
+        {/* Discreet Luxury Dropdown Menu Panel */}
         <AnimatePresence>
           {showRightSidebar && (
             <>
@@ -2383,96 +2382,62 @@ export default function App() {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 onClick={() => setShowRightSidebar(false)}
-                className="fixed inset-0 bg-black/20 backdrop-blur-[3px] z-[1000]"
+                className="fixed inset-0 bg-black/30 backdrop-blur-[2px] z-[1000]"
               />
 
-              {/* Gaveta Sanfonada Modificada: Wider and including integrated Login Section */}
               <motion.div 
-                initial={{ opacity: 0, y: -10, scale: 0.96 }}
+                initial={{ opacity: 0, y: -8, scale: 0.96 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -10, scale: 0.96 }}
-                transition={{ type: "spring", stiffness: 450, damping: 30 }}
+                exit={{ opacity: 0, y: -8, scale: 0.96 }}
+                transition={{ type: "spring", stiffness: 500, damping: 32 }}
                 className={cn(
-                  "fixed right-5 top-[64px] w-[235px] bg-[#0c0c0e]/95 backdrop-blur-2xl border p-3 rounded-[20px] z-[1000] flex flex-col gap-2.5 shadow-[0_20px_50px_rgba(0,0,0,0.95),0_0_20px_rgba(0,245,255,0.08)] overflow-hidden transition-all duration-200",
+                  "fixed right-5 top-[56px] w-[215px] bg-[#0c0c0e]/95 backdrop-blur-2xl border p-2.5 rounded-2xl z-[1000] flex flex-col gap-2 shadow-[0_20px_45px_rgba(0,0,0,0.9),0_0_20px_rgba(207,157,123,0.06)] overflow-hidden transition-all duration-200",
                   passError 
-                    ? "animate-card-shake border-red-500/80 shadow-[0_0_35px_rgba(239,68,68,0.4)] bg-red-950/20" 
-                    : "border-white/10"
+                    ? "animate-card-shake border-red-500/80 shadow-[0_0_30px_rgba(239,68,68,0.35)] bg-red-950/20" 
+                    : "border-white/[0.08]"
                 )}
               >
-                {/* Decorative Accordion Bellow Lines */}
-                <div className="flex items-center justify-between px-1 border-b border-white/5 pb-1.5">
-                  <span className="text-[7.5px] text-white/40 font-mono tracking-[0.2em] uppercase font-bold">// MENU PORTAL</span>
-                  <div className="flex gap-[2px] items-center">
-                    <span className="w-[1.5px] h-[6px] bg-[#00f5ff] rounded-full opacity-40" />
-                    <span className="w-[1.5px] h-[9px] bg-[#00f5ff] rounded-full opacity-80" />
-                    <span className="w-[1.5px] h-[6px] bg-[#00f5ff] rounded-full opacity-45" />
-                  </div>
+                {/* Header with Title and Close Button */}
+                <div className="flex items-center justify-between px-1 border-b border-white/[0.06] pb-1.5">
+                  <span className="text-[7px] text-white/40 font-mono tracking-[0.2em] uppercase font-bold">
+                    // MENU
+                  </span>
+                  <button 
+                    onClick={() => setShowRightSidebar(false)}
+                    className="p-0.5 rounded text-white/30 hover:text-white hover:bg-white/5 transition-colors cursor-pointer"
+                    title="Fechar"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2.5">
-                  {/* WhatsApp Button inside Dropdown */}
+                {/* The 2 Discreet Luxury Action Buttons */}
+                <div className="flex flex-col gap-1.5">
+                  {/* WhatsApp Button */}
                   <button 
                     onClick={() => {
                       setShowWhatsAppForm(true);
                       setShowRightSidebar(false);
                     }}
-                    className="group/btn flex flex-col items-center justify-center gap-1.5 p-2.5 rounded-2xl bg-[#0f0f11]/90 border border-white/[0.04] hover:border-green-500/35 hover:bg-[#131316] transition-all duration-200 active:scale-95 cursor-pointer outline-none select-none text-center shadow-inner h-[86px]"
+                    className="group/btn flex items-center gap-2.5 p-2 rounded-xl bg-white/[0.02] hover:bg-white/[0.06] border border-white/[0.04] hover:border-green-500/30 transition-all duration-150 active:scale-[0.98] cursor-pointer outline-none select-none text-left"
                   >
-                    <div className="relative w-8 h-8 rounded-full flex items-center justify-center bg-green-500/10 text-green-400 shrink-0 transition-transform duration-350 group-hover/btn:scale-110 shadow-[0_0_12px_rgba(34,197,94,0.15)] group-hover/btn:shadow-[0_0_18px_rgba(34,197,94,0.3)]">
-                      <span className="absolute inset-0 rounded-full bg-green-400 opacity-15 blur-[1px] animate-pulse" />
-                      <MessageCircle className="w-3.5 h-3.5 fill-current relative z-10" />
+                    <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-green-500/10 text-green-400 border border-green-500/20 shrink-0 transition-transform duration-200 group-hover/btn:scale-105">
+                      <MessageCircle className="w-3.5 h-3.5 fill-current" />
                     </div>
-                    <div className="flex flex-col items-center select-none">
-                      <span className="text-[6.5px] text-[#10b981] font-extrabold uppercase tracking-[0.14em] leading-none mb-0.5">FALAR</span>
-                      <span className="text-white text-[8px] font-orbitron font-extrabold uppercase tracking-[0.5px] leading-none">WHATSAPP</span>
+                    <div className="flex flex-col flex-1 min-w-0 select-none">
+                      <span className="text-[6.5px] text-[#10b981] font-mono font-bold uppercase tracking-wider leading-none">
+                        CONTATO DIRETO
+                      </span>
+                      <span className="text-white text-[9.5px] font-orbitron font-bold uppercase tracking-[0.8px] leading-tight mt-0.5">
+                        WHATSAPP
+                      </span>
                     </div>
+                    <span className="text-white/20 group-hover/btn:text-green-400 group-hover/btn:translate-x-0.5 transition-all text-[10px] font-bold pr-0.5">
+                      ➔
+                    </span>
                   </button>
 
-                  {/* Minha Agenda (Moon/Calendar Mode) Button inside Dropdown */}
-                  <button 
-                    onClick={() => {
-                      toggleMoonMode();
-                      setShowRightSidebar(false);
-                    }}
-                    className={cn(
-                      "group/btn flex flex-col items-center justify-center gap-1.5 p-2.5 rounded-2xl transition-all duration-200 active:scale-95 cursor-pointer outline-none select-none text-center bg-[#0f0f11]/90 border border-white/[0.04] hover:border-[#00f5ff]/35 hover:bg-[#131316] shadow-inner h-[86px]"
-                    )}
-                  >
-                    <div className={cn(
-                      "w-8 h-8 rounded-full flex items-center justify-center transition-all duration-700 text-[14px] bg-white/5 border border-white/5 shrink-0 transition-transform duration-350 group-hover/btn:scale-110 shadow-[0_0_12px_rgba(0,245,255,0.15)] group-hover/btn:shadow-[0_0_18px_rgba(0,245,255,0.3)]",
-                      moonMode && "rotate-[360deg] bg-cyan-500/10 border-[#00f5ff]/20"
-                    )}>
-                      <span className="relative z-10">{moonMode ? '🌕' : '🌙'}</span>
-                    </div>
-                    <div className="flex flex-col items-center select-none">
-                      <span className="text-[6.5px] text-[#00f5ff] font-extrabold uppercase tracking-[0.14em] leading-none mb-0.5">CONSULTAR</span>
-                      <span className="text-white text-[8px] font-orbitron font-extrabold uppercase tracking-[0.5px] leading-none">AGENDA</span>
-                    </div>
-                  </button>
-
-                  {/* Event (Voo/Local) Button inside Dropdown */}
-                  <button 
-                    onClick={() => {
-                      setShowSidebar(true);
-                      setShowRightSidebar(false);
-                    }}
-                    className={cn(
-                      "group/btn flex flex-col items-center justify-center gap-1.5 p-2.5 rounded-2xl transition-all duration-200 active:scale-95 cursor-pointer outline-none select-none text-center bg-[#0f0f11]/90 border border-white/[0.04] hover:border-[#ffaa00]/35 hover:bg-[#131316] shadow-inner h-[86px]"
-                    )}
-                  >
-                    <div className={cn(
-                      "w-8 h-8 rounded-full flex items-center justify-center transition-all duration-700 text-[10px] bg-white/5 border border-white/5 shrink-0 text-amber-400 transition-transform duration-350 group-hover/btn:scale-110 shadow-[0_0_12px_rgba(255,170,0,0.15)] group-hover/btn:shadow-[0_0_18px_rgba(255,170,0,0.3)]",
-                      showSidebar && "rotate-[360deg] bg-amber-500/10 border-[#ffaa00]/20"
-                    )}>
-                      <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-                    </div>
-                    <div className="flex flex-col items-center select-none">
-                      <span className="text-[6.5px] text-amber-500 font-extrabold uppercase tracking-[0.14em] leading-none mb-0.5 font-bold">PRÓXIMO</span>
-                      <span className="text-white text-[8px] font-orbitron font-extrabold uppercase tracking-[0.5px] leading-none">EVENTO</span>
-                    </div>
-                  </button>
-
-                  {/* Login (Padlock Slider) Button inside Dropdown */}
+                  {/* Login / Logout Button */}
                   <button 
                     onClick={() => {
                       if (authorized) {
@@ -2483,54 +2448,60 @@ export default function App() {
                       setShowRightSidebar(false);
                     }}
                     className={cn(
-                      "group/btn flex flex-col items-center justify-center gap-1.5 p-2.5 rounded-2xl transition-all duration-200 active:scale-95 cursor-pointer outline-none select-none text-center bg-[#0f0f11]/90 border border-white/[0.04] hover:border-amber-500/35 hover:bg-[#131316] shadow-inner h-[86px]"
+                      "group/btn flex items-center gap-2.5 p-2 rounded-xl bg-white/[0.02] hover:bg-white/[0.06] border transition-all duration-150 active:scale-[0.98] cursor-pointer outline-none select-none text-left",
+                      authorized
+                        ? "border-white/[0.04] hover:border-red-500/30"
+                        : "border-white/[0.04] hover:border-amber-500/30"
                     )}
                   >
                     <div className={cn(
-                      "w-8 h-8 rounded-full flex items-center justify-center transition-all duration-700 text-[10px] shrink-0 transition-transform duration-350 group-hover/btn:scale-110",
+                      "w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-transform duration-200 group-hover/btn:scale-105 border",
                       authorized 
-                        ? "text-green-400 bg-green-500/10 border-green-500/30 shadow-[0_0_12px_rgba(34,197,94,0.15)] group-hover/btn:shadow-[0_0_18px_rgba(34,197,94,0.3)]" 
-                        : "text-amber-500 bg-amber-500/10 border-white/5 shadow-[0_0_12px_rgba(245,158,11,0.15)] group-hover/btn:shadow-[0_0_18px_rgba(245,158,11,0.3)]"
+                        ? "bg-red-500/10 border-red-500/20 text-red-400" 
+                        : "bg-amber-500/10 border-amber-500/20 text-amber-400"
                     )}>
-                      {authorized ? <Unlock className="w-3.5 h-3.5 text-green-400" /> : <Lock className="w-3.5 h-3.5 text-amber-500" />}
+                      {authorized ? (
+                        <Unlock className="w-3.5 h-3.5 text-red-400" />
+                      ) : (
+                        <Lock className="w-3.5 h-3.5 text-amber-400" />
+                      )}
                     </div>
-                    <div className="flex flex-col items-center select-none">
-                      <span className="text-[6.5px] text-white/40 font-extrabold uppercase tracking-[0.14em] mb-0.5 font-bold">ACESSO</span>
-                      <span className="text-white text-[8px] font-orbitron font-extrabold uppercase tracking-[0.5px]">LOGIN</span>
+                    <div className="flex flex-col flex-1 min-w-0 select-none">
+                      <span className={cn(
+                        "text-[6.5px] font-mono font-bold uppercase tracking-wider leading-none",
+                        authorized ? "text-red-400/80" : "text-amber-400/80"
+                      )}>
+                        {authorized ? 'AUTENTICADO' : 'ÁREA RESTRITA'}
+                      </span>
+                      <span className="text-white text-[9.5px] font-orbitron font-bold uppercase tracking-[0.8px] leading-tight mt-0.5">
+                        {authorized ? 'DESCONECTAR' : 'LOGIN'}
+                      </span>
                     </div>
+                    <span className={cn(
+                      "group-hover/btn:translate-x-0.5 transition-all text-[10px] font-bold pr-0.5",
+                      authorized ? "text-white/20 group-hover/btn:text-red-400" : "text-white/20 group-hover/btn:text-amber-400"
+                    )}>
+                      ➔
+                    </span>
                   </button>
                 </div>
 
-                {/* Single clean line at the bottom to stay lightweight */}
-                <div className="border-t border-white/5 pt-1 mt-0.5 text-center">
-                  {authorized && (
-                    <div className="space-y-1.5 px-0.5 text-left pb-0.5 mt-1.5">
-                      <div className="flex items-center gap-1.5 px-1 pb-0.5">
-                        <div className="w-3.5 h-3.5 rounded-full bg-[#00f5ff]/10 border border-[#00f5ff]/30 flex items-center justify-center text-[7.5px] text-[#00f5ff] font-bold pb-0.5">
-                          ✓
-                        </div>
-                        <div className="flex flex-col flex-1">
-                          <span className="text-[6.5px] text-white/40 uppercase font-mono tracking-[0.14em] leading-none">
-                            Autenticado
-                          </span>
-                          <span className="text-[#00f5ff] text-[8.5px] font-orbitron font-extrabold uppercase tracking-[1.2px] leading-none mt-0.5">
-                            MINISTRO ATIVO
-                          </span>
-                        </div>
-                      </div>
-                      
-                      <button 
-                        onClick={() => {
-                          handleLogout();
-                          setShowRightSidebar(false);
-                        }}
-                        className="w-full py-1.5 px-2.5 rounded-xl block font-orbitron font-extrabold text-[8px] uppercase tracking-[1.2px] transition-all duration-200 active:scale-[0.96] select-none text-white bg-red-950/40 border border-red-500/20 hover:bg-red-500/10 hover:border-red-500/40 cursor-pointer shadow-md text-center"
-                      >
-                        <span className="flex items-center justify-center gap-1">
-                          <span>DESCONECTAR</span>
-                          <span className="text-[8px] opacity-85">✖</span>
+                {/* Footer Status Badge */}
+                <div className="border-t border-white/[0.06] pt-1.5 mt-0.5">
+                  {authorized ? (
+                    <div className="flex items-center justify-between px-1">
+                      <div className="flex items-center gap-1.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-green-400" />
+                        <span className="text-[7.5px] font-orbitron text-white/50 uppercase tracking-wider">
+                          Sessão Ativa
                         </span>
-                      </button>
+                      </div>
+                      <span className="text-[7px] text-[#00f5ff]/70 font-mono font-bold">MINISTRO</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between text-[6.5px] text-white/25 font-mono px-1">
+                      <span>CRIPTOGRAFADO</span>
+                      <span className="text-[#CF9D7B]/60 font-bold">VIVA LARES</span>
                     </div>
                   )}
                 </div>
@@ -2635,129 +2606,168 @@ export default function App() {
                 id="centralLoginOverlay"
               />
 
-              {/* Centered Login Modal in same position as Calendar */}
+              {/* Centered Luxury Cyber Login Modal */}
               <div className="fixed inset-0 pointer-events-none flex items-center justify-center p-4 z-[1700]">
                 <motion.div 
-                  initial={{ opacity: 0, scale: 0.95, y: -20 }}
+                  initial={{ opacity: 0, scale: 0.92, y: -16 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95, y: -20 }}
-                  transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                  exit={{ opacity: 0, scale: 0.92, y: -16 }}
+                  transition={{ type: "spring", damping: 28, stiffness: 350 }}
                   className={cn(
-                    "pointer-events-auto p-4 rounded-[20px] w-full max-w-[215px] bg-[#0c0c0e]/95 border transition-all duration-350 shadow-[0_20px_50px_rgba(0,0,0,0.95)] backdrop-blur-2xl flex flex-col items-center gap-3 relative overflow-visible",
+                    "pointer-events-auto p-5 sm:p-6 rounded-[28px] w-full max-w-[275px] bg-gradient-to-b from-[#12161f]/98 via-[#0c0f15]/98 to-[#07090d]/98 border transition-all duration-300 shadow-[0_25px_60px_rgba(0,0,0,0.95),0_0_35px_rgba(207,157,123,0.12)] backdrop-blur-3xl flex flex-col items-center gap-3.5 relative overflow-hidden",
                     passError 
-                      ? "border-red-500/40 shadow-[0_0_50px_rgba(239,68,68,0.35)] animate-card-shake" 
-                      : "border-white/10"
+                      ? "border-red-500/60 shadow-[0_0_50px_rgba(239,68,68,0.4)] animate-card-shake" 
+                      : "border-[#CF9D7B]/30 hover:border-[#CF9D7B]/50"
                   )}
                   id="centralLoginModal"
                 >
+                  {/* Luxury Top Light Ambient Accent */}
+                  <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-[#CF9D7B] to-transparent opacity-80" />
+
                   {/* Close modal action */}
                   <button 
                     onClick={closeCentralLoginModal}
-                    className="absolute top-3 right-3 text-white/40 hover:text-white pb-0.5 rounded-full hover:bg-white/5 transition-all outline-none cursor-pointer w-6 h-6 flex items-center justify-center border border-white/5"
+                    className="absolute top-3.5 right-3.5 text-white/40 hover:text-white rounded-full bg-white/[0.04] hover:bg-white/10 transition-all outline-none cursor-pointer w-7 h-7 flex items-center justify-center border border-white/10"
+                    title="Fechar"
                   >
                     <X className="w-3.5 h-3.5" />
                   </button>
 
-                  <div className="w-10 h-10 rounded-full bg-amber-500/5 border border-amber-500/20 flex items-center justify-center mt-1 shadow-[0_0_15px_rgba(245,158,11,0.03)]">
-                    <Lock className={cn("w-4 h-4 transition-all duration-500", passError ? "text-red-400 animate-bounce" : "text-amber-500")} />
+                  {/* High-Tech Jewel Security Emblem */}
+                  <div className="relative mt-1">
+                    <div className={cn(
+                      "w-12 h-12 rounded-2xl flex items-center justify-center border transition-all duration-500 shadow-inner",
+                      passError 
+                        ? "bg-red-500/15 border-red-500/40 text-red-400 shadow-[0_0_20px_rgba(239,68,68,0.3)] animate-pulse" 
+                        : "bg-gradient-to-b from-[#CF9D7B]/20 to-[#CF9D7B]/5 border-[#CF9D7B]/40 text-[#CF9D7B] shadow-[0_0_20px_rgba(207,157,123,0.25)]"
+                    )}>
+                      <Lock className={cn("w-5 h-5 transition-transform duration-300", passError && "animate-card-shake")} />
+                    </div>
+                    {/* Orbiting micro-dot indicator */}
+                    <span className={cn(
+                      "absolute -bottom-1 -right-1 w-2.5 h-2.5 rounded-full border-2 border-[#0c0f15]",
+                      passError ? "bg-red-500 animate-ping" : "bg-emerald-400 shadow-[0_0_8px_#34d399]"
+                    )} />
                   </div>
 
                   {/* Header context */}
-                  <div className="text-center w-full">
-                    <h3 className="font-orbitron font-bold text-[10px] tracking-[2px] text-white/90 uppercase">
+                  <div className="text-center w-full space-y-0.5">
+                    <h3 className="font-orbitron font-black text-xs tracking-[2.5px] text-white uppercase">
                       Acesso do Ministro
                     </h3>
-                    <p className={cn(
-                      "text-[6.5px] font-mono tracking-[2px] uppercase mt-0.5 transition-colors duration-300",
-                      passError ? "text-red-400 animate-pulse" : "text-amber-500/85"
-                    )}>
-                      {passError ? "// COMBINAÇÃO INCORRETA" : "// DIGITE SUA SENHA"}
-                    </p>
+                    <div className="flex items-center justify-center gap-1.5">
+                      <span className={cn(
+                        "w-1.5 h-1.5 rounded-full animate-pulse",
+                        passError ? "bg-red-400" : "bg-[#CF9D7B]"
+                      )} />
+                      <p className={cn(
+                        "text-[7px] font-mono tracking-[1.5px] uppercase font-bold transition-colors duration-300",
+                        passError ? "text-red-400" : "text-[#CF9D7B]/90"
+                      )}>
+                        {passError ? "SENHA INCORRETA // RETENTE" : "CHAVE DIGITAL DE ACESSO"}
+                      </p>
+                    </div>
                   </div>
 
-                  {/* Input form with readOnly input to suppress virtual keyboard */}
-                  <form onSubmit={handleCentralModalLogin} className="w-full space-y-3">
-                    <div className="relative group/input">
+                  {/* Luxury PIN Screen / Password Display */}
+                  <div className="w-full bg-black/60 border border-white/10 rounded-2xl p-2.5 flex flex-col items-center gap-2 shadow-inner">
+                    {/* Visual PIN Dots Indicator */}
+                    <div className="flex items-center justify-center gap-2 py-0.5">
+                      {[0, 1, 2, 3, 4, 5, 6].map((idx) => {
+                        const isFilled = passInput.length > idx;
+                        return (
+                          <div 
+                            key={`pin-dot-${idx}`}
+                            className={cn(
+                              "w-2.5 h-2.5 rounded-full transition-all duration-200 border",
+                              isFilled 
+                                ? (passError 
+                                    ? "bg-red-500 border-red-400 shadow-[0_0_8px_rgba(239,68,68,0.8)] scale-110" 
+                                    : "bg-[#CF9D7B] border-[#dfb292] shadow-[0_0_8px_rgba(207,157,123,0.8)] scale-110")
+                                : "bg-white/5 border-white/15"
+                            )}
+                          />
+                        );
+                      })}
+                    </div>
+
+                    {/* Masked Password Readout Box */}
+                    <div className="w-full relative">
                       <input 
                         type="password"
                         value={passInput}
                         onChange={(e) => setPassInput(e.target.value)}
-                        placeholder="SENHA..."
+                        placeholder="DIGITE A SENHA..."
                         readOnly={true}
                         className={cn(
-                          "w-full p-2.5 rounded-xl border bg-black/80 text-white font-rajdhani outline-none text-center text-xs tracking-[4px] uppercase transition-all duration-300 focus:bg-black cursor-default",
+                          "w-full py-1.5 px-3 rounded-xl border bg-black/80 font-mono outline-none text-center text-xs tracking-[6px] uppercase transition-all duration-300 cursor-default select-none",
                           passError 
-                            ? "border-red-500/40 focus:border-red-500 text-red-300 placeholder-red-500/50" 
-                            : "border-white/10 focus:border-[#00f5ff]/70 focus:shadow-[0_0_12px_rgba(0,245,255,0.25)]"
+                            ? "border-red-500/50 text-red-300 placeholder-red-500/40" 
+                            : "border-white/10 text-white placeholder-white/20 focus:border-[#CF9D7B]/70"
                         )}
                       />
                     </div>
+                  </div>
 
+                  {/* Confirm Action Button */}
+                  <form onSubmit={handleCentralModalLogin} className="w-full">
                     <button 
                       type="submit"
                       disabled={!passInput}
                       className={cn(
-                        "w-full py-2.5 px-3 rounded-xl relative overflow-hidden font-orbitron font-extrabold text-[9px] uppercase tracking-[1.5px] transition-all duration-300 active:scale-[0.96] select-none group/btn shadow-md",
+                        "w-full py-2.5 px-4 rounded-xl relative overflow-hidden font-orbitron font-extrabold text-[9.5px] uppercase tracking-[2px] transition-all duration-300 active:scale-[0.97] select-none group/btn shadow-lg flex items-center justify-center gap-2",
                         passInput
-                          ? "text-black bg-white hover:text-white cursor-pointer"
-                          : "text-white/30 bg-white/5 border border-white/10 pointer-events-none"
+                          ? "bg-gradient-to-r from-[#CF9D7B] via-[#e5bda0] to-[#CF9D7B] text-[#0a0d14] hover:shadow-[0_0_25px_rgba(207,157,123,0.5)] cursor-pointer"
+                          : "text-white/25 bg-white/[0.03] border border-white/[0.08] pointer-events-none"
                       )}
                     >
-                      {passInput && (
-                        <span 
-                          className="absolute inset-x-0 top-0 bottom-0 bg-[#00f5ff]/20 opacity-0 group-hover/btn:opacity-100 transition-opacity duration-500" 
-                        />
-                      )}
-                      
-                      <span className="relative z-10 flex items-center justify-center gap-1">
-                        <span>CONFIRMAR</span>
-                        <span className="text-[9px] opacity-80 group-hover/btn:translate-x-1 transition-transform duration-300">➜</span>
-                      </span>
+                      <span>CONFIRMAR ACESSO</span>
+                      <span className="text-xs transition-transform duration-300 group-hover/btn:translate-x-1">➔</span>
                     </button>
                   </form>
 
-                  {/* Tactile Keypad grid below the capsule lock */}
-                  <div className="grid grid-cols-3 gap-1.5 w-full max-w-[170px] mt-0.5">
+                  {/* Tactile Jewel Numeric Keypad */}
+                  <div className="grid grid-cols-3 gap-1.5 w-full">
                     {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
                       <button 
                         key={`keypad-${num}`}
                         type="button"
                         onClick={() => setPassInput(prev => prev + num.toString())}
-                        className="h-7 rounded-lg bg-white/5 hover:bg-white/10 active:scale-95 border border-white/5 active:border-white/15 text-white font-orbitron font-bold text-[10px] transition-all duration-100 flex items-center justify-center cursor-pointer select-none outline-none"
+                        className="h-9 rounded-xl bg-gradient-to-b from-white/[0.05] to-white/[0.02] hover:bg-white/[0.09] active:bg-[#CF9D7B]/20 border border-white/[0.08] hover:border-[#CF9D7B]/30 active:border-[#CF9D7B] text-white font-orbitron font-bold text-xs transition-all duration-150 flex items-center justify-center cursor-pointer select-none outline-none shadow-[0_2px_6px_rgba(0,0,0,0.4)] active:scale-95"
                       >
                         {num}
                       </button>
                     ))}
                     <button 
                       type="button"
-                      onClick={() => {
-                        setPassInput('');
-                      }}
-                      className="h-7 rounded-lg bg-red-950/20 hover:bg-red-950/35 active:scale-95 border border-red-500/10 hover:border-red-500/25 text-red-400 font-orbitron font-bold text-[7.5px] uppercase transition-all duration-100 flex items-center justify-center cursor-pointer select-none outline-none"
+                      onClick={() => setPassInput('')}
+                      className="h-9 rounded-xl bg-red-950/20 hover:bg-red-950/40 active:scale-95 border border-red-500/20 hover:border-red-500/40 text-red-400 font-orbitron font-extrabold text-[8px] uppercase tracking-wider transition-all duration-150 flex items-center justify-center cursor-pointer select-none outline-none shadow-[0_2px_6px_rgba(0,0,0,0.4)]"
+                      title="Limpar Senha"
                     >
                       LIMPAR
                     </button>
                     <button 
                       type="button"
                       onClick={() => setPassInput(prev => prev + '0')}
-                      className="h-7 rounded-lg bg-white/5 hover:bg-white/10 active:scale-95 border border-white/5 active:border-white/15 text-white font-orbitron font-bold text-[10px] transition-all duration-100 flex items-center justify-center cursor-pointer select-none outline-none"
+                      className="h-9 rounded-xl bg-gradient-to-b from-white/[0.05] to-white/[0.02] hover:bg-white/[0.09] active:bg-[#CF9D7B]/20 border border-white/[0.08] hover:border-[#CF9D7B]/30 active:border-[#CF9D7B] text-white font-orbitron font-bold text-xs transition-all duration-150 flex items-center justify-center cursor-pointer select-none outline-none shadow-[0_2px_6px_rgba(0,0,0,0.4)] active:scale-95"
                     >
                       0
                     </button>
                     <button 
                       type="button"
-                      onClick={() => {
-                        setPassInput(prev => prev.slice(0, -1));
-                      }}
-                      className="h-7 rounded-lg bg-white/5 hover:bg-white/10 active:scale-95 border border-white/5 active:border-white/12 text-white font-orbitron font-bold text-[10px] transition-all duration-100 flex items-center justify-center cursor-pointer select-none outline-none"
+                      onClick={() => setPassInput(prev => prev.slice(0, -1))}
+                      className="h-9 rounded-xl bg-white/[0.04] hover:bg-white/[0.09] active:scale-95 border border-white/[0.08] hover:border-white/20 text-white font-orbitron font-bold text-sm transition-all duration-150 flex items-center justify-center cursor-pointer select-none outline-none shadow-[0_2px_6px_rgba(0,0,0,0.4)]"
+                      title="Apagar dígito"
                     >
                       ⌫
                     </button>
                   </div>
 
-                  <p className="text-[5.5px] font-space-grotesk tracking-[1px] text-white/30 text-center uppercase leading-none mt-0.5">
-                    SUPORTA TECLADO FÍSICO E TOUCH SCREEN
-                  </p>
+                  {/* High-tech security footer tag */}
+                  <div className="flex items-center justify-between w-full pt-1 border-t border-white/[0.06] text-[6.5px] font-mono text-white/30 tracking-[1px] uppercase">
+                    <span>CRIPTOGRAFIA 256-BIT</span>
+                    <span className="text-[#CF9D7B]/60 font-bold">TOUCH & TECLADO</span>
+                  </div>
                 </motion.div>
               </div>
             </>
