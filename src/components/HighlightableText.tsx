@@ -24,15 +24,6 @@ interface EditingWordState {
   italic: boolean;
 }
 
-interface FeedbackBadgeState {
-  key: string;
-  name: string;
-  icon: string;
-  hex: string;
-  x: number;
-  y: number;
-}
-
 export const HighlightableText = ({ 
   text, 
   sectionKey, 
@@ -43,8 +34,6 @@ export const HighlightableText = ({
 
   const [editingWord, setEditingWord] = useState<EditingWordState | null>(null);
   const [popoverStyle, setPopoverStyle] = useState<React.CSSProperties>({});
-  const [feedbackBadge, setFeedbackBadge] = useState<FeedbackBadgeState | null>(null);
-  const feedbackTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const touchTimerRef = useRef<NodeJS.Timeout | null>(null);
   const touchMovedRef = useRef<boolean>(false);
 
@@ -54,10 +43,9 @@ export const HighlightableText = ({
   const tokens = text.split(/(\s+)/);
   let nonWhitespaceCounter = 0;
 
-  // Clear feedback badge timer on unmount
+  // Cleanup touch timer on unmount
   useEffect(() => {
     return () => {
-      if (feedbackTimeoutRef.current) clearTimeout(feedbackTimeoutRef.current);
       if (touchTimerRef.current) clearTimeout(touchTimerRef.current);
     };
   }, []);
@@ -115,7 +103,7 @@ export const HighlightableText = ({
   };
 
   // Cycle color immediately on word click
-  const cycleColorOnWord = (target: HTMLElement, key: string) => {
+  const cycleColorOnWord = (key: string) => {
     const rawValue = highlights?.[key] || '';
     let parsed = { c: '', fs: 100, b: false, u: false, uc: false, it: false };
     let hasOtherStyles = false;
@@ -149,22 +137,6 @@ export const HighlightableText = ({
       }
     }
 
-    // Show floating micro feedback badge
-    const rect = target.getBoundingClientRect();
-    setFeedbackBadge({
-      key,
-      name: nextDef.name,
-      icon: nextDef.icon,
-      hex: nextDef.hex,
-      x: rect.left + rect.width / 2,
-      y: rect.top - 6
-    });
-
-    if (feedbackTimeoutRef.current) clearTimeout(feedbackTimeoutRef.current);
-    feedbackTimeoutRef.current = setTimeout(() => {
-      setFeedbackBadge(null);
-    }, 700);
-
     // Subtle haptic feedback on supported mobile devices
     if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
       try { navigator.vibrate(10); } catch (_) {}
@@ -182,7 +154,7 @@ export const HighlightableText = ({
 
     // Fast Color Cycling mode (Default, highly practical)
     if (highlightMode.isCycle) {
-      cycleColorOnWord(e.currentTarget, key);
+      cycleColorOnWord(key);
     } else {
       // Menu mode: open full styling dialog
       openAdvancedMenu(e.currentTarget, key, token);
@@ -347,30 +319,6 @@ export const HighlightableText = ({
           </span>
         );
       })}
-
-      {/* Floating Micro Feedback Badge when cycling color */}
-      <AnimatePresence>
-        {feedbackBadge && (
-          <motion.div
-            initial={{ opacity: 0, y: 4, scale: 0.8 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -4, scale: 0.8 }}
-            transition={{ duration: 0.12 }}
-            style={{
-              position: 'fixed',
-              top: `${feedbackBadge.y}px`,
-              left: `${feedbackBadge.x}px`,
-              transform: 'translate(-50%, -100%)',
-              zIndex: 10000,
-              pointerEvents: 'none'
-            }}
-            className="px-2.5 py-1 rounded-full text-[10px] font-orbitron font-black tracking-wider bg-black/90 border border-neon-cyan/40 shadow-[0_0_20px_rgba(0,245,255,0.4)] text-white flex items-center gap-1.5 backdrop-blur-md select-none whitespace-nowrap"
-          >
-            <span className="text-xs">{feedbackBadge.icon}</span>
-            <span className="text-neon-cyan">{feedbackBadge.name}</span>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* Backdrop invisível para detecção de clique fora */}
       {editingWord && (
