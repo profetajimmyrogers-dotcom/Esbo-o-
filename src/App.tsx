@@ -64,6 +64,7 @@ import { cn } from './lib/utils';
 import { HighlightableText } from './components/HighlightableText';
 import { PulpitoTopic } from './components/PulpitoTopic';
 import { PulpitoSectors } from './components/PulpitoSectors';
+import { PulpitView } from './components/PulpitView';
 import { useBrush } from './lib/brushStore';
 import { BrushToolbar } from './components/BrushToolbar';
 import { useHighlightMode } from './lib/highlightStore';
@@ -3447,230 +3448,42 @@ export default function App() {
             </div>
           </>
         ) : (
-          /* Pulpito Mode */
-          <div className="fixed inset-0 z-[2000] bg-[#0C1519] overflow-y-auto p-6 md:p-12 font-rajdhani" translate="no">
-            {/* Immersive Dark Background Overlay */}
-            <div className="absolute inset-0 bg-radial from-[#121c22]/50 via-transparent to-transparent pointer-events-none -z-10" />
-
-            {/* Floating Timer */}
-            <div className="fixed top-4 right-4 bg-black/95 border border-[#CF9D7B] text-[#CF9D7B] px-5 py-3 font-orbitron text-xl md:text-3xl font-black shadow-[0_0_20px_rgba(207,157,123,0.3)] z-[2001] rounded-xl flex items-center gap-3">
-              <span className="w-3.5 h-3.5 rounded-full bg-red-600 animate-pulse" />
-              {formatTime(tempo)}
-            </div>
-
-            <div className={cn("max-w-5xl mx-auto space-y-16 pb-32 transition-all duration-300", fontSizes[fontSizeIndex])}>
-              {/* Header Section */}
-              <div className="space-y-6 border-b border-white/5 pb-10">
-                <h1 className="text-3xl md:text-5xl lg:text-6xl font-orbitron font-black text-white leading-tight tracking-tight uppercase">
-                  {selectedSermon?.tema}
-                </h1>
-                
-                <div className="flex flex-wrap items-center gap-6 text-xl md:text-2xl">
-                  <div className="flex items-center gap-3 text-[#ffee00] bg-[#CF9D7B]/10 px-4 py-2 border border-[#CF9D7B]/20 rounded-xl">
-                    <BookOpen className="w-6 h-6 text-[#CF9D7B]" />
-                    <span className="font-bold">
-                      <HighlightableText 
-                        text={selectedSermon?.texto || ''} 
-                        sermonId={selectedSermon?.id!} 
-                        sectionKey="texto" 
-                        highlights={selectedSermon?.highlights}
-                        onHighlight={(key, color) => handleHighlight(selectedSermon?.id!, key, color)}
-                      />
-                    </span>
-                  </div>
-                  
-                  {selectedSermon?.agr && (
-                    <div className="text-white/80 italic flex items-center gap-2 bg-white/5 border border-white/10 px-4 py-2 rounded-xl">
-                      <span className="text-[#CF9D7B] font-bold font-orbitron select-none">🙌 AGRADECIMENTOS:</span>
-                      <span>{selectedSermon.agr}</span>
-                    </div>
-                  )}
-                </div>
-
-                {/* Inline Sectors - Discreet solution */}
-                <PulpitoSectors 
-                  setores={selectedSermon?.setores || []} 
-                  onAdd={async (s) => {
-                    if (selectedSermon?.id) {
-                      try {
-                        const newSetores = [...(selectedSermon.setores || []), s];
-                        await updateDoc(doc(db, 'sermoes', selectedSermon.id), { 
-                          setores: newSetores,
-                          updatedAt: serverTimestamp()
-                        });
-                      } catch (error) {
-                        handleFirestoreError(error, OperationType.UPDATE, `sermoes/${selectedSermon.id}`);
-                      }
-                    }
-                  }}
-                />
-              </div>
-
-              {/* Intro Section */}
-              {selectedSermon?.intro && (
-                <section className="space-y-6 bg-[#162127]/20 p-8 border-l-4 border-[#CF9D7B]/60 rounded-r-xl">
-                  <h4 className="font-orbitron text-[#CF9D7B] text-sm tracking-[0.4em] uppercase font-black">
-                    // INTRODUÇÃO REVELADA
-                  </h4>
-                  <div className="leading-relaxed text-white/90 whitespace-pre-wrap font-medium">
-                    <HighlightableText 
-                      text={selectedSermon.intro} 
-                      sermonId={selectedSermon.id!} 
-                      sectionKey="intro" 
-                      highlights={selectedSermon.highlights}
-                      onHighlight={(key, color) => handleHighlight(selectedSermon.id!, key, color)}
-                    />
-                  </div>
-                </section>
-              )}
-
-              {/* Development Section */}
-              <section className="space-y-10">
-                <h4 className="font-orbitron text-[#ffee00]/80 text-sm tracking-[0.4em] uppercase font-black">
-                  // DESENVOLVIMENTO DO TEMA
-                </h4>
-                <div className="space-y-8">
-                  {selectedSermon?.pontos.map((p, i) => (
-                    <PulpitoTopic 
-                      key={i}
-                      p={p}
-                      i={i}
-                      sermonId={selectedSermon.id!}
-                      highlights={selectedSermon.highlights}
-                      onHighlight={(key, color) => handleHighlight(selectedSermon.id!, key, color)}
-                    />
-                  ))}
-                </div>
-              </section>
-
-              {/* Application Section */}
-              {selectedSermon?.apl && (
-                <section className="space-y-6 bg-[#162127]/20 p-8 border-l-4 border-[#00f5ff]/60 rounded-r-xl">
-                  <h4 className="font-orbitron text-[#00f5ff]/80 text-sm tracking-[0.4em] uppercase font-black">
-                    // APLICAÇÃO GERAL & FECHAMENTO
-                  </h4>
-                  <div className="leading-relaxed text-white/90 whitespace-pre-wrap font-medium font-rajdhani">
-                    <HighlightableText 
-                      text={selectedSermon.apl} 
-                      sermonId={selectedSermon.id!} 
-                      sectionKey="apl" 
-                      highlights={selectedSermon.highlights}
-                      onHighlight={(key, color) => handleHighlight(selectedSermon.id!, key, color)}
-                    />
-                  </div>
-                </section>
-              )}
-
-              {/* Footer Actions */}
-              <div className="pt-20 pb-12 flex justify-center">
-                <button 
-                  onClick={() => {
-                    setAutoScrollActive(false);
-                    setMode('grid');
-                  }}
-                  className="group flex items-center gap-2.5 px-8 py-3 border border-[#CF9D7B]/40 text-[#CF9D7B]/80 font-orbitron text-[11px] tracking-[0.3em] uppercase hover:border-[#CF9D7B] hover:text-white hover:bg-[#CF9D7B]/15 transition-all duration-500 rounded-lg cursor-pointer font-bold"
-                >
-                  <LogOut className="w-4 h-4 opacity-75 group-hover:opacity-100 transition-opacity" />
-                  ENCERRAR PREGAÇÃO IMPERIAL
-                </button>
-              </div>
-            </div>
-
-            {/* Tablet Pulpit Imperial Reading Remote Controller HUD (Floating controller) */}
-            <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[2010] bg-[#0c1519]/95 border border-[#CF9D7B]/30 backdrop-blur-xl px-4 py-2 rounded-2xl flex items-center gap-4 shadow-[0_4px_30px_rgba(207,157,123,0.3)] select-none max-w-[95vw] w-fit text-white">
-              {/* Size Tools */}
-              <div className="flex items-center gap-2 border-r border-[#CF9D7B]/20 pr-3 shrink-0">
-                <button 
-                  onClick={() => setFontSizeIndex(prev => Math.max(0, prev - 1))}
-                  className="w-7 h-7 rounded-lg bg-white/5 hover:bg-white/15 text-[#CF9D7B] border border-white/10 flex items-center justify-center font-orbitron font-extrabold text-[10px] active:scale-95 duration-150 cursor-pointer"
-                  title="Diminuir letras"
-                >
-                  A-
-                </button>
-                <span className="text-[9px] font-mono font-bold text-white uppercase px-1 min-w-[3rem] text-center shrink-0">
-                  FONTE: {fontSizeIndex + 1}X
-                </span>
-                <button 
-                  onClick={() => setFontSizeIndex(prev => Math.min(fontSizes.length - 1, prev + 1))}
-                  className="w-7 h-7 rounded-lg bg-white/5 hover:bg-white/15 text-[#CF9D7B] border border-white/10 flex items-center justify-center font-orbitron font-extrabold text-[10px] active:scale-95 duration-150 cursor-pointer"
-                  title="Aumentar letras"
-                >
-                  A+
-                </button>
-              </div>
-
-              {/* Fast 1-Click Color Cycle Mode & Visual Indicator */}
-              <div className="flex items-center gap-2 border-r border-[#CF9D7B]/20 pr-3 shrink-0">
-                <button
-                  type="button"
-                  onClick={() => highlightMode.toggleMode()}
-                  className={cn(
-                    "px-2.5 py-1.5 rounded-lg border text-[9px] font-orbitron font-bold tracking-wider flex items-center gap-1.5 transition-all duration-300 active:scale-95 cursor-pointer shrink-0",
-                    highlightMode.isCycle
-                      ? "bg-[#ffee00]/15 border-[#ffee00]/50 text-[#ffee00] shadow-[0_0_12px_rgba(255,238,0,0.25)]"
-                      : "bg-white/5 border-white/10 text-white/50 hover:bg-white/10 hover:text-white"
-                  )}
-                  title={
-                    highlightMode.isCycle
-                      ? "Modo Rápido Ativo: Cada toque na palavra cicla as cores até zerar! Clique para modo menu."
-                      : "Modo Menu: 1 clique abre o menu de formatação. Clique para modo 1-clique."
+          /* Pulpito Mode - Adapted from pulpit-mode independent module */
+          selectedSermon ? (
+            <PulpitView
+              sermon={selectedSermon}
+              onClose={() => {
+                setAutoScrollActive(false);
+                setMode('grid');
+              }}
+              onHighlight={(key, color) => handleHighlight(selectedSermon.id!, key, color)}
+              onAddSector={async (s) => {
+                if (selectedSermon?.id) {
+                  try {
+                    const newSetores = [...(selectedSermon.setores || []), s];
+                    await updateDoc(doc(db, 'sermoes', selectedSermon.id), { 
+                      setores: newSetores,
+                      updatedAt: serverTimestamp()
+                    });
+                  } catch (error) {
+                    handleFirestoreError(error, OperationType.UPDATE, `sermoes/${selectedSermon.id}`);
                   }
+                }
+              }}
+            />
+          ) : (
+            <div className="fixed inset-0 z-[2000] bg-[#04060a] flex items-center justify-center p-6 text-white font-orbitron">
+              <div className="text-center space-y-4">
+                <p className="text-lg">Nenhum sermão selecionado para o púlpito.</p>
+                <button 
+                  onClick={() => setMode('grid')}
+                  className="px-6 py-2.5 bg-[#CF9D7B] text-black font-bold rounded-lg cursor-pointer"
                 >
-                  <Sparkles className={cn("w-3.5 h-3.5", highlightMode.isCycle ? "text-[#ffee00] animate-pulse" : "text-white/40")} />
-                  <span>{highlightMode.isCycle ? '1-CLIQUE: CICLAR' : '1-CLIQUE: MENU'}</span>
-                </button>
-
-                {/* Color dots preview showing the cycle order */}
-                {highlightMode.isCycle && (
-                  <div 
-                    className="hidden sm:flex items-center gap-1 bg-black/50 px-2 py-1 rounded-md border border-white/10 text-[10px]"
-                    title="Ordem do Ciclo: Amarelo ➔ Ciano ➔ Branco/Rosa ➔ Verde ➔ Carmim ➔ Zerar"
-                  >
-                    <span className="w-2 h-2 rounded-full bg-[#ffee00] shadow-[0_0_4px_#ffee00]" />
-                    <span className="text-[8px] text-white/30">➔</span>
-                    <span className="w-2 h-2 rounded-full bg-[#00f5ff] shadow-[0_0_4px_#00f5ff]" />
-                    <span className="text-[8px] text-white/30">➔</span>
-                    <span className="w-2 h-2 rounded-full bg-white shadow-[0_0_4px_#fff]" />
-                    <span className="text-[8px] text-white/30">➔</span>
-                    <span className="w-2 h-2 rounded-full bg-[#39ff14] shadow-[0_0_4px_#39ff14]" />
-                    <span className="text-[8px] text-white/30">➔</span>
-                    <span className="w-2 h-2 rounded-full bg-[#dc143c] shadow-[0_0_4px_#dc143c]" />
-                    <span className="text-[8px] text-white/30">➔</span>
-                    <span className="text-[8px] font-mono text-text-dim">✖️</span>
-                  </div>
-                )}
-              </div>
-
-              {/* Integrated Brush/Pincel Tools */}
-              <div className="flex items-center gap-2.5 shrink-0">
-                <button
-                  onClick={() => brush.setBrush({ isActive: !brush.isActive })}
-                  className={cn(
-                    "px-3 py-1.5 rounded-lg border text-[9px] font-orbitron font-bold tracking-widest flex items-center gap-1.5 transition-all duration-300 active:scale-95 cursor-pointer shrink-0",
-                    brush.isActive
-                      ? "bg-[#00f5ff]/15 border-[#00f5ff]/50 text-[#00f5ff] shadow-[0_0_12px_rgba(0,245,255,0.25)]"
-                      : "bg-white/5 border-white/10 text-white/55 hover:bg-white/10 hover:text-white"
-                  )}
-                  title="Ativar/Desativar Marcador Rápido"
-                >
-                  <Paintbrush className={cn("w-3.5 h-3.5", brush.isActive && "animate-pulse")} />
-                  <span>PINCEL</span>
+                  VOLTAR AO CATÁLOGO
                 </button>
               </div>
-
-              {/* Back action */}
-              <button
-                onClick={() => {
-                  setAutoScrollActive(false);
-                  setMode('grid');
-                }}
-                className="p-1.5 bg-red-950/25 border border-red-500/20 hover:border-red-500 hover:bg-red-500/30 text-red-400 hover:text-white rounded-lg transition-all cursor-pointer shadow-md shrink-0 ml-auto"
-                title="Sair do Púlpito"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
             </div>
-          </div>
+          )
         )}
       </main>
 

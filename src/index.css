@@ -50,6 +50,10 @@
     );
     animation: scanline 10s linear infinite;
   }
+
+  body.pulpit-active::after {
+    display: none !important;
+  }
 }
 
 @keyframes scanline {

@@ -1,0 +1,517 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#04060a">
+<title>Modo Púlpito · Módulo independente</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   MODO PÚLPITO · módulo independente
+   Para reutilizar em outro app: copie este <style>, o bloco
+   HTML marcado com "PULPIT MARKUP" e o <script> do final.
+   API:  PulpitMode.open(sermon, {onClose})  ·  PulpitMode.close()
+   ============================================================ */
+:root{
+  --bg:#0A1216;--panel:#111C21;--panel2:#17252C;--text:#EDE8E2;--muted:#94A0A4;--muted2:#7F8D92;
+  --line:rgba(207,157,123,.14);--accent:#CF9D7B;--accent2:#F3D8B8;--ink:#0A1216;
+  --pnote:#B9A6FF;--pnote2:#8F6FFF;--ok:#86C9A0;--warn:#E8B96A;--danger:#E28568;
+  --gold:linear-gradient(135deg,#F3D8B8 0%,#CF9D7B 48%,#8C5F45 100%);
+  --sans:'DM Sans',ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,'SFMono-Regular',Menlo,Consolas,monospace;
+  color-scheme:dark
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font:15px/1.6 var(--sans);-webkit-font-smoothing:antialiased}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none}
+.hidden{display:none!important}
+.muted{color:var(--muted)}
+.btn{border:1px solid var(--line);background:color-mix(in srgb,var(--panel) 85%,transparent);color:var(--text);border-radius:999px;padding:9px 17px;display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:500;transition:.2s}
+.btn:hover{border-color:color-mix(in srgb,var(--accent) 55%,transparent);transform:translateY(-1px)}
+.btn.gold{background:var(--gold);color:var(--ink);border-color:transparent;font-weight:600}
+
+/* ---------- tela de demonstração (pode ser removida) ---------- */
+.demo{min-height:100vh;display:grid;place-items:center;padding:24px}
+.demo-card{width:min(560px,100%);background:linear-gradient(165deg,color-mix(in srgb,var(--panel2) 42%,transparent),transparent 55%),var(--panel);border:1px solid var(--line);border-radius:22px;padding:30px;box-shadow:0 26px 60px -30px #000}
+.demo-card h1{font:600 28px var(--sans);margin:6px 0 8px}
+.demo-card p{color:var(--muted);margin:0 0 18px;font-size:13.5px}
+.demo-eyebrow{font:600 9.5px var(--mono);letter-spacing:.3em;text-transform:uppercase;color:var(--accent)}
+.demo-row{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+.demo-card select{flex:1;min-width:180px;border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--panel2);color:var(--text)}
+
+/* ---------- PÚLPITO ---------- */
+.pulpit{position:fixed;inset:0;z-index:60;background:#04060a;color:#e8ecf4;display:flex;flex-direction:column;--sc:#00e5ff;--ps:1;--plh:1.65;--serif:'Space Grotesk','Inter',ui-sans-serif,system-ui,sans-serif;isolation:isolate;overflow:hidden}
+.pulpit:before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(900px 520px at 12% -10%,color-mix(in srgb,var(--sc) 24%,transparent),transparent 60%),radial-gradient(720px 520px at 100% 112%,color-mix(in srgb,var(--sc) 14%,transparent),transparent 62%),linear-gradient(#ffffff07 1px,transparent 1px),linear-gradient(90deg,#ffffff07 1px,transparent 1px);background-size:auto,auto,42px 42px,42px 42px}
+.pulpit.light{background:#f4f7fb;color:#101828}
+.pulpit-bar{display:flex;align-items:center;justify-content:space-between;padding:14px 22px;border-bottom:1px solid color-mix(in srgb,var(--sc) 24%,transparent);gap:12px;flex-wrap:wrap}
+.pulpit.light .pulpit-bar{border-color:#0c1a2622}
+.pb-title b{font:600 16px var(--serif)}
+.pb-tools{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.pb-sep{width:1px;height:22px;background:color-mix(in srgb,var(--sc) 30%,transparent);margin:0 4px}
+.pulpit-bar button{background:#ffffff10;color:inherit;border:1px solid color-mix(in srgb,var(--sc) 34%,transparent);border-radius:9px;padding:9px 14px;transition:.2s}
+.pulpit-bar button:hover{border-color:var(--sc);box-shadow:0 0 12px color-mix(in srgb,var(--sc) 30%,transparent)}
+.pulpit-rail{display:flex;gap:8px;overflow-x:auto;padding:12px 22px;scrollbar-width:none;border-bottom:1px solid color-mix(in srgb,var(--sc) 14%,transparent)}
+.pulpit-rail::-webkit-scrollbar{display:none}
+.rchip{flex:none;display:flex;align-items:center;gap:8px;border:1px solid #ffffff1c;background:#ffffff08;color:inherit;border-radius:30px;padding:6px 14px 6px 7px;font:500 11.5px var(--mono);opacity:.5;transition:.3s}
+.rchip i{font-style:normal;min-width:23px;height:23px;border-radius:50%;display:grid;place-items:center;background:color-mix(in srgb,var(--c) 26%,transparent);color:var(--c);font-size:11px;font-weight:700}
+.rchip.done{opacity:.8}
+.rchip:hover{opacity:1}
+.rchip.active{opacity:1;border-color:var(--c);background:color-mix(in srgb,var(--c) 16%,transparent);box-shadow:0 0 22px color-mix(in srgb,var(--c) 35%,transparent);transform:translateY(-1px)}
+.pulpit.light .rchip{border-color:#0c1a2620;background:#0c1a260a}
+.pulpit-num{position:fixed;right:4vw;bottom:13vh;z-index:0;pointer-events:none;user-select:none;font:600 clamp(120px,22vw,300px)/1 var(--mono);color:var(--sc);opacity:.06}
+.pulpit-content{flex:1;overflow:auto;max-width:1100px;width:100%;margin:auto;padding:5vh 7vw;display:flex;flex-direction:column;justify-content:center;position:relative;z-index:1}
+.pulpit-kicker{color:var(--sc);font:600 11px var(--mono);letter-spacing:.3em;text-transform:uppercase}
+.pulpit-content h1{font:600 clamp(32px,5vw,62px)/1.06 var(--serif);margin:10px 0 26px}
+.pulpit-content h1:after{content:"";display:block;width:84px;height:3px;border-radius:3px;margin-top:20px;background:var(--sc);box-shadow:0 0 16px color-mix(in srgb,var(--sc) 55%,transparent)}
+.pulpit-content[data-type=cover]{text-align:center;align-items:center}
+.pulpit-content[data-type=cover] h1{font-size:clamp(42px,7.6vw,104px);line-height:1}
+.pulpit-content[data-type=cover] h1:after{margin:24px auto 0}
+.pulpit-text{font-size:calc(clamp(20px,2.8vw,34px)*var(--ps));line-height:var(--plh,1.65)}
+.pulpit.high-contrast{background:#000;color:#fff;--sc:#ffdf00}
+.pulpit.high-contrast .pulpit-bar,.pulpit.high-contrast .pulpit-controls{border-color:#ffffff55}
+.pulpit.high-contrast .pulpit-text,.pulpit.high-contrast .pulpit-content h1{color:#fff}
+.pulpit-clock{font:600 12px var(--mono);color:#fff;background:#ffffff12;border:1px solid #ffffff30;border-radius:8px;padding:8px 10px;white-space:nowrap}
+.pulpit-remaining{font:600 11px var(--mono);color:#b8e7c5;background:#1c563b55;border:1px solid #5aab7b66;border-radius:8px;padding:8px 10px;white-space:nowrap}
+.pulpit-remaining.warn{color:#ffe0a3;background:#73511c66;border-color:#d9a94f88}
+.pulpit-remaining.over{color:#ffb0a4;background:#70291f77;border-color:#e2856888}
+.pulpit-extra{display:flex;align-items:center;gap:6px}
+.pulpit-extra label{font:10px var(--mono);color:#c5cbd2}
+.pulpit-extra input{width:76px;accent-color:var(--sc)}
+.pulpit-alert{position:fixed;top:82px;left:50%;transform:translateX(-50%);z-index:90;background:#2b251b;color:#ffe0a3;border:1px solid #d9a94f88;border-radius:10px;padding:9px 14px;font:600 11px var(--mono);box-shadow:0 12px 34px #0008;pointer-events:none}
+.pulpit.high-contrast .pulpit-alert{background:#111;color:#ffdf00;border-color:#ffdf00}
+.pulpit-big{font-family:var(--serif);font-weight:500;font-size:calc(clamp(28px,4.6vw,60px)*var(--ps));line-height:1.3;overflow-wrap:anywhere}
+.pulpit-sub{font:600 calc(clamp(12px,1.3vw,17px)*var(--ps)) var(--mono);letter-spacing:.2em;text-transform:uppercase;color:var(--sc);margin-bottom:16px}
+.pchips{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:8px}
+.pchip{border:1px solid color-mix(in srgb,var(--sc) 55%,transparent);color:var(--sc);border-radius:30px;padding:6px 16px;font:500 calc(13.5px*var(--ps)) var(--mono);letter-spacing:.08em}
+@keyframes pNext{from{opacity:0;transform:translateX(60px);filter:blur(6px)}to{opacity:1;transform:none;filter:none}}
+@keyframes pPrev{from{opacity:0;transform:translateX(-60px);filter:blur(6px)}to{opacity:1;transform:none;filter:none}}
+@keyframes pFade{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@keyframes noteIn{from{opacity:0;transform:translateY(6px) scale(.98)}to{opacity:1;transform:none}}
+.pulpit-content.anim-next>*{animation:pNext .6s cubic-bezier(.2,.8,.2,1) both}
+.pulpit-content.anim-prev>*{animation:pPrev .6s cubic-bezier(.2,.8,.2,1) both}
+.pulpit-content.anim-fade>*{animation:pFade .5s both}
+.pulpit-content>*:nth-child(2){animation-delay:.07s!important}
+.pulpit-content>*:nth-child(3){animation-delay:.16s!important}
+.pulpit-block{margin:0 0 24px}
+.pulpit-block h2{font:700 .42em var(--mono);letter-spacing:.2em;text-transform:uppercase;color:var(--sc);opacity:.9;margin:0 0 9px}
+.pulpit-rich p{margin:.35em 0}
+.pulpit-rich mark,.pulpit-rich span[style*=background]{color:#0f1c2e;border-radius:4px;padding:0 .1em}
+.pulpit-rich ul,.pulpit-rich ol{padding-left:1.3em}
+.pulpit-rich img{max-width:100%;height:auto}
+/* notas do pregador */
+.pulpit-text .pnote,.pulpit-rich .pnote{background:transparent!important;color:var(--pnote)!important;padding:0 .02em;border-bottom:1.5px dashed color-mix(in srgb,var(--pnote2) 62%,transparent);border-radius:2px;cursor:pointer;text-shadow:0 0 16px color-mix(in srgb,var(--pnote2) 38%,transparent);transition:background .15s,box-shadow .15s;outline:none}
+.pulpit-text .pnote:hover,.pulpit-text .pnote:focus-visible,.pulpit-rich .pnote:hover,.pulpit-rich .pnote:focus-visible{background:color-mix(in srgb,var(--pnote2) 10%,transparent);box-shadow:0 0 0 2px color-mix(in srgb,var(--pnote2) 18%,transparent)}
+.pulpit-text .pnote-mark,.pulpit-rich .pnote-mark{font-size:.46em;margin-left:.18em;vertical-align:super;opacity:.95;letter-spacing:0}
+.pulpit.light .pnote{color:#5B3FD1!important;border-bottom-color:#5b3fd199;text-shadow:none}
+.pulpit.light .pnote:hover,.pulpit.light .pnote:focus-visible{background:#5b3fd114!important;box-shadow:0 0 0 2px #5b3fd122!important}
+.pulpit.light .pulpit-note{background:#fffdf8;color:#241a4d;border-color:#5b3fd166;box-shadow:0 30px 90px -20px #0003,0 0 40px -20px #5b3fd166}
+.pulpit.light .pulpit-note:after{background:#fffdf8;border-color:#5b3fd166}
+.pulpit.light .pn-head{border-bottom-color:#5b3fd12e}
+.pulpit.light .pn-head span{color:#5B3FD1}
+.pulpit.light .pn-head button{color:#5B3FD1;border-color:#5b3fd133;background:#5b3fd110}
+.pulpit-note{position:fixed;z-index:80;width:min(370px,calc(100vw - 24px));max-height:min(46vh,340px);display:flex;flex-direction:column;background-color:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:16px;box-shadow:0 30px 90px -18px #000;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);overflow:visible;animation:noteIn .22s cubic-bezier(.2,.8,.2,1) both}
+.pulpit-note:after{content:"";position:absolute;left:var(--ax,50%);width:13px;height:13px;margin-left:-7px;background:var(--panel);border:1px solid var(--line);transform:rotate(45deg)}
+.pulpit-note.above:after{bottom:-7px;border-top:0;border-left:0}
+.pulpit-note.below:after{top:-7px;border-bottom:0;border-right:0}
+.pn-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px 9px 14px;border-bottom:1px solid var(--line);flex:none}
+.pn-head span{font:600 8.5px var(--mono);letter-spacing:.22em;text-transform:uppercase;color:var(--pnote2)}
+.pn-head button{width:26px;height:26px;border-radius:8px;border:1px solid color-mix(in srgb,var(--pnote2) 33%,transparent);background:color-mix(in srgb,var(--pnote2) 8%,transparent);color:var(--pnote);font-size:11px}
+.pn-body{padding:13px 15px 15px;font:400 15px/1.55 var(--sans);white-space:pre-wrap;overflow:auto;word-break:break-word;overscroll-behavior:contain;flex:1 1 auto;min-height:0}
+.pn-body a{color:var(--pnote2)}
+/* versículos */
+.pulpit-rich blockquote.verse{margin:14px 0;padding:14px 18px;border-left:3px solid var(--sc,#00e5ff);background:color-mix(in srgb,var(--sc,#00e5ff) 9%,transparent);border-radius:0 14px 14px 0;font-size:.86em;line-height:1.65}
+.pulpit-rich blockquote.verse p{margin:0 0 5px}
+.pulpit-rich blockquote.verse sup{font:600 9px var(--mono);color:var(--sc,#00e5ff);margin-right:5px}
+.pulpit-rich blockquote.verse cite{display:block;margin-top:8px;font:600 10px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:color-mix(in srgb,var(--sc,#00e5ff) 78%,#fff);font-style:normal}
+/* agradecimentos */
+.pthanks{position:relative;margin-top:clamp(18px,3.5vh,36px);padding:clamp(16px,2.4vw,26px) clamp(18px,2.8vw,32px) clamp(18px,2.6vw,28px);border-radius:20px;border:1px solid color-mix(in srgb,var(--sc) 34%,transparent);background:linear-gradient(135deg,color-mix(in srgb,var(--sc) 13%,transparent),color-mix(in srgb,var(--sc) 3%,transparent) 62%),#ffffff06;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);box-shadow:0 24px 60px -30px #000,inset 0 1px 0 #ffffff14;overflow:hidden}
+.pthanks:before{content:"";position:absolute;left:0;top:18px;bottom:18px;width:3px;border-radius:0 3px 3px 0;background:var(--sc);box-shadow:0 0 14px var(--sc)}
+.pthanks-label{display:flex;align-items:center;gap:10px;margin-bottom:14px;font:600 calc(12px*var(--ps)) var(--mono);letter-spacing:.3em;text-transform:uppercase;color:var(--sc)}
+.pthanks-label i{font-style:normal;font-size:1.1em}
+.pthanks-label:after{content:"";flex:1;height:1px;background:linear-gradient(90deg,color-mix(in srgb,var(--sc) 45%,transparent),transparent)}
+.pthanks-names{display:flex;flex-wrap:wrap;gap:10px 12px}
+.pthanks-name{font:500 calc(clamp(18px,2.5vw,32px)*var(--ps))/1.2 var(--serif);padding:8px 20px;border-radius:999px;border:1px solid color-mix(in srgb,var(--sc) 40%,transparent);background:linear-gradient(135deg,color-mix(in srgb,var(--sc) 16%,transparent),color-mix(in srgb,var(--sc) 5%,transparent));color:inherit;box-shadow:0 8px 20px -12px color-mix(in srgb,var(--sc) 60%,transparent)}
+.pulpit.light .pthanks{background:linear-gradient(135deg,color-mix(in srgb,var(--sc) 10%,#fff),#ffffffc0 70%);box-shadow:0 22px 50px -28px #0003,inset 0 1px 0 #fff}
+.pulpit.light .pthanks-name{background:#fff;color:#101828}
+.pulpit.high-contrast .pthanks-name{background:#111;color:#fff;border-color:#ffdf00}
+/* galeria */
+.pgal{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px}
+.pg{aspect-ratio:4/3;border-radius:12px;overflow:hidden;border:1px solid color-mix(in srgb,var(--sc) 30%,transparent);cursor:zoom-in;background:#0c1018}
+.pg img{width:100%;height:100%;object-fit:cover;transition:transform .5s}
+.pg:hover img{transform:scale(1.06)}
+/* controles */
+.pulpit-controls{display:flex;align-items:center;justify-content:center;gap:12px;padding:16px;border-top:1px solid color-mix(in srgb,var(--sc) 24%,transparent)}
+.pulpit-controls button{background:#ffffff10;color:inherit;border:1px solid color-mix(in srgb,var(--sc) 34%,transparent);border-radius:9px;padding:9px 14px;transition:.2s}
+.pulpit-controls button:hover:not(:disabled){border-color:var(--sc);box-shadow:0 0 12px color-mix(in srgb,var(--sc) 30%,transparent)}
+.pulpit-controls button:disabled{opacity:.35;cursor:default}
+.pulpit.light .pulpit-controls{border-color:#0c1a2622}
+.pulpit.light button{background:#0c1a260a;border-color:#0c1a2626}
+.timer{font-variant-numeric:tabular-nums;font:600 19px var(--mono);min-width:105px;text-align:center;letter-spacing:.04em}
+.timer.warning{color:var(--warn)}
+.timer.over{color:var(--danger)}
+.progress{height:2px;background:#ffffff1c}
+.progress span{display:block;height:100%;background:var(--sc);box-shadow:0 0 12px var(--sc);transition:width .3s}
+/* visão geral */
+.pulpit-index{position:absolute;inset:0;z-index:5;background:#04060af5;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);overflow:auto;padding:22px;animation:fade .2s both}
+.pulpit.light .pulpit-index{background:#f4f7fbf5}
+.pi-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.pi-head b{font:600 26px var(--serif)}
+.pi-head button{background:#ffffff10;color:inherit;border:1px solid color-mix(in srgb,var(--sc) 34%,transparent);border-radius:9px;padding:8px 14px}
+.pi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.pi-card{text-align:left;border:1px solid #ffffff1a;border-left:3px solid var(--c);background:#ffffff08;border-radius:12px;padding:14px 16px;color:inherit;display:grid;gap:4px;transition:.25s}
+.pi-card:hover,.pi-card.active{background:color-mix(in srgb,var(--c) 15%,transparent);transform:translateY(-3px)}
+.pi-n{font:600 26px var(--mono);color:var(--c)}
+.pi-card em{font-style:normal;font:600 9px var(--mono);letter-spacing:.2em;opacity:.7;text-transform:uppercase}
+.pi-card strong{font-size:14.5px;line-height:1.3}
+.pulpit.light .pi-card{border-color:#0c1a2620;border-left-color:var(--c);background:#0c1a260a}
+/* lightbox */
+.lightbox{position:fixed;inset:0;z-index:100;background:#070d11eb;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:20px;animation:fade .2s both;backdrop-filter:blur(6px)}
+.lightbox img{max-width:min(1100px,94vw);max-height:76vh;border-radius:12px;box-shadow:0 40px 100px -20px #000;border:1px solid color-mix(in srgb,var(--accent) 30%,transparent);background:var(--panel)}
+.lb-bar{color:#EDE8E2;font:500 12px var(--mono)}
+.lb-nav{position:absolute;top:50%;transform:translateY(-50%);width:46px;height:46px;border-radius:50%;background:#ffffff14;color:#fff;font-size:20px;border:1px solid #ffffff30}
+.lb-nav:hover{background:color-mix(in srgb,var(--accent) 35%,transparent)}
+.lb-prev{left:16px}.lb-next{right:16px}
+.lb-close{position:absolute;top:16px;right:16px;width:40px;height:40px;border-radius:10px;background:#ffffff14;color:#fff;border:1px solid #ffffff30}
+.toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%);z-index:150;background:var(--gold);color:var(--ink);padding:11px 20px;border-radius:999px;font-size:12.5px;font-weight:600;max-width:90vw;text-align:center}
+@media(max-width:650px){
+  .pulpit-rail{padding:10px 12px}.pulpit-num{display:none}.pb-tools button{padding:7px 9px}.pb-sep{display:none}
+  .pulpit-bar{padding:10px}.pulpit-content{padding:28px 22px}.pulpit-controls{gap:6px;flex-wrap:wrap}.timer{font-size:15px}
+}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+
+<!-- ============ TELA DE DEMONSTRAÇÃO (opcional) ============ -->
+<div class="demo" id="demo">
+  <div class="demo-card">
+    <div class="demo-eyebrow">Módulo independente</div>
+    <h1>Modo Púlpito</h1>
+    <p>Abra o sermão de exemplo ou carregue um arquivo JSON exportado do Sermon Workspace (backup completo ou sermão individual).</p>
+    <div class="demo-row">
+      <button class="btn gold" id="demoOpen">▶ Abrir exemplo</button>
+      <button class="btn" id="demoLoad">⇧ Carregar JSON</button>
+      <input type="file" id="demoFile" accept="application/json,.json" class="hidden">
+    </div>
+    <div class="demo-row hidden" id="demoPickRow" style="margin-top:14px">
+      <select id="demoPick" aria-label="Escolher sermão"></select>
+      <button class="btn gold" id="demoOpenPick">▶ Pregar este</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ PULPIT MARKUP ============ -->
+<div id="pulpit" class="pulpit hidden" style="--sc:#00e5ff;--plh:1.65">
+  <div class="progress"><span id="pulpitProgress" style="width:0%"></span></div>
+  <header class="pulpit-bar">
+    <div class="pb-title"><b id="pulpitTitle">Modo Púlpito</b><div class="pulpit-kicker" id="pulpitSub">Apresentação</div></div>
+    <div class="pb-tools">
+      <span id="pulpitClock" class="pulpit-clock" title="Horário atual">--:--</span>
+      <span id="timer" class="timer">00:00</span>
+      <span id="pulpitRemaining" class="pulpit-remaining">Restam 30:00</span>
+      <button id="timerStart" title="Iniciar cronômetro">▶</button>
+      <button id="timerPause" title="Pausar">Ⅱ</button>
+      <button id="timerReset" title="Zerar">↺</button>
+      <span class="pb-sep"></span>
+      <button id="pulpitSmaller" title="Diminuir texto">A−</button>
+      <button id="pulpitBigger" title="Aumentar texto">A+</button>
+      <div class="pulpit-extra"><label for="pulpitSpacing">Linhas</label><input id="pulpitSpacing" type="range" min="1.2" max="2.2" step=".05" value="1.65" title="Espaçamento entre linhas"></div>
+      <button id="pulpitContrast" title="Ativar contraste elevado">◐ Contraste</button>
+      <button id="pulpitIndexBtn" title="Visão geral (G)">▦</button>
+      <button id="pulpitFull" title="Tela cheia (F)">⛶</button>
+      <button id="pulpitTheme" title="Claro / escuro">◑</button>
+      <button id="exitPulpit">✕ Sair</button>
+    </div>
+  </header>
+  <nav class="pulpit-rail" id="pulpitRail" aria-label="Seções do sermão"></nav>
+  <div class="pulpit-num" id="pulpitNum" aria-hidden="true">01</div>
+  <section class="pulpit-content" id="pulpitSlide">
+    <div class="pulpit-kicker" id="pulpitKicker"></div>
+    <h1 id="pulpitHeading"></h1>
+    <div class="pulpit-text" id="pulpitText"></div>
+  </section>
+  <footer class="pulpit-controls">
+    <button id="pulpitPrev">← Anterior</button>
+    <span id="pulpitCounter" class="muted">1 / 1</span>
+    <button id="pulpitNext">Próximo →</button>
+  </footer>
+  <div id="pulpitIndex" class="pulpit-index hidden"></div>
+  <div id="pulpitNote" class="pulpit-note hidden" role="dialog" aria-label="Nota do pregador">
+    <div class="pn-head"><span>Nota do pregador</span><button id="pulpitNoteClose" aria-label="Fechar nota">✕</button></div>
+    <div class="pn-body" id="pulpitNoteBody"></div>
+  </div>
+  <div id="pulpitAlert" class="pulpit-alert hidden" role="status" aria-live="polite"></div>
+</div>
+
+<div id="lightbox" class="lightbox hidden">
+  <button class="lb-close" id="lbClose" aria-label="Fechar">✕</button>
+  <button class="lb-nav lb-prev" id="lbPrev" aria-label="Anterior">‹</button>
+  <img id="lbImg" alt="">
+  <button class="lb-nav lb-next" id="lbNext" aria-label="Próxima">›</button>
+  <div class="lb-bar" id="lbCount"></div>
+</div>
+<div id="toast" class="toast hidden"></div>
+
+<script>
+/* ============================================================
+   MODO PÚLPITO · lógica independente
+   ------------------------------------------------------------
+   USO:
+     PulpitMode.open(sermon, { onClose: () => {...} });
+     PulpitMode.close();
+
+   FORMATO DO SERMÃO (todos os campos são opcionais, exceto título):
+   {
+     title, theme (agradecimentos separados por vírgula),
+     references, text (texto bíblico), category, series, date 'AAAA-MM-DD',
+     goal, author, audience, purpose,
+     intro, application, closing, appeal   → HTML
+     topics: [{ id, title, body(HTML), references, application }],
+     gallery: [ 'url ou data:image/...' ],
+     targetMinutes: 30,
+     hidden: { intro:true, topics:true, ... }   → seções ocultas
+   }
+   Notas do pregador: <span data-note="BASE64(UTF-8)" style="background-color:#3a5249">texto</span>
+   ============================================================ */
+const PulpitMode=(()=>{'use strict';
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt=d=>d?new Date(d+'T12:00:00').toLocaleDateString('pt-BR'):'';
+const txt=h=>!!h&&(/<img/i.test(String(h))||String(h).replace(/<[^>]*>|&nbsp;|\s/g,'').length>0);
+const H=(s,k)=>!!(s.hidden&&s.hidden[k]);
+const PCOLORS=['#00e5ff','#38bdf8','#34d399','#a78bfa','#fbbf24','#f472b6','#60a5fa'];
+const NOTE_COLOR='#3a5249';
+const NOTE_RGB=(()=>{const d=document.createElement('i');d.style.backgroundColor=NOTE_COLOR;return d.style.backgroundColor})();
+
+function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.remove('hidden');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.add('hidden'),2600)}
+
+/* sanitização básica do HTML rico vindo de fora */
+function clean(html){const box=document.createElement('div');box.innerHTML=String(html||'');
+  box.querySelectorAll('script,style,iframe,object,embed,form,link,meta').forEach(el=>el.remove());
+  box.querySelectorAll('*').forEach(el=>{[...el.attributes].forEach(a=>{const n=a.name.toLowerCase();
+    if(n.startsWith('on')||n==='contenteditable')el.removeAttribute(a.name);
+    else if((n==='href'||n==='src')&&/^\s*javascript:/i.test(a.value))el.removeAttribute(a.name)})});
+  return box.innerHTML}
+
+/* ---------- construção das seções ---------- */
+const rbox=h=>`<div class="pulpit-rich">${clean(h)}</div>`;
+const pblock=(t,h)=>`<div class="pulpit-block"><h2>${t}</h2>${rbox(h)}</div>`;
+const pchips=a=>a.filter(Boolean).map(x=>`<span class="pchip">${esc(x)}</span>`).join('');
+function buildSections(s){
+  s.topics=Array.isArray(s.topics)?s.topics:[];s.gallery=Array.isArray(s.gallery)?s.gallery:[];
+  const a=[],c=[s.author&&`<b>Quem escreveu:</b> ${esc(s.author)}`,s.audience&&`<b>Para quem:</b> ${esc(s.audience)}`,s.purpose&&`<b>Por que:</b> ${esc(s.purpose)}`].filter(Boolean);
+  const meta=[s.category,s.series&&'Série · '+s.series,s.references,fmt(s.date)].filter(Boolean);
+  a.push({type:'cover',kicker:'Mensagem',title:s.title||'Sermão sem título',html:(meta.length?`<div class="pchips">${pchips(meta)}</div>`:'')+(s.goal?`<p class="pulpit-big" style="margin-top:26px;font-size:clamp(22px,3.2vw,38px);opacity:.9">${esc(s.goal)}</p>`:'')});
+  const thanks=!H(s,'theme')?String(s.theme||'').split(/[,;\n]+/).map(x=>x.trim()).filter(Boolean):[];
+  const showRef=!H(s,'references')&&(s.references||s.text);
+  if(showRef||thanks.length)a.push({kicker:thanks.length?'Texto bíblico · Agradecimentos':'Texto bíblico',title:(showRef&&s.references)||'Palavra',html:(showRef&&s.text?`<p class="pulpit-big">“${esc(s.text)}”</p>`:'')+(thanks.length?`<div class="pthanks"><div class="pthanks-label"><i>✦</i>Agradecimentos</div><div class="pthanks-names">${thanks.map(n=>`<span class="pthanks-name">${esc(n)}</span>`).join('')}</div></div>`:'')});
+  if(!H(s,'context')&&c.length)a.push({kicker:'Contexto',title:'Contexto bíblico',html:c.map(x=>`<p>${x}</p>`).join('')});
+  if(!H(s,'intro')&&txt(s.intro))a.push({kicker:'Abertura',title:'Introdução',html:rbox(s.intro)});
+  if(!H(s,'topics'))s.topics.forEach((t,i)=>{
+    if(!(txt(t.body)||(t.title||'').trim()))return;
+    const sub=!H(s,'t_refs')&&t.references?`<div class="pulpit-sub">${esc(t.references)}</div>`:'';
+    const app=!H(s,'t_app')&&t.application?`<div class="pulpit-block" style="margin-top:24px"><h2>Aplicação</h2><p>${esc(t.application)}</p></div>`:'';
+    a.push({kicker:'Tópico '+String(i+1).padStart(2,'0'),title:t.title||`Tópico ${i+1}`,html:sub+rbox(t.body||'')+app})});
+  if(!H(s,'application')&&txt(s.application))a.push({kicker:'Aplicação',title:'Aplicação geral',html:rbox(s.application)});
+  const fin=[!H(s,'closing')&&txt(s.closing)&&rbox(s.closing),!H(s,'appeal')&&txt(s.appeal)&&pblock('Apelo final',s.appeal)].filter(Boolean);
+  if(fin.length)a.push({kicker:'Conclusão',title:'Fechamento',html:fin.join('')});
+  if(!H(s,'gallery')&&s.gallery.length)a.push({kicker:'Recursos visuais',title:'Galeria da mensagem',html:`<div class="pgal">${s.gallery.map((src,i)=>`<div class="pg" data-pgi="${i}"><img src="${esc(src)}" alt=""></div>`).join('')}</div>`,gallery:s.gallery});
+  return a}
+
+/* ---------- estado ---------- */
+let pulpit={sections:[],index:0,seconds:0,target:1800,interval:null,running:false,scale:1,spacing:1.65,alerts:[],clockInterval:null};
+let onCloseCb=null,lb={ids:[],i:0},pulpitNoteAnchor=null;
+const store={get:(k,d)=>{try{const v=Number(localStorage.getItem(k));return v||d}catch(e){return d}},set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}}};
+
+function open(s,opts={}){
+  if(!s||typeof s!=='object')return;
+  onCloseCb=typeof opts.onClose==='function'?opts.onClose:null;
+  pulpit={sections:buildSections(s),index:0,seconds:0,target:(s.targetMinutes||30)*60,interval:null,running:false,scale:store.get('pulpit-scale',1),spacing:store.get('pulpit-spacing',1.65),alerts:[],clockInterval:null};
+  $('#pulpitTitle').textContent=s.title||'Modo Púlpito';
+  $('#pulpitSub').textContent=[s.references,s.category].filter(Boolean).join(' · ')||'Apresentação';
+  const p=$('#pulpit');p.style.setProperty('--ps',pulpit.scale);p.style.setProperty('--plh',pulpit.spacing);
+  $('#pulpitSpacing').value=pulpit.spacing;
+  p.classList.remove('hidden','high-contrast');$('#pulpitIndex').classList.add('hidden');
+  $('#pulpitContrast').textContent='◐ Contraste';
+  pulpit.clockInterval=setInterval(updateClock,1000);updateClock();
+  renderSlide('fade');updateTimer();startTimer();
+}
+
+function renderSlide(dir){
+  closeNote();
+  const p=$('#pulpit'),s=pulpit.sections[pulpit.index]||{},n=pulpit.sections.length,col=PCOLORS[pulpit.index%PCOLORS.length];
+  p.style.setProperty('--sc',col);
+  $('#pulpitKicker').textContent=s.kicker||'';
+  $('#pulpitHeading').textContent=s.title||'';
+  $('#pulpitText').innerHTML=decorateNotes(s.html||'');
+  $('#pulpitCounter').textContent=`${pulpit.index+1} / ${n}`;
+  $('#pulpitProgress').style.width=`${((pulpit.index+1)/Math.max(1,n))*100}%`;
+  $('#pulpitNum').textContent=String(pulpit.index+1).padStart(2,'0');
+  $('#pulpitPrev').disabled=pulpit.index<=0;$('#pulpitNext').disabled=pulpit.index>=n-1;
+  const sl=$('#pulpitSlide');sl.dataset.type=s.type||'';
+  sl.classList.remove('anim-next','anim-prev','anim-fade');void sl.offsetWidth;sl.classList.add('anim-'+(dir||'fade'));sl.scrollTop=0;
+  const rail=$('#pulpitRail');
+  rail.innerHTML=pulpit.sections.map((x,i)=>`<button class="rchip ${i===pulpit.index?'active':i<pulpit.index?'done':''}" style="--c:${PCOLORS[i%PCOLORS.length]}" data-jump="${i}"><i>${i+1}</i><span>${esc(x.title)}</span></button>`).join('');
+  const act=rail.querySelector('.active');act&&act.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});
+  if(s.gallery)sl.querySelectorAll('[data-pgi]').forEach(el=>el.onclick=()=>openLb(s.gallery,Number(el.dataset.pgi)));
+}
+
+/* ---------- notas do pregador ---------- */
+function noteTextOf(el){const v=el&&el.dataset?el.dataset.note:'';if(!v)return '';try{return decodeURIComponent(escape(atob(v)))}catch(e){return v}}
+function decorateNotes(html){
+  if(!html||(!html.includes('data-note')&&!html.includes(NOTE_COLOR)&&!html.includes(NOTE_RGB)))return html;
+  const d=document.createElement('div');d.innerHTML=html;
+  d.querySelectorAll('[data-note],[style]').forEach(el=>{
+    const hasAttr=el.dataset&&el.dataset.note,bg=el.style&&el.style.backgroundColor,hasColor=bg===NOTE_COLOR||bg===NOTE_RGB;
+    if(!hasAttr&&!hasColor)return;
+    el.classList.add('pnote');el.setAttribute('tabindex','0');el.setAttribute('role','button');el.setAttribute('aria-label','Abrir nota do pregador');
+    el.style.removeProperty('background-color');el.style.removeProperty('background');
+    if(!el.querySelector('.pnote-mark')){const m=document.createElement('span');m.className='pnote-mark';m.textContent='✎';m.setAttribute('aria-hidden','true');el.appendChild(m)}
+  });
+  return d.innerHTML}
+function positionPop(pop,rect){
+  const vw=innerWidth,vh=innerHeight,w=pop.offsetWidth||330,h=pop.offsetHeight||210,cx=(rect.left+rect.right)/2,
+  left=Math.max(10,Math.min(vw-w-10,cx-w/2)),above=rect.top-h-14>=10,top=above?rect.top-h-12:Math.min(vh-h-10,rect.bottom+12);
+  pop.classList.toggle('above',above);pop.classList.toggle('below',!above);
+  pop.style.left=left+'px';pop.style.top=top+'px';pop.style.setProperty('--ax',Math.max(18,Math.min(w-18,cx-left))+'px')}
+function linkify(safe){return safe.replace(/(https?:\/\/[^\s<]+|www\.[^\s<]+)/g,u=>{const href=u.startsWith('http')?u:'https://'+u;return `<a href="${href}" target="_blank" rel="noopener noreferrer">${u}</a>`})}
+function showNote(el){
+  const box=$('#pulpitNote');if(!box)return;
+  if(pulpitNoteAnchor===el&&!box.classList.contains('hidden')){closeNote();return}
+  const t=noteTextOf(el);if(!t){toast('Esta nota está vazia');return}
+  pulpitNoteAnchor=el;const body=$('#pulpitNoteBody');body.innerHTML=linkify(esc(t));body.scrollTop=0;
+  box.classList.remove('hidden');positionPop(box,el.getBoundingClientRect())}
+function closeNote(){const box=$('#pulpitNote');if(box)box.classList.add('hidden');pulpitNoteAnchor=null}
+
+/* ---------- visão geral ---------- */
+function toggleIndex(){
+  const box=$('#pulpitIndex');if(!box.classList.contains('hidden'))return box.classList.add('hidden');
+  box.innerHTML=`<div class="pi-head"><b>Visão geral do sermão</b><button id="piClose">✕ Fechar</button></div><div class="pi-grid">${pulpit.sections.map((x,i)=>`<button class="pi-card ${i===pulpit.index?'active':''}" style="--c:${PCOLORS[i%PCOLORS.length]}" data-jump="${i}"><span class="pi-n">${String(i+1).padStart(2,'0')}</span><em>${esc(x.kicker)}</em><strong>${esc(x.title)}</strong></button>`).join('')}</div>`;
+  box.classList.remove('hidden');$('#piClose').onclick=()=>box.classList.add('hidden')}
+
+/* ---------- navegação e ajustes ---------- */
+function step(d){const next=Math.max(0,Math.min(pulpit.sections.length-1,pulpit.index+d));if(next===pulpit.index)return;pulpit.index=next;renderSlide(d>0?'next':'prev')}
+function scale(d){pulpit.scale=Math.max(.75,Math.min(1.6,Math.round((pulpit.scale+d)*20)/20));store.set('pulpit-scale',pulpit.scale);$('#pulpit').style.setProperty('--ps',pulpit.scale)}
+function close(){
+  pauseTimer();clearInterval(pulpit.clockInterval);closeNote();closeLb();
+  if(document.fullscreenElement)document.exitFullscreen().catch(()=>{});
+  $('#pulpit').classList.add('hidden');
+  if(onCloseCb){const cb=onCloseCb;onCloseCb=null;try{cb()}catch(e){}}
+}
+
+/* ---------- relógio e cronômetro ---------- */
+function updateClock(){const el=$('#pulpitClock');if(el)el.textContent=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}
+function showAlert(msg){const el=$('#pulpitAlert');if(!el)return;el.textContent=msg;el.classList.remove('hidden');clearTimeout(showAlert.t);showAlert.t=setTimeout(()=>el.classList.add('hidden'),4200)}
+function updateTimer(){
+  const m=String(Math.floor(pulpit.seconds/60)).padStart(2,'0'),s=String(pulpit.seconds%60).padStart(2,'0'),el=$('#timer');
+  el.textContent=`${m}:${s}`;el.className='timer'+(pulpit.seconds>pulpit.target?' over':pulpit.seconds>pulpit.target*.85?' warning':'');
+  const left=Math.max(0,pulpit.target-pulpit.seconds),rm=String(Math.floor(left/60)).padStart(2,'0'),rs=String(left%60).padStart(2,'0'),rel=$('#pulpitRemaining');
+  if(rel){rel.textContent=pulpit.seconds>=pulpit.target?'Tempo excedido':`Restam ${rm}:${rs}`;rel.className='pulpit-remaining'+(pulpit.seconds>=pulpit.target?' over':pulpit.seconds>=pulpit.target*.85?' warn':'')}
+  if(pulpit.seconds>=pulpit.target&&!pulpit.alerts.includes('end')){pulpit.alerts.push('end');showAlert('Tempo previsto encerrado')}
+  else if(pulpit.seconds>=pulpit.target*.85&&!pulpit.alerts.includes('near')){pulpit.alerts.push('near');showAlert('Atenção: faltam cerca de 15% do tempo previsto')}}
+function startTimer(){if(pulpit.running)return;pulpit.running=true;pulpit.interval=setInterval(()=>{pulpit.seconds++;updateTimer()},1000)}
+function pauseTimer(){pulpit.running=false;clearInterval(pulpit.interval)}
+function resetTimer(){pauseTimer();pulpit.seconds=0;pulpit.alerts=[];$('#pulpitAlert')?.classList.add('hidden');updateTimer()}
+
+/* ---------- lightbox (somente visualização) ---------- */
+function openLb(ids,i){if(!ids||!ids.length)return;lb={ids:[...ids],i:Math.max(0,Math.min(i,ids.length-1))};$('#lightbox').classList.remove('hidden');drawLb()}
+function drawLb(){$('#lbImg').src=lb.ids[lb.i];$('#lbCount').textContent=`${lb.i+1} de ${lb.ids.length}`}
+function closeLb(){$('#lightbox').classList.add('hidden');$('#lbImg').removeAttribute('src')}
+$('#lbClose').onclick=closeLb;
+$('#lbPrev').onclick=()=>{lb.i=(lb.i-1+lb.ids.length)%lb.ids.length;drawLb()};
+$('#lbNext').onclick=()=>{lb.i=(lb.i+1)%lb.ids.length;drawLb()};
+$('#lightbox').addEventListener('click',e=>{if(e.target.id==='lightbox')closeLb()});
+
+/* ---------- eventos ---------- */
+$('#pulpitPrev').onclick=()=>step(-1);$('#pulpitNext').onclick=()=>step(1);$('#exitPulpit').onclick=close;
+$('#pulpitSmaller').onclick=()=>scale(-.1);$('#pulpitBigger').onclick=()=>scale(.1);$('#pulpitIndexBtn').onclick=toggleIndex;
+$('#pulpitFull').onclick=()=>document.fullscreenElement?document.exitFullscreen():$('#pulpit').requestFullscreen?.().catch(()=>{});
+$('#pulpitTheme').onclick=()=>$('#pulpit').classList.toggle('light');
+$('#pulpitContrast').onclick=()=>{const on=$('#pulpit').classList.toggle('high-contrast');$('#pulpitContrast').textContent=on?'◉ Contraste alto':'◐ Contraste'};
+$('#pulpitSpacing').oninput=e=>{pulpit.spacing=Number(e.target.value);$('#pulpit').style.setProperty('--plh',pulpit.spacing);store.set('pulpit-spacing',pulpit.spacing)};
+$('#timerStart').onclick=startTimer;$('#timerPause').onclick=pauseTimer;$('#timerReset').onclick=resetTimer;
+$('#pulpit').addEventListener('click',e=>{
+  const pn=e.target.closest('.pnote');if(pn){e.stopPropagation();showNote(pn);return}
+  if(!$('#pulpitNote').classList.contains('hidden')&&!e.target.closest('#pulpitNote'))closeNote();
+  const b=e.target.closest('[data-jump]');if(!b)return;
+  const i=Number(b.dataset.jump),d=i-pulpit.index;pulpit.index=i;$('#pulpitIndex').classList.add('hidden');renderSlide(d>=0?'next':'prev')});
+$('#pulpitNoteClose').addEventListener('click',closeNote);
+$('#pulpitSlide').addEventListener('scroll',closeNote,{passive:true});
+window.addEventListener('resize',closeNote,{passive:true});
+document.addEventListener('keydown',e=>{
+  if($('#pulpit').classList.contains('hidden'))return;
+  if(e.key==='Enter'||e.key===' '){const pn=document.activeElement&&document.activeElement.classList&&document.activeElement.classList.contains('pnote')?document.activeElement:null;if(pn){e.preventDefault();showNote(pn);return}}
+  if(e.key==='Escape'){
+    if(!$('#pulpitNote').classList.contains('hidden'))return closeNote();
+    if(!$('#pulpitIndex').classList.contains('hidden'))return $('#pulpitIndex').classList.add('hidden');
+    if(!$('#lightbox').classList.contains('hidden'))return closeLb();
+    return close()}
+  if(!$('#lightbox').classList.contains('hidden')){if(e.key==='ArrowLeft')$('#lbPrev').click();if(e.key==='ArrowRight')$('#lbNext').click();return}
+  if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();step(1)}
+  if(e.key==='ArrowLeft')step(-1);
+  if(e.key==='g'||e.key==='G')toggleIndex();
+  if(e.key==='f'||e.key==='F')$('#pulpitFull').click();
+  if(e.key==='+'||e.key==='=')scale(.1);
+  if(e.key==='-')scale(-.1)});
+let tx=0,ty=0;
+$('#pulpitSlide').addEventListener('touchstart',e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY},{passive:true});
+$('#pulpitSlide').addEventListener('touchend',e=>{if(e.target.closest('.pnote'))return;const dx=e.changedTouches[0].clientX-tx,dy=e.changedTouches[0].clientY-ty;if(Math.abs(dx)>55&&Math.abs(dx)>Math.abs(dy)*1.4)step(dx<0?1:-1)},{passive:true});
+
+return{open,close,toast};
+})();
+
+/* ============================================================
+   DEMONSTRAÇÃO (pode ser removida ao integrar em outro app)
+   ============================================================ */
+(()=>{
+const b64=t=>btoa(unescape(encodeURIComponent(t)));
+const note=(label,text)=>`<span data-note="${b64(text)}" style="background-color:rgb(58, 82, 73)">${label}</span>`;
+const EXAMPLE={
+  title:'Esperança que não decepciona',
+  theme:'Pastor Silva, Irmã Lúcia, Diác. Marcos',
+  references:'Romanos 5:1–5',
+  text:'Ora, a esperança não nos decepciona, porque o amor de Deus é derramado em nossos corações.',
+  category:'Pregação expositiva',date:'2026-11-22',
+  goal:'Mostrar que a esperança cristã nasce da obra de Cristo, não das circunstâncias.',
+  author:'Paulo, apóstolo',audience:'A igreja em Roma',purpose:'Explicar a justificação pela fé e seus frutos na vida do crente.',
+  targetMinutes:35,
+  intro:'<p>Todos já esperamos por algo que não veio. Hoje falaremos de uma esperança diferente — '+note('uma esperança que tem fundamento','Contar a ilustração do navio e da âncora (Hb 6:19). Pausa de 3 segundos aqui.')+'.</p>',
+  topics:[
+    {id:'t1',title:'Temos paz com Deus',references:'Romanos 5:1',body:'<p>A justificação pela fé nos coloca em paz com Deus. <mark style="background-color:rgb(57, 255, 136)">Não é paz sentimental — é paz de reconciliação.</mark></p><blockquote class="verse"><p><sup>1</sup> Tendo sido, pois, justificados pela fé, temos paz com Deus por meio de nosso Senhor Jesus Cristo.</p><cite>Romanos 5:1</cite></blockquote>',application:'Descanse: sua posição diante de Deus não depende do seu desempenho de hoje.'},
+    {id:'t2',title:'Gloriamo-nos nas tribulações',references:'Romanos 5:3–4',body:'<p>A tribulação produz perseverança; a perseverança, carácter aprovado; e o carácter, esperança. '+note('Ver nota','Link de apoio: https://www.bible.com — comparar com Tg 1:2-4.')+'</p><ul><li>Tribulação</li><li>Perseverança</li><li>Carácter</li><li>Esperança</li></ul>',application:'Pergunte: o que Deus está formando em mim neste momento difícil?'},
+    {id:'t3',title:'O amor derramado',references:'Romanos 5:5',body:'<p>A esperança não decepciona porque <mark style="background-color:rgb(185, 220, 255)">o Espírito Santo derramou o amor de Deus</mark> em nós.</p>',application:'Viva hoje como alguém amado antes de ser capaz.'}
+  ],
+  application:'<p>Escolha uma área da vida onde você perdeu a esperança e entregue-a a Cristo esta semana.</p>',
+  closing:'<p>A esperança cristã não é otimismo: é uma pessoa — <b>Jesus Cristo</b>.</p>',
+  appeal:'<p>Se você deseja recomeçar com Deus, venha à frente enquanto oramos.</p>'
+};
+let loaded=[];
+const $=s=>document.querySelector(s);
+$('#demoOpen').onclick=()=>{$('#demo').classList.add('hidden');PulpitMode.open(EXAMPLE,{onClose:()=>$('#demo').classList.remove('hidden')})};
+$('#demoLoad').onclick=()=>$('#demoFile').click();
+$('#demoFile').onchange=e=>{
+  const f=e.target.files[0];e.target.value='';if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{try{
+    const d=JSON.parse(r.result);
+    let list=Array.isArray(d)?d:Array.isArray(d.sermons)?d.sermons:(d&&d.title!==undefined?[d]:[]);
+    list=list.filter(x=>x&&typeof x==='object');
+    if(!list.length)throw 0;
+    const imgs=(!Array.isArray(d)&&d.images)||{};
+    /* converte ids de galeria (backup do Sermon Workspace) em data URIs */
+    list.forEach(s=>{if(Array.isArray(s.gallery))s.gallery=s.gallery.map(id=>imgs[id]||id).filter(Boolean)});
+    loaded=list;
+    $('#demoPick').innerHTML=list.map((s,i)=>`<option value="${i}">${(s.title||'Sermão sem título').replace(/</g,'&lt;')}</option>`).join('');
+    $('#demoPickRow').classList.remove('hidden');
+    PulpitMode.toast(list.length+' sermão(ões) carregado(s)');
+  }catch(err){PulpitMode.toast('Arquivo JSON inválido')}};
+  r.readAsText(f)};
+$('#demoOpenPick').onclick=()=>{const s=loaded[Number($('#demoPick').value)];if(!s)return;$('#demo').classList.add('hidden');PulpitMode.open(s,{onClose:()=>$('#demo').classList.remove('hidden')})};
+})();
+</script>
+</body>
+</html>
