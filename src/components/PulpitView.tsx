@@ -141,7 +141,17 @@ export const PulpitView = ({
       metaChips.push(`${sermon.setores.length} Setor(es)`);
     }
 
-    // 1. PRIMEIRA PÁGINA: Texto Bíblico + Agradecimento + Foto + Registro do Setor
+    // 1. PRIMEIRA PÁGINA: Mensagem & Tema (A)
+    list.push({
+      id: 'cover',
+      type: 'cover',
+      kicker: 'MENSAGEM',
+      title: sermon.tema || 'Sermão sem título',
+      subtitle: sermon.texto || '',
+      metaChips: [sermon.texto, sermon.setores && sermon.setores.length > 0 ? `${sermon.setores.length} Setores` : ''].filter(Boolean)
+    });
+
+    // 2. SEGUNDA PÁGINA: Texto Bíblico + Agradecimento + Registro do Setor (B)
     const thanksList = (sermon.agr || '')
       .split(/[,;\n]+/)
       .map(s => s.trim())
@@ -150,25 +160,26 @@ export const PulpitView = ({
     list.push({
       id: 'verse',
       type: 'verse',
-      kicker: 'TEXTO BÍBLICO & MINISTRAÇÃO',
+      kicker: 'TEXTO BÍBLICO & AGRADECIMENTOS',
       title: 'Palavra do Senhor',
-      subtitle: sermon.texto || 'Passagem bíblica de abertura',
+      subtitle: sermon.texto || 'Passagem bíblica',
       contentKey: 'texto',
       text: sermon.texto,
       thanksList
     });
 
-    // 2. SEGUNDA PÁGINA: Abertura da Pregação (Tema da Mensagem + Introdução)
-    list.push({
-      id: 'intro',
-      type: 'intro',
-      kicker: 'ABERTURA DA PREGAÇÃO',
-      title: 'Abertura & Tema',
-      subtitle: sermon.tema || 'Tema da Mensagem',
-      contentKey: 'intro',
-      text: sermon.intro || '',
-      metaChips
-    });
+    // 3. TERCEIRA PÁGINA: Abertura / Introdução Sozinha (C)
+    if (sermon.intro && sermon.intro.trim()) {
+      list.push({
+        id: 'intro',
+        type: 'intro',
+        kicker: 'ABERTURA',
+        title: 'Introdução',
+        subtitle: 'Abertura da Pregação',
+        contentKey: 'intro',
+        text: sermon.intro
+      });
+    }
 
     // Topics Sections
     if (Array.isArray(sermon.pontos) && sermon.pontos.length > 0) {
@@ -203,6 +214,18 @@ export const PulpitView = ({
         title: 'Aplicação Geral & Fechamento',
         contentKey: 'apl',
         text: sermon.apl
+      });
+    }
+
+    // (D) FOTO SEMPRE NA ÚLTIMA PÁGINA (se existir imagem)
+    if (sermon.img && sermon.img.trim()) {
+      list.push({
+        id: 'photo_page',
+        type: 'cover',
+        kicker: 'RECURSO VISUAL',
+        title: 'Foto da Mensagem',
+        subtitle: sermon.tema || 'Ilustração final',
+        text: sermon.img
       });
     }
 
@@ -647,15 +670,6 @@ export const PulpitView = ({
             {isFullscreen ? <Minimize className="w-3.5 h-3.5" /> : <Maximize className="w-3.5 h-3.5" />}
           </button>
 
-          {/* Theme Toggle (Dark / Light) */}
-          <button 
-            onClick={toggleTheme}
-            className="p-1.5 text-xs rounded-md border border-white/15 bg-white/5 text-white/80 hover:text-white hover:border-white/30 cursor-pointer"
-            title="Alternar tema claro/escuro"
-          >
-            {isLightMode ? <Moon className="w-3.5 h-3.5" /> : <Sun className="w-3.5 h-3.5" />}
-          </button>
-
           {/* Exit Button */}
           <button 
             onClick={onClose}
@@ -840,119 +854,53 @@ export const PulpitView = ({
                       </div>
                     </div>
 
-                    {/* Junto abaixo organizado: Agradecimento, Foto e Registro do Setor */}
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
-                      {/* Coluna Principal: Agradecimentos + Registro do Setor */}
-                      <div className={cn("space-y-5", sermon.img ? "lg:col-span-8" : "lg:col-span-12")}>
-                        {/* Agradecimentos */}
-                        {currentSection.thanksList && currentSection.thanksList.length > 0 && (
+                    {/* Agradecimentos e Registro do Setor organizados abaixo do texto bíblico */}
+                    <div className="space-y-5">
+                      {/* Agradecimentos */}
+                      {currentSection.thanksList && currentSection.thanksList.length > 0 && (
+                        <div 
+                          className="relative p-5 md:p-6 rounded-2xl border border-white/15 bg-white/5 backdrop-blur-md shadow-lg space-y-3"
+                          style={{ borderLeft: '3px solid var(--sc)' }}
+                        >
                           <div 
-                            className="relative p-5 md:p-6 rounded-2xl border border-white/15 bg-white/5 backdrop-blur-md shadow-lg space-y-3"
-                            style={{ borderLeft: '3px solid var(--sc)' }}
+                            className="flex items-center gap-2 font-mono font-bold text-xs tracking-[0.25em] uppercase text-white/90"
+                            style={{ color: 'var(--sc)' }}
                           >
-                            <div 
-                              className="flex items-center gap-2 font-mono font-bold text-xs tracking-[0.25em] uppercase text-white/90"
-                              style={{ color: 'var(--sc)' }}
-                            >
-                              <span>✦</span>
-                              <span>AGRADECIMENTOS & HOMENAGENS</span>
-                            </div>
-                            <div className="flex flex-wrap gap-2">
-                              {currentSection.thanksList.map((name, i) => (
-                                <span 
-                                  key={i}
-                                  className="px-3.5 py-1.5 rounded-full border border-white/20 bg-white/10 font-bold text-xs md:text-sm text-white tracking-wide shadow-sm"
-                                  style={{ 
-                                    fontSize: 'calc(clamp(13px, 1.5vw, 17px) * var(--ps))',
-                                    borderColor: 'color-mix(in srgb, var(--sc) 35%, rgba(255,255,255,0.2))'
-                                  }}
-                                >
-                                  {name}
-                                </span>
-                              ))}
-                            </div>
+                            <span>✦</span>
+                            <span>AGRADECIMENTOS & HOMENAGENS</span>
                           </div>
-                        )}
-
-                        {/* Registro do Setor */}
-                        <div className="bg-black/35 p-4 rounded-xl border border-white/10 shadow-md">
-                          <PulpitoSectors 
-                            setores={sermon.setores || []} 
-                            onAdd={onAddSector} 
-                          />
-                        </div>
-                      </div>
-
-                      {/* Coluna da Foto / Arte do Sermão se existir */}
-                      {sermon.img && (
-                        <div className="lg:col-span-4">
-                          <div className="p-4 rounded-2xl border border-white/15 bg-black/40 shadow-xl space-y-3">
-                            <div className="flex items-center gap-2 font-orbitron font-bold text-xs text-white uppercase tracking-wider">
-                              <ImageIcon className="w-3.5 h-3.5 text-[var(--sc)]" />
-                              <span>FOTO DA MENSAGEM</span>
-                            </div>
-                            <div 
-                              className="relative group rounded-xl overflow-hidden border border-white/20 bg-black/60 aspect-video sm:aspect-4/3 cursor-pointer"
-                              onClick={() => setShowLightbox(true)}
-                              title="Clique para ampliar a foto em tela cheia"
-                            >
-                              <img 
-                                src={sermon.img} 
-                                alt="Foto do sermão" 
-                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
-                              />
-                              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-2 text-white font-orbitron font-bold text-xs tracking-wider transition-opacity">
-                                <ZoomIn className="w-4 h-4 text-[var(--sc)]" />
-                                <span>AMPLIAR</span>
-                              </div>
-                            </div>
-                            <p className="font-mono text-[10px] text-white/50 text-center tracking-wider uppercase">
-                              Toque para zoom em tela cheia
-                            </p>
+                          <div className="flex flex-wrap gap-2">
+                            {currentSection.thanksList.map((name, i) => (
+                              <span 
+                                key={i}
+                                className="px-3.5 py-1.5 rounded-full border border-white/20 bg-white/10 font-bold text-xs md:text-sm text-white tracking-wide shadow-sm"
+                                style={{ 
+                                  fontSize: 'calc(clamp(13px, 1.5vw, 17px) * var(--ps))',
+                                  borderColor: 'color-mix(in srgb, var(--sc) 35%, rgba(255,255,255,0.2))'
+                                }}
+                              >
+                                {name}
+                              </span>
+                            ))}
                           </div>
                         </div>
                       )}
+
+                      {/* Registro do Setor */}
+                      <div className="bg-black/35 p-4 rounded-xl border border-white/10 shadow-md">
+                        <PulpitoSectors 
+                          setores={sermon.setores || []} 
+                          onAdd={onAddSector} 
+                        />
+                      </div>
                     </div>
                   </div>
                 )}
 
                 {/* 2. SEGUNDA PÁGINA: Abertura da pregação (Tema da Mensagem e a Introdução) */}
+                {/* 3. TERCEIRA PÁGINA: Abertura / Introdução Sozinha */}
                 {currentSection.type === 'intro' && (
                   <div className="space-y-8 pt-2">
-                    {/* Tema da Mensagem em Grande Destaque Nobre */}
-                    <div className="space-y-3">
-                      <div className="space-y-1">
-                        <span className="font-mono text-xs tracking-[0.3em] uppercase text-white/60">
-                          // TEMA DA MENSAGEM
-                        </span>
-                        <h3 
-                          className="font-orbitron font-black text-white text-3xl sm:text-4xl md:text-5xl lg:text-6xl tracking-tight leading-[1.1] uppercase drop-shadow-lg"
-                          style={{ fontSize: 'calc(clamp(26px, 3.8vw, 54px) * var(--ps))' }}
-                        >
-                          {sermon.tema}
-                        </h3>
-                      </div>
-
-                      {/* Metadados / Chips rápidos */}
-                      {currentSection.metaChips && currentSection.metaChips.length > 0 && (
-                        <div className="flex flex-wrap gap-2 pt-1">
-                          {currentSection.metaChips.map((chip, i) => (
-                            <span 
-                              key={i}
-                              className="px-3.5 py-1 rounded-full border border-white/20 bg-white/5 font-mono text-xs text-white/80 tracking-wider"
-                            >
-                              {chip}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-
-                      <div 
-                        className="w-28 h-1 rounded-full shadow-[0_0_16px_var(--sc)]"
-                        style={{ backgroundColor: 'var(--sc)' }}
-                      />
-                    </div>
-
                     {/* Introdução Revelada */}
                     <div 
                       className="p-6 md:p-8 rounded-2xl border bg-black/35 border-white/15 shadow-xl space-y-3"
@@ -977,6 +925,30 @@ export const PulpitView = ({
                         />
                       </div>
                     </div>
+                  </div>
+                )}
+
+                {/* (D) FOTO NA ÚLTIMA PÁGINA */}
+                {currentSection.id === 'photo_page' && sermon.img && (
+                  <div className="space-y-6 pt-2 flex flex-col items-center">
+                    <div 
+                      className="relative group max-w-2xl w-full rounded-2xl overflow-hidden border border-white/25 bg-black/60 shadow-2xl cursor-pointer aspect-video sm:aspect-16/10"
+                      onClick={() => setShowLightbox(true)}
+                      title="Clique para ampliar a foto em tela cheia"
+                    >
+                      <img 
+                        src={sermon.img} 
+                        alt="Foto final da mensagem" 
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                      />
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-2 text-white font-orbitron font-bold text-sm tracking-wider transition-opacity">
+                        <ZoomIn className="w-5 h-5 text-[var(--sc)]" />
+                        <span>AMPLIAR FOTO EM TELA CHEIA</span>
+                      </div>
+                    </div>
+                    <span className="font-mono text-xs text-white/60 tracking-widest uppercase">
+                      ✦ FOTO OFICIAL DA MINISTRAÇÃO ✦
+                    </span>
                   </div>
                 )}
 
