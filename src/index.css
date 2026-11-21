@@ -10,6 +10,17 @@
   --font-noto-hebrew: "Noto Sans Hebrew", sans-serif;
   --font-space-grotesk: "Space Grotesk", sans-serif;
   --font-outfit: "Outfit", sans-serif;
+  --font-bebas: "Bebas Neue", "DM Sans", sans-serif;
+  --font-dmsans: "DM Sans", sans-serif;
+  --font-jetbrains: "JetBrains Mono", monospace;
+
+  --color-sw-bg: #0C1519;
+  --color-sw-panel: #162127;
+  --color-sw-panel2: #1C2A31;
+  --color-sw-text: #E8E8E8;
+  --color-sw-muted: #8A8A8A;
+  --color-sw-accent: #CF9D7B;
+  --color-sw-accent2: #F3D8B8;
 
   --color-neon-cyan: #00f5ff;
   --color-neon-pink: #ffffff;
@@ -112,6 +123,11 @@
 .highlight-crimson {
   @apply bg-neon-crimson text-white px-0.5 rounded-xs font-bold ring-1 ring-neon-crimson/30;
   box-shadow: 0 0 8px rgba(220, 20, 60, 0.6);
+}
+
+.highlight-caramel {
+  @apply bg-[#CF9D7B] text-[#0C1519] px-1 rounded-xs font-bold ring-1 ring-[#CF9D7B]/50;
+  box-shadow: 0 0 10px rgba(207, 157, 123, 0.45);
 }
 
 /* Background Effects, Cinematic Zoom & Drifting Divine Clouds */

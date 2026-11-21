@@ -10,15 +10,20 @@ export const PulpitoSectors = ({ setores, onAdd }: PulpitoSectorsProps) => {
   const [newSetor, setNewSetor] = useState('');
 
   return (
-    <div className="flex flex-wrap items-center gap-4 py-3 border-t border-neon-cyan/10 mt-6 opacity-60 hover:opacity-100 transition-opacity">
+    <div className="flex flex-wrap items-center gap-3 py-2 border-t border-[rgba(207,157,123,0.15)] mt-3 opacity-80 hover:opacity-100 transition-opacity">
       <div className="flex items-center gap-2">
-        <div className="w-1.5 h-1.5 rounded-full bg-neon-yellow animate-pulse shadow-[0_0_5px_rgba(255,238,0,0.8)]" />
-        <span className="text-[10px] font-orbitron text-neon-cyan/40 tracking-[0.2em] uppercase">Registros de Setor:</span>
+        <div className="w-1.5 h-1.5 rounded-full bg-[#CF9D7B] shadow-[0_0_6px_#CF9D7B]" />
+        <span className="text-[10px] font-mono text-[#CF9D7B] tracking-[0.2em] uppercase font-bold">
+          REGISTRO DO SETOR:
+        </span>
       </div>
       
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-1.5 items-center">
         {setores.map((s, i) => (
-          <div key={i} className="px-2 py-0.5 border border-neon-yellow/30 bg-neon-yellow/5 text-neon-yellow font-mono text-xs rounded-sm">
+          <div 
+            key={i} 
+            className="px-2.5 py-0.5 border border-[rgba(207,157,123,0.35)] bg-[rgba(207,157,123,0.12)] text-[#F3D8B8] font-mono text-xs rounded-full font-semibold shadow-xs"
+          >
             {s}
           </div>
         ))}
@@ -28,7 +33,7 @@ export const PulpitoSectors = ({ setores, onAdd }: PulpitoSectorsProps) => {
             <input 
               autoFocus
               value={newSetor}
-              onChange={(e) => setNewSetor(e.target.value.slice(0, 10))}
+              onChange={(e) => setNewSetor(e.target.value.slice(0, 15))}
               onBlur={() => {
                 if (!newSetor.trim()) setIsAdding(false);
               }}
@@ -40,16 +45,17 @@ export const PulpitoSectors = ({ setores, onAdd }: PulpitoSectorsProps) => {
                 }
                 if (e.key === 'Escape') setIsAdding(false);
               }}
-              className="w-20 bg-neon-yellow/10 border border-neon-yellow text-neon-yellow text-center text-xs outline-none py-0.5 font-mono"
-              placeholder="48-s"
+              className="w-24 bg-[#0C1519] border border-[#CF9D7B] text-[#F3D8B8] text-center text-xs outline-none py-0.5 px-2 rounded-full font-mono shadow-[0_0_8px_rgba(207,157,123,0.3)]"
+              placeholder="Ex.: 07"
             />
           </div>
         ) : (
           <button 
+            type="button"
             onClick={() => setIsAdding(true)}
-            className="px-3 py-0.5 border border-dashed border-neon-cyan/20 text-neon-cyan/30 hover:border-neon-cyan hover:text-neon-cyan text-[10px] font-orbitron transition-all"
+            className="px-3 py-0.5 border border-dashed border-[rgba(207,157,123,0.3)] text-[#CF9D7B] hover:border-[#CF9D7B] hover:bg-[rgba(207,157,123,0.1)] rounded-full text-[10px] font-mono tracking-wider transition-all cursor-pointer"
           >
-            + REGISTRAR
+            + REGISTRAR SETOR
           </button>
         )}
       </div>

@@ -13,6 +13,16 @@ interface HighlightableTextProps {
   onHighlight: (key: string, color: string) => void;
 }
 
+interface WordFormatting {
+  c: string;
+  fs: number;
+  b: boolean;
+  u: boolean;
+  uc: boolean;
+  it: boolean;
+  note?: string;
+}
+
 interface EditingWordState {
   key: string;
   originalWord: string;
@@ -22,6 +32,22 @@ interface EditingWordState {
   underline: boolean;
   uppercase: boolean;
   italic: boolean;
+  note?: string;
+}
+
+interface ActiveNoteState {
+  key: string;
+  word: string;
+  note: string;
+  placement: 'top' | 'bottom';
+  style: React.CSSProperties;
+  arrowLeft: number;
+}
+
+interface NoteEditorState {
+  key: string;
+  word: string;
+  initialNote: string;
 }
 
 export const HighlightableText = ({ 
@@ -34,6 +60,14 @@ export const HighlightableText = ({
 
   const [editingWord, setEditingWord] = useState<EditingWordState | null>(null);
   const [popoverStyle, setPopoverStyle] = useState<React.CSSProperties>({});
+  
+  // Balão com informações (Speech Balloon)
+  const [activeNote, setActiveNote] = useState<ActiveNoteState | null>(null);
+  
+  // Modal de edição da Nota do Pregador
+  const [noteEditor, setNoteEditor] = useState<NoteEditorState | null>(null);
+  const [noteInputText, setNoteInputText] = useState<string>('');
+
   const touchTimerRef = useRef<NodeJS.Timeout | null>(null);
   const touchMovedRef = useRef<boolean>(false);
 
@@ -50,10 +84,33 @@ export const HighlightableText = ({
     };
   }, []);
 
-  // Apply brush styles instantly
+  // Helper para decodificar formato da palavra
+  const parseHighlightValue = (rawValue?: string): WordFormatting => {
+    const def: WordFormatting = { c: '', fs: 100, b: false, u: false, uc: false, it: false, note: '' };
+    if (!rawValue) return def;
+    if (rawValue.startsWith('{')) {
+      try {
+        return { ...def, ...JSON.parse(rawValue) };
+      } catch (e) {
+        return def;
+      }
+    }
+    return { ...def, c: rawValue };
+  };
+
+  // Apply brush styles instantly, preservando nota existente
   const applyBrushToWord = (key: string) => {
+    const rawValue = highlights?.[key] || '';
+    const parsed = parseHighlightValue(rawValue);
+    const existingNote = parsed.note ? parsed.note.trim() : '';
+
     if (brush.isEraser) {
-      onHighlight(key, '');
+      if (existingNote) {
+        // Se tinha nota, mantém a nota e limpa apenas estilos/cor
+        onHighlight(key, JSON.stringify({ note: existingNote }));
+      } else {
+        onHighlight(key, '');
+      }
     } else {
       onHighlight(key, JSON.stringify({
         c: brush.color,
@@ -61,7 +118,8 @@ export const HighlightableText = ({
         b: brush.bold,
         u: brush.underline,
         uc: brush.uppercase,
-        it: brush.italic
+        it: brush.italic,
+        ...(existingNote ? { note: existingNote } : {})
       }));
     }
   };
@@ -69,19 +127,11 @@ export const HighlightableText = ({
   // Open the advanced formatting modal
   const openAdvancedMenu = (target: HTMLElement, key: string, token: string) => {
     const rawValue = highlights?.[key] || '';
-    let parsed = { c: '', fs: 100, b: false, u: false, uc: false, it: false };
-    
-    if (rawValue.startsWith('{')) {
-      try {
-        parsed = { ...parsed, ...JSON.parse(rawValue) };
-      } catch (e) {}
-    } else if (rawValue) {
-      parsed.c = rawValue;
-    }
+    const parsed = parseHighlightValue(rawValue);
 
     const rect = target.getBoundingClientRect();
-    const leftPos = rect.left + rect.width / 2 - 140; // 140 is half of 280px
-    const clampedLeft = Math.max(12, Math.min(window.innerWidth - 292, leftPos));
+    const leftPos = rect.left + rect.width / 2 - 145;
+    const clampedLeft = Math.max(12, Math.min(window.innerWidth - 302, leftPos));
 
     setEditingWord({
       key,
@@ -91,38 +141,94 @@ export const HighlightableText = ({
       bold: !!parsed.b,
       underline: !!parsed.u,
       uppercase: !!parsed.uc,
-      italic: !!parsed.it
+      italic: !!parsed.it,
+      note: parsed.note || ''
     });
 
     setPopoverStyle({
       position: 'fixed',
-      top: `${Math.min(window.innerHeight - 380, rect.bottom + 8)}px`,
+      top: `${Math.min(window.innerHeight - 440, Math.max(12, rect.bottom + 8))}px`,
       left: `${clampedLeft}px`,
       zIndex: 9999,
     });
   };
 
-  // Cycle color immediately on word click
+  // Abre o balão flutuante apontando para a palavra
+  const openNoteBalloon = (target: HTMLElement, key: string, word: string, noteContent: string) => {
+    const rect = target.getBoundingClientRect();
+    const balloonWidth = Math.min(330, window.innerWidth - 24);
+    const leftPos = rect.left + rect.width / 2 - balloonWidth / 2;
+    const clampedLeft = Math.max(12, Math.min(window.innerWidth - balloonWidth - 12, leftPos));
+    const arrowOffset = Math.max(20, Math.min(balloonWidth - 20, rect.left + rect.width / 2 - clampedLeft));
+
+    // Determina se o balão abre em cima ou embaixo da palavra
+    const placeOnBottom = rect.top < 190;
+    const topPos = placeOnBottom ? rect.bottom + 12 : Math.max(12, rect.top - 12);
+
+    setActiveNote({
+      key,
+      word,
+      note: noteContent,
+      placement: placeOnBottom ? 'bottom' : 'top',
+      style: {
+        position: 'fixed',
+        left: `${clampedLeft}px`,
+        ...(placeOnBottom ? { top: `${topPos}px` } : { bottom: `${window.innerHeight - rect.top + 10}px` }),
+        width: `${balloonWidth}px`,
+        zIndex: 10000,
+      },
+      arrowLeft: arrowOffset
+    });
+
+    if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+      try { navigator.vibrate(15); } catch (_) {}
+    }
+  };
+
+  // Salva a nota da palavra mantendo estilos existentes
+  const handleSaveNote = (key: string, newNoteText: string) => {
+    const rawValue = highlights?.[key] || '';
+    const parsed = parseHighlightValue(rawValue);
+    const cleanNote = newNoteText.trim();
+    const hasOtherStyles = (parsed.fs && parsed.fs !== 100) || parsed.b || parsed.u || parsed.uc || parsed.it;
+
+    if (!cleanNote && !parsed.c && !hasOtherStyles) {
+      onHighlight(key, '');
+    } else if (!cleanNote && !hasOtherStyles && parsed.c) {
+      onHighlight(key, parsed.c);
+    } else {
+      onHighlight(key, JSON.stringify({
+        c: parsed.c || '',
+        fs: parsed.fs || 100,
+        b: !!parsed.b,
+        u: !!parsed.u,
+        uc: !!parsed.uc,
+        it: !!parsed.it,
+        ...(cleanNote ? { note: cleanNote } : {})
+      }));
+    }
+
+    setNoteEditor(null);
+    setActiveNote(null);
+  };
+
+  const handleDeleteNote = (key: string) => {
+    handleSaveNote(key, '');
+  };
+
+  // Cycle color immediately on word click, preservando nota existente
   const cycleColorOnWord = (key: string) => {
     const rawValue = highlights?.[key] || '';
-    let parsed = { c: '', fs: 100, b: false, u: false, uc: false, it: false };
-    let hasOtherStyles = false;
-
-    if (rawValue.startsWith('{')) {
-      try {
-        parsed = { ...parsed, ...JSON.parse(rawValue) };
-        hasOtherStyles = (parsed.fs && parsed.fs !== 100) || parsed.b || parsed.u || parsed.uc || parsed.it;
-      } catch (e) {}
-    } else if (rawValue) {
-      parsed.c = rawValue;
-    }
+    const parsed = parseHighlightValue(rawValue);
+    const existingNote = parsed.note ? parsed.note.trim() : '';
+    const hasOtherStyles = (parsed.fs && parsed.fs !== 100) || parsed.b || parsed.u || parsed.uc || parsed.it || existingNote.length > 0;
 
     const currentColor = parsed.c || '';
     const nextDef = getNextColor(currentColor);
 
     // Save highlight value
     if (nextDef.id === '') {
-      // Zerar
+      // Zerar cor
       if (hasOtherStyles) {
         onHighlight(key, JSON.stringify({ ...parsed, c: '' }));
       } else {
@@ -137,7 +243,6 @@ export const HighlightableText = ({
       }
     }
 
-    // Subtle haptic feedback on supported mobile devices
     if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
       try { navigator.vibrate(10); } catch (_) {}
     }
@@ -152,7 +257,21 @@ export const HighlightableText = ({
       return;
     }
 
-    // Fast Color Cycling mode (Default, highly practical)
+    const rawValue = highlights?.[key] || '';
+    const parsed = parseHighlightValue(rawValue);
+    const wordNote = parsed.note ? parsed.note.trim() : '';
+
+    // Se a palavra tem nota oculta anexada, clique abre/fecha o balão com informações!
+    if (wordNote.length > 0) {
+      if (activeNote && activeNote.key === key) {
+        setActiveNote(null);
+      } else {
+        openNoteBalloon(e.currentTarget, key, token, wordNote);
+      }
+      return;
+    }
+
+    // Fast Color Cycling mode (Default)
     if (highlightMode.isCycle) {
       cycleColorOnWord(key);
     } else {
@@ -207,19 +326,23 @@ export const HighlightableText = ({
   const handleSave = (currentObj: EditingWordState | null = editingWord) => {
     if (!currentObj) return;
     
-    const { key, color, fontSize, bold, underline, uppercase, italic } = currentObj;
-    const isDefault = !color && fontSize === 100 && !bold && !underline && !uppercase && !italic;
+    const { key, color, fontSize, bold, underline, uppercase, italic, note } = currentObj;
+    const cleanNote = (note || '').trim();
+    const hasStyles = (fontSize && fontSize !== 100) || bold || underline || uppercase || italic || cleanNote.length > 0;
     
-    if (isDefault) {
+    if (!color && !hasStyles) {
       onHighlight(key, '');
+    } else if (!hasStyles && color) {
+      onHighlight(key, color);
     } else {
       onHighlight(key, JSON.stringify({
-        c: color,
-        fs: fontSize,
+        c: color || '',
+        fs: fontSize || 100,
         b: bold,
         u: underline,
         uc: uppercase,
-        it: italic
+        it: italic,
+        ...(cleanNote ? { note: cleanNote } : {})
       }));
     }
     setEditingWord(null);
@@ -249,7 +372,20 @@ export const HighlightableText = ({
 
   const resetToDefault = () => {
     if (editingWord) {
-      onHighlight(editingWord.key, '');
+      // Se houver nota anexada, preserva a nota ao zerar as cores e estilos
+      if (editingWord.note && editingWord.note.trim().length > 0) {
+        onHighlight(editingWord.key, JSON.stringify({
+          c: '',
+          fs: 100,
+          b: false,
+          u: false,
+          uc: false,
+          it: false,
+          note: editingWord.note.trim()
+        }));
+      } else {
+        onHighlight(editingWord.key, '');
+      }
       setEditingWord(null);
     }
   };
@@ -267,14 +403,9 @@ export const HighlightableText = ({
         const key = `${sectionKey}_${currentWordIndex}`;
         
         const rawValue = highlights?.[key] || '';
-        let parsed = { c: '', fs: 100, b: false, u: false, uc: false, it: false };
-        if (rawValue.startsWith('{')) {
-          try {
-            parsed = { ...parsed, ...JSON.parse(rawValue) };
-          } catch (e) {}
-        } else if (rawValue) {
-          parsed.c = rawValue;
-        }
+        const parsed = parseHighlightValue(rawValue);
+        const hasNote = !!(parsed.note && parsed.note.trim().length > 0);
+        const isBalloonActive = activeNote?.key === key;
 
         const customStyle: React.CSSProperties = {};
         if (parsed.fs && parsed.fs > 100) {
@@ -294,6 +425,8 @@ export const HighlightableText = ({
               parsed.uc && "uppercase",
               parsed.it && "italic",
               parsed.fs && parsed.fs > 100 && "inline-block align-middle animate-pulse-slow",
+              hasNote && "border border-[#CF9D7B]/70 bg-[#CF9D7B]/20 text-[#F3D8B8] shadow-[0_0_12px_rgba(207,157,123,0.3)] rounded px-1.5 py-0.5 inline-flex items-center gap-1 my-0.5 font-medium backdrop-blur-xs",
+              isBalloonActive && "ring-2 ring-[#CF9D7B] shadow-[0_0_20px_rgba(207,157,123,0.65)] bg-[#CF9D7B]/35 text-white",
               brush.isActive 
                 ? (brush.isEraser 
                     ? "hover:bg-red-500/20 hover:scale-105 cursor-pointer border border-dashed border-red-500/20" 
@@ -308,25 +441,224 @@ export const HighlightableText = ({
             onTouchEnd={handleTouchEnd}
             onMouseEnter={(e) => handleWordMouseEnter(e, key)}
             title={
-              brush.isActive
-                ? (brush.isEraser ? "Apagar estilo" : "Pincelar com caneta")
-                : highlightMode.isCycle
-                  ? "Toque para mudar de cor (Amarelo ➔ Ciano ➔ Rosa ➔ Verde ➔ Carmim ➔ Zerar). 2 cliques: opções avançadas"
-                  : "Clique para abrir opções de formatação"
+              hasNote
+                ? `Nota do Pregador: "${parsed.note?.slice(0, 30)}..." (Toque para abrir balão)`
+                : brush.isActive
+                  ? (brush.isEraser ? "Apagar estilo" : "Pincelar com caneta")
+                  : highlightMode.isCycle
+                    ? "Toque para mudar de cor (Amarelo ➔ Ciano ➔ Rosa ➔ Verde ➔ Carmim ➔ Zerar). 2 cliques ou segurar: opções avançadas"
+                    : "Clique para abrir opções de formatação"
             }
           >
-            {token}
+            <span>{token}</span>
+            {hasNote && (
+              <span 
+                className="text-[11px] text-[#CF9D7B] font-bold select-none opacity-95 inline-block align-baseline ml-0.5 drop-shadow-[0_0_5px_rgba(207,157,123,0.9)]"
+                title="Nota do Pregador anexada (toque para abrir o balão)"
+              >
+                💬
+              </span>
+            )}
           </span>
         );
       })}
 
-      {/* Backdrop invisível para detecção de clique fora */}
+      {/* Backdrop invisível para detecção de clique fora do menu avançado */}
       {editingWord && (
         <div 
           className="fixed inset-0 z-[9998] cursor-default bg-transparent" 
           onClick={() => handleSave()} 
         />
       )}
+
+      {/* BALÃO COM INFORMAÇÕES: NOTA DO PREGADOR (Revelando ao tocar na palavra) */}
+      <AnimatePresence>
+        {activeNote && (
+          <>
+            {/* Backdrop invisível para fechar o balão ao clicar fora */}
+            <div 
+              className="fixed inset-0 z-[9999] cursor-default bg-transparent"
+              onClick={() => setActiveNote(null)}
+            />
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.92, y: activeNote.placement === 'top' ? 6 : -6 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.92, y: activeNote.placement === 'top' ? 4 : -4 }}
+              transition={{ duration: 0.15, ease: 'easeOut' }}
+              style={activeNote.style}
+              className="bg-[#162127]/98 backdrop-blur-2xl border border-[rgba(207,157,123,0.4)] rounded-2xl p-4 shadow-[0_18px_48px_rgba(3,8,10,0.85),0_0_24px_rgba(207,157,123,0.18)] flex flex-col gap-2.5 text-[#E8E8E8] font-sans cursor-default select-text relative"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Caret / Pointer Arrow apontando para a palavra com fundo #162127 e borda caramelo */}
+              <div 
+                className={cn(
+                  "absolute w-3.5 h-3.5 pointer-events-none z-10",
+                  activeNote.placement === 'top' 
+                    ? "-bottom-[7px] border-r border-b border-[rgba(207,157,123,0.4)] bg-[#162127]" 
+                    : "-top-[7px] border-l border-t border-[rgba(207,157,123,0.4)] bg-[#162127]"
+                )}
+                style={{ 
+                  left: `${activeNote.arrowLeft}px`, 
+                  transform: 'translateX(-50%) rotate(45deg)' 
+                }}
+              />
+
+              {/* Header do Balão com tema Teal-Noite + Caramelo Nobre */}
+              <div className="flex justify-between items-center pb-2 border-b border-[rgba(207,157,123,0.2)] select-none">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs text-[#CF9D7B]">💬</span>
+                  <span className="text-[10px] sm:text-[11px] font-mono font-bold tracking-widest text-[#CF9D7B] uppercase">
+                    NOTA DO PREGADOR
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const curKey = activeNote.key;
+                      const curWord = activeNote.word;
+                      const curNote = activeNote.note;
+                      setActiveNote(null);
+                      setNoteInputText(curNote);
+                      setNoteEditor({
+                        key: curKey,
+                        word: curWord,
+                        initialNote: curNote
+                      });
+                    }}
+                    className="px-2.5 py-0.5 text-[10px] text-[#F3D8B8] hover:text-white bg-[#0C1519] hover:bg-[#1C2A31] border border-[rgba(207,157,123,0.35)] hover:border-[#CF9D7B] rounded-lg transition-colors flex items-center gap-1 cursor-pointer font-mono shadow-sm"
+                    title="Editar ou excluir esta anotação"
+                  >
+                    <span>Editar</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setActiveNote(null)}
+                    className="p-1 text-[#CF9D7B]/70 hover:text-[#F3D8B8] rounded-md hover:bg-[#0C1519] transition-colors cursor-pointer"
+                    title="Fechar nota"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Corpo da Nota em Marfim / Creme Alta-Legibilidade */}
+              <div className="text-sm sm:text-[15px] text-[#E8E8E8] font-sans leading-relaxed whitespace-pre-wrap break-words max-h-[280px] overflow-y-auto pr-1 select-text selection:bg-[#CF9D7B]/30 selection:text-white">
+                {activeNote.note}
+              </div>
+
+              {/* Rodapé sutil com a palavra de referência */}
+              <div className="pt-1 flex items-center justify-between text-[10px] text-[#8A8A8A] font-mono border-t border-[rgba(207,157,123,0.15)] select-none">
+                <span className="truncate max-w-[190px]">Palavra: "{activeNote.word}"</span>
+                <span className="text-[#CF9D7B]/90">✦ Toque fora para fechar</span>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* MODAL DEDICADO: NOTA DO PREGADOR (Criar / Editar / Excluir) */}
+      <AnimatePresence>
+        {noteEditor && (
+          <div 
+            className="fixed inset-0 z-[10002] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 cursor-default"
+            onClick={() => setNoteEditor(null)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              transition={{ duration: 0.15 }}
+              className="w-full max-w-lg bg-[#162127]/98 backdrop-blur-2xl border border-[rgba(207,157,123,0.35)] rounded-2xl p-5 shadow-[0_25px_60px_rgba(3,8,10,0.85),0_0_35px_rgba(207,157,123,0.2)] flex flex-col gap-3.5 font-sans relative"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div className="flex justify-between items-center pb-2.5 border-b border-[rgba(207,157,123,0.2)] select-none">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-[#CF9D7B]">💬</span>
+                  <span className="text-xs font-mono font-bold tracking-widest text-[#CF9D7B] uppercase">
+                    NOTA DO PREGADOR
+                  </span>
+                  <span className="text-[11px] text-[#8A8A8A] font-mono truncate max-w-[170px]">
+                    · "{noteEditor.word}"
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setNoteEditor(null)}
+                  className="p-1 text-[#8A8A8A] hover:text-[#F3D8B8] rounded-lg hover:bg-[#0C1519] transition-colors cursor-pointer"
+                  title="Fechar sem salvar"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+
+              {/* Textarea */}
+              <div className="space-y-1">
+                <textarea
+                  value={noteInputText}
+                  onChange={(e) => setNoteInputText(e.target.value)}
+                  placeholder="Ex.: João 3:16 · Curiosidade sobre o contexto, referência cruzada..."
+                  rows={4}
+                  autoFocus
+                  className="w-full bg-[#0C1519] border border-[rgba(207,157,123,0.3)] focus:border-[#CF9D7B] focus:ring-1 focus:ring-[#CF9D7B]/50 rounded-xl p-3.5 text-sm sm:text-base text-[#E8E8E8] placeholder:text-[#8A8A8A] outline-none leading-relaxed resize-none shadow-inner transition-all font-sans"
+                />
+
+                {/* Quick Tags / Sugestões rápidas */}
+                <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                  <span className="text-[10px] text-[#8A8A8A] font-mono">Atalhos:</span>
+                  {[
+                    { label: '📖 Versículo', insert: '📖 Versículo: ' },
+                    { label: '💡 Ilustração', insert: '💡 Ilustração: ' },
+                    { label: '💬 Exemplo', insert: '💬 Exemplo: ' },
+                    { label: '⏱ Pausa', insert: '⏱ [Pausa reflexiva] ' },
+                  ].map((tag) => (
+                    <button
+                      key={tag.label}
+                      type="button"
+                      onClick={() => {
+                        setNoteInputText(prev => prev ? `${prev}\n${tag.insert}` : tag.insert);
+                      }}
+                      className="px-2.5 py-1 text-[11px] bg-[#0C1519] hover:bg-[#1C2A31] border border-[rgba(207,157,123,0.25)] hover:border-[#CF9D7B]/60 text-[#F3D8B8] rounded-lg transition-colors cursor-pointer select-none font-mono"
+                    >
+                      {tag.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1 select-none">
+                <span className="text-[11px] text-[#8A8A8A] font-mono">
+                  Toque na palavra no púlpito para abrir o balão 💬
+                </span>
+
+                <div className="flex items-center justify-end gap-2">
+                  {noteEditor.initialNote && (
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteNote(noteEditor.key)}
+                      className="px-3.5 py-1.5 text-xs text-[#e08060] hover:text-white hover:bg-[#e08060]/20 border border-[#e08060]/40 rounded-lg transition-colors cursor-pointer font-medium"
+                    >
+                      Excluir
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => handleSaveNote(noteEditor.key, noteInputText)}
+                    className="px-6 py-2 text-xs font-bold text-[#0C1519] bg-gradient-to-r from-[#F3D8B8] via-[#CF9D7B] to-[#B07D55] hover:brightness-110 active:scale-95 rounded-full shadow-[0_4px_16px_rgba(207,157,123,0.35)] transition-all cursor-pointer"
+                  >
+                    Salvar
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* Menu flutuante inteligente de customização - Arrastável */}
       <AnimatePresence>
@@ -340,7 +672,7 @@ export const HighlightableText = ({
             exit={{ opacity: 0, scale: 0.95, y: -4 }}
             transition={{ duration: 0.12 }}
             style={popoverStyle}
-            className="w-[290px] bg-card-bg/95 backdrop-blur-xl border border-neon-cyan/40 rounded-xl p-4 shadow-[0_0_40px_rgba(0,245,255,0.35)] flex flex-col gap-3 text-neon-cyan font-mono cursor-default"
+            className="w-[295px] bg-card-bg/95 backdrop-blur-xl border border-neon-cyan/40 rounded-xl p-4 shadow-[0_0_40px_rgba(0,245,255,0.35)] flex flex-col gap-3 text-neon-cyan font-mono cursor-default"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header com estilo arrastável */}
@@ -355,6 +687,53 @@ export const HighlightableText = ({
                 title="Fechar e salvar"
               >
                 <X size={15} />
+              </button>
+            </div>
+
+            {/* NOVA FUNÇÃO: NOTA DO PREGADOR (Oculta) */}
+            <div className="p-1">
+              <button
+                type="button"
+                onClick={() => {
+                  const targetKey = editingWord.key;
+                  const targetWord = editingWord.originalWord;
+                  const currentNote = editingWord.note || '';
+                  setEditingWord(null);
+                  setNoteInputText(currentNote);
+                  setNoteEditor({
+                    key: targetKey,
+                    word: targetWord,
+                    initialNote: currentNote,
+                  });
+                }}
+                className={cn(
+                  "w-full py-2.5 px-3 rounded-xl border flex items-center justify-between text-left transition-all cursor-pointer shadow-md",
+                  editingWord.note 
+                    ? "bg-[#1C2A31] border-[#CF9D7B] text-[#F3D8B8] shadow-[0_0_15px_rgba(207,157,123,0.25)]" 
+                    : "bg-[#0C1519]/80 border-[rgba(207,157,123,0.35)] text-[#CF9D7B] hover:bg-[#1C2A31] hover:border-[#CF9D7B]"
+                )}
+                title="Esconder versículo ou anotação para abrir no modo púlpito"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="text-base text-[#CF9D7B]">💬</span>
+                  <div className="flex flex-col">
+                    <span className="text-[10px] font-mono font-bold tracking-wider text-[#CF9D7B] uppercase">
+                      {editingWord.note ? 'EDITAR NOTA DO PREGADOR' : 'NOTA DO PREGADOR'}
+                    </span>
+                    <span className="text-[9px] text-[#E8E8E8] font-sans line-clamp-1 max-w-[160px]">
+                      {editingWord.note ? `"${editingWord.note}"` : 'Esconder versículo ou anotação'}
+                    </span>
+                  </div>
+                </div>
+                {editingWord.note ? (
+                  <span className="text-[9px] bg-[#CF9D7B]/20 text-[#F3D8B8] px-2 py-0.5 rounded-full border border-[#CF9D7B]/50 font-mono font-bold">
+                    ATIVA
+                  </span>
+                ) : (
+                  <span className="text-[9px] text-[#CF9D7B] font-mono font-bold">
+                    + CRIAR
+                  </span>
+                )}
               </button>
             </div>
 
@@ -428,6 +807,7 @@ export const HighlightableText = ({
               <div className="flex gap-1.5 justify-between">
                 {[
                   { cls: '', name: 'Sem marca (Zerar)', bg: 'bg-dark-bg border border-neon-cyan/30 relative overflow-hidden' },
+                  { cls: 'highlight-caramel', name: 'Caramelo Nobre', bg: 'bg-[#CF9D7B] shadow-[0_0_8px_rgba(207,157,123,0.5)]' },
                   { cls: 'highlight-yellow', name: 'Amarelo Ouro', bg: 'bg-[#ffee00]' },
                   { cls: 'highlight-cyan', name: 'Ciano Neon', bg: 'bg-[#00f5ff]' },
                   { cls: 'highlight-pink', name: 'Branco / Rosa', bg: 'bg-white shadow-[0_0_10px_#fff]' },

@@ -85,6 +85,7 @@ export const BrushToolbar = () => {
             <div className="flex gap-1.5 justify-between">
               {[
                 { cls: '', name: 'Sem marca', bg: 'bg-dark-bg border border-neon-cyan/30 relative overflow-hidden' },
+                { cls: 'highlight-caramel', name: 'Caramelo Nobre', bg: 'bg-[#CF9D7B] shadow-[0_0_8px_rgba(207,157,123,0.5)]' },
                 { cls: 'highlight-yellow', name: 'Amarelo', bg: 'bg-[#ffee00]' },
                 { cls: 'highlight-cyan', name: 'Ciano', bg: 'bg-[#00f5ff]' },
                 { cls: 'highlight-pink', name: 'Rosa/Branco', bg: 'bg-white shadow-[0_0_8px_#fff]' },

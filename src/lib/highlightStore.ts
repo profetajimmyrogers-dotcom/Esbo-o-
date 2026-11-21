@@ -21,6 +21,14 @@ export const COLOR_CYCLE: ColorDefinition[] = [
     icon: '✖️' 
   },
   { 
+    id: 'highlight-caramel', 
+    name: 'Caramelo Nobre', 
+    shortLabel: 'Caramelo', 
+    dotBg: 'bg-[#CF9D7B] shadow-[0_0_8px_rgba(207,157,123,0.6)]', 
+    hex: '#CF9D7B', 
+    icon: '🟠' 
+  },
+  { 
     id: 'highlight-yellow', 
     name: 'Amarelo Ouro', 
     shortLabel: 'Amarelo', 

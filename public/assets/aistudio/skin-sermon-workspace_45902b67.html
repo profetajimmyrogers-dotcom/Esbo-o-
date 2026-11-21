@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0C1519">
+<title>Skin Sermon Workspace — Guia de Estilo 'Onde Passei'</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,200;0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,300&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============ TOKENS DA SKIN (copie isto para o seu app) ============ */
+:root{
+  --bg:#0C1519;--panel:#162127;--panel2:#1C2A31;
+  --text:#E8E8E8;--muted:#8A8A8A;--line:rgba(207,157,123,.15);
+  --accent:#CF9D7B;--accent2:#F3D8B8;--ink:#0C1519;
+  --gold:linear-gradient(135deg,#F3D8B8 0%,#CF9D7B 48%,#B07D55 100%);
+  --danger:#e08060;--ok:#81C784;--warn:#FFB74D;
+  --shadow:0 18px 48px rgba(3,8,10,.5);
+  --radius:12px;--radius-lg:16px;
+  --glow:rgba(207,157,123,.11);
+  --serif:'Bebas Neue','DM Sans',ui-sans-serif,system-ui,sans-serif;
+  --sans:'DM Sans','Inter',ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,'SFMono-Regular',Menlo,Consolas,monospace;
+  color-scheme:dark
+}
+[data-theme="light"]{
+  --bg:#F3ECE1;--panel:#FBF7EF;--panel2:#EAE0D1;
+  --text:#2A211A;--muted:#8A7E70;--line:rgba(114,75,57,.22);
+  --accent:#A9713F;--accent2:#724B39;--ink:#F8F2EA;
+  --gold:linear-gradient(135deg,#E8C9A8 0%,#CF9D7B 48%,#B07D55 100%);
+  --danger:#C25A3C;--ok:#3E7D4F;--warn:#A86A12;
+  --shadow:0 14px 34px rgba(74,56,38,.12);
+  --glow:rgba(207,157,123,.20);
+  color-scheme:light
+}
+/* ============ BASE + ATMOSFERA ============ */
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.55 var(--sans);-webkit-font-smoothing:antialiased}
+body:before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:radial-gradient(800px 500px at 50% -18%,var(--glow),transparent 70%),
+  radial-gradient(1000px 560px at 88% 108%,var(--glow),transparent 62%),
+  radial-gradient(760px 520px at -10% 60%,var(--glow),transparent 65%)}
+body:after{content:"";position:fixed;inset:0;z-index:9999;pointer-events:none;opacity:.4;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E")}
+.no-grain:after{display:none}
+button,input,textarea,select{font:inherit}button{cursor:pointer;border:0;color:inherit}
+::selection{background:color-mix(in srgb,var(--accent) 32%,transparent);color:#fff}
+[data-theme="light"] ::selection{background:color-mix(in srgb,var(--accent) 26%,transparent);color:inherit}
+::-webkit-scrollbar{width:2px;height:2px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(207,157,123,.3);border-radius:2px}
+::-webkit-scrollbar-thumb:hover{background:var(--accent)}
+h1,h2,h3{margin:0;letter-spacing:-.02em}
+.display-1{font:600 clamp(32px,4vw,46px)/1.05 var(--serif);letter-spacing:.04em}
+.display-2{font:600 clamp(30px,4vw,48px)/1.04 var(--serif);letter-spacing:.04em}
+.title{font:600 22px var(--serif)}
+.subtitle{font:600 16px var(--serif)}
+.stat-number{font:400 36px/1.02 var(--serif);letter-spacing:.05em;color:var(--accent2)}
+.muted{color:var(--muted)}
+.eyebrow{font:600 10px var(--mono);letter-spacing:.3em;text-transform:uppercase;color:var(--accent)}
+.label-mono{font:600 9.5px var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.crumb{font:500 10.5px var(--mono);letter-spacing:.24em;text-transform:uppercase;color:var(--muted)}
+.gold-text{background:var(--gold);-webkit-background-clip:text;background-clip:text;color:transparent}
+/* ============ COMPONENTES ============ */
+.btn{position:relative;overflow:hidden;border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:999px;padding:9px 16px;display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:500;transition:.2s}
+.btn:hover{border-color:color-mix(in srgb,var(--accent) 55%,transparent);transform:translateY(-1px);box-shadow:0 6px 18px rgba(0,0,0,.28)}
+.btn.gold{background:var(--gold);color:var(--ink);border-color:transparent;font-weight:600;box-shadow:0 4px 22px color-mix(in srgb,var(--accent) 30%,transparent)}
+.btn.gold:before{content:"";position:absolute;top:0;left:-70%;width:45%;height:100%;background:linear-gradient(100deg,transparent,#ffffff70,transparent);transform:skewX(-20deg);transition:.7s}
+.btn.gold:hover:before{left:130%}
+.btn.gold:hover{box-shadow:0 6px 30px color-mix(in srgb,var(--accent) 45%,transparent)}
+.btn.ghost{background:color-mix(in srgb,var(--accent) 10%,transparent);border-color:color-mix(in srgb,var(--accent) 45%,transparent);color:var(--accent2)}
+.btn.danger{color:var(--danger);border-color:color-mix(in srgb,var(--danger) 40%,transparent)}
+.btn.small{padding:6px 10px;font-size:12px}
+.iconbtn{width:36px;height:36px;display:grid;place-items:center;border:1px solid var(--line);background:var(--panel);border-radius:10px;color:var(--text);transition:.2s}
+.iconbtn:hover{border-color:color-mix(in srgb,var(--accent) 55%,transparent);color:var(--accent2);box-shadow:0 0 14px color-mix(in srgb,var(--accent) 16%,transparent)}
+.iconbtn.sm{width:30px;height:30px;border-radius:8px;font-size:12px}
+.iconbtn.glass{background:#000000a6;border-color:#ffffff26;color:#fff;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.field{display:grid;gap:6px;align-content:start}
+.field>label{font:600 9.5px var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+input,textarea,select{width:100%;border:1px solid var(--line);border-radius:10px;padding:11px 12px;background:color-mix(in srgb,var(--text) 4%,transparent);color:var(--text);outline:none;transition:.2s}
+textarea{min-height:76px;resize:vertical}
+input:focus,textarea:focus,select:focus{border-color:var(--accent)!important;box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 16%,transparent)}
+.search{border:0;border-bottom:1px solid var(--line);background:transparent;border-radius:0;padding:11px 2px;outline:none;transition:border-color .3s}
+.search::placeholder{color:var(--muted)}
+.search:focus{box-shadow:none!important;border-bottom-color:var(--accent)!important}
+.select{border:1px solid var(--line);background:color-mix(in srgb,var(--text) 4%,transparent);color:var(--text);border-radius:10px;padding:10px 12px;outline:none}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{background:var(--panel);border:1px solid var(--line);color:var(--muted);border-radius:999px;padding:6px 14px;font-size:12px;transition:.2s}
+.chip:hover{color:var(--text);border-color:color-mix(in srgb,var(--accent) 50%,transparent)}
+.chip.active{background:var(--gold);color:var(--ink);border-color:transparent;font-weight:600;box-shadow:0 2px 14px color-mix(in srgb,var(--accent) 25%,transparent)}
+.chip em{font-style:normal;opacity:.65;margin-left:4px;font-family:var(--mono);font-size:11px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--panel)}
+.seg button{background:transparent;color:var(--muted);padding:9px 13px}
+.seg button.active{background:color-mix(in srgb,var(--accent) 14%,transparent);color:var(--accent2)}
+.tag{font:600 9.5px var(--mono);letter-spacing:.08em;background:#000000a6;color:var(--accent);border:1px solid color-mix(in srgb,var(--accent) 45%,transparent);border-radius:30px;padding:4px 10px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius-lg);padding:20px;box-shadow:var(--shadow)}
+.card.hover{transition:transform .3s cubic-bezier(.2,.8,.2,1),border-color .25s,box-shadow .25s}
+.card.hover:hover{transform:translateY(-4px);border-color:color-mix(in srgb,var(--accent) 55%,transparent);box-shadow:0 22px 48px rgba(0,0,0,.55),0 0 26px color-mix(in srgb,var(--accent) 12%,transparent)}
+.stat{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow);overflow:hidden}
+.stat:before{content:"";position:absolute;left:0;top:18px;bottom:18px;width:2px;background:var(--accent)}
+.stat:after{content:"";position:absolute;left:0;top:0;width:100%;height:2px;background:var(--gold);opacity:.85}
+.sidebox{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:15px}
+.sidebox h3{font:600 16px var(--serif);margin-bottom:11px}
+.section-block{background:color-mix(in srgb,var(--panel) 93%,transparent);border:1px solid var(--line);border-radius:14px;padding:18px}
+.section-block>strong{font:700 10px var(--mono);letter-spacing:.28em;color:var(--accent)}
+.status{font:500 10.5px var(--mono);color:var(--muted);display:flex;align-items:center;gap:6px;letter-spacing:.04em}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 8px var(--ok)}
+.toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%);z-index:100;background:var(--gold);color:var(--ink);padding:11px 20px;border-radius:999px;box-shadow:0 12px 34px color-mix(in srgb,var(--accent) 35%,transparent);font-size:13px;font-weight:600;animation:pop .25s both}
+.empty{border:1px dashed color-mix(in srgb,var(--accent) 35%,transparent);border-radius:var(--radius-lg);padding:40px 20px;text-align:center;color:var(--muted);background:var(--panel)}
+.empty .big{font-size:34px;color:var(--accent)}
+@keyframes pop{from{opacity:0;transform:scale(.94) translateY(6px)}to{opacity:1;transform:none}}
+@keyframes rise{from{opacity:0;transform:translateY(26px) scale(.98)}to{opacity:1;transform:none}}
+/* CYBER — modo apresentação */
+.cyber{--sc:#00e5ff;background:#04060a;color:#e8ecf4;font-family:'Space Grotesk','Inter',ui-sans-serif,system-ui,sans-serif}
+.cyber:before{content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(900px 520px at 12% -10%,color-mix(in srgb,var(--sc) 24%,transparent),transparent 60%),
+  radial-gradient(720px 520px at 100% 112%,color-mix(in srgb,var(--sc) 14%,transparent),transparent 62%),
+  linear-gradient(#ffffff07 1px,transparent 1px),linear-gradient(90deg,#ffffff07 1px,transparent 1px);
+  background-size:auto,auto,42px 42px,42px 42px}
+.cyber .kicker{color:var(--sc);font:600 11px var(--mono);letter-spacing:.3em;text-transform:uppercase}
+.cyber .pill{border:1px solid color-mix(in srgb,var(--sc) 55%,transparent);color:var(--sc);border-radius:30px;padding:6px 16px;font:500 13.5px var(--mono);letter-spacing:.08em}
+.cyber .ctl{background:#ffffff10;color:inherit;border:1px solid color-mix(in srgb,var(--sc) 34%,transparent);border-radius:9px;padding:9px 14px;transition:.2s}
+.cyber .ctl:hover{border-color:var(--sc);box-shadow:0 0 12px color-mix(in srgb,var(--sc) 30%,transparent)}
+.cyber .heading-underline:after{content:"";display:block;width:84px;height:3px;border-radius:3px;margin-top:20px;background:var(--sc);box-shadow:0 0 16px color-mix(in srgb,var(--sc) 55%,transparent)}
+.cyber .watermark{font:600 clamp(90px,16vw,220px)/1 var(--mono);color:var(--sc);opacity:.06;position:absolute;right:2vw;bottom:6vh;pointer-events:none}
+/* ============ ESTILOS DO GUIA (não fazem parte da skin) ============ */
+.topbar{position:sticky;top:0;z-index:50;height:70px;display:flex;align-items:center;justify-content:space-between;padding:0 30px;border-bottom:1px solid var(--line);background:color-mix(in srgb,var(--bg) 82%,transparent);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+.brand{display:flex;align-items:center;gap:12px}
+.brandmark{width:42px;height:42px;border-radius:12px;background:var(--gold);color:var(--ink);display:grid;place-items:center;font:700 22px var(--mono);box-shadow:0 6px 24px color-mix(in srgb,var(--accent) 35%,transparent),inset 0 1px 0 #ffffff66}
+.brand strong{display:block;font:600 13px var(--mono);letter-spacing:.26em}
+.brand small{color:var(--accent);font:500 8.5px var(--mono);letter-spacing:.4em}
+.top-actions{display:flex;gap:9px;align-items:center}
+.cnav{position:sticky;top:70px;z-index:40;display:flex;gap:8px;flex-wrap:wrap;padding:14px 30px;border-bottom:1px solid var(--line);background:color-mix(in srgb,var(--panel) 70%,transparent);backdrop-filter:blur(12px)}
+.cnav a{color:var(--muted);text-decoration:none;font:500 10px var(--mono);letter-spacing:.14em;text-transform:uppercase;border:1px solid var(--line);border-radius:999px;padding:7px 13px;transition:.2s}
+.cnav a:hover{color:var(--accent2);border-color:color-mix(in srgb,var(--accent) 50%,transparent)}
+.wrap{max-width:1180px;margin:0 auto;padding:44px 30px 90px}
+.hero-guide{padding:44px 40px;border:1px solid color-mix(in srgb,var(--accent) 22%,var(--line));border-radius:var(--radius-lg);background:linear-gradient(120deg,color-mix(in srgb,var(--panel) 94%,transparent),color-mix(in srgb,var(--panel2) 90%,transparent));box-shadow:var(--shadow)}
+.hero-guide p{color:var(--muted);max-width:640px;margin:12px 0 0}
+.sec{margin:64px 0 0}
+.sec-head{display:flex;align-items:baseline;gap:14px;border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:24px}
+.sec-head .num{font:600 12px var(--mono);color:var(--accent);letter-spacing:.2em}
+.sec-head h2{font:600 24px var(--serif);letter-spacing:.04em}
+.sec-head .hint{margin-left:auto;font:500 10px var(--mono);color:var(--muted);letter-spacing:.12em}
+.grid-sw{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px}
+.sw-card{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--panel);cursor:pointer;transition:.2s}
+.sw-card:hover{transform:translateY(-3px);border-color:color-mix(in srgb,var(--accent) 55%,transparent)}
+.sw-color{height:64px;border-bottom:1px solid var(--line)}
+.sw-info{padding:9px 11px}
+.sw-info b{display:block;font:600 11px var(--mono);letter-spacing:.08em}
+.sw-info span{font:500 9.5px var(--mono);color:var(--muted)}
+.sw-info i{display:block;font:400 9px var(--mono);color:var(--accent);font-style:normal;margin-top:3px;letter-spacing:.06em}
+.demo-row{display:flex;gap:12px;flex-wrap:wrap;align-items:center;padding:22px;border:1px solid var(--line);border-radius:var(--radius-lg);background:var(--panel)}
+.demo-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.type-spec{padding:20px 0;border-bottom:1px dashed var(--line)}
+.type-spec:last-child{border-bottom:0}
+.type-meta{font:500 9.5px var(--mono);color:var(--muted);letter-spacing:.14em;text-transform:uppercase;margin-top:6px}
+.codeblock{position:relative;background:#0a1116;border:1px solid var(--line);border-radius:12px;margin:14px 0 0}
+[data-theme="light"] .codeblock{background:#2A211A;border-color:rgba(114,75,57,.3)}
+.codeblock pre{margin:0;padding:18px 20px;overflow:auto;font:400 12px/1.7 var(--mono);color:#D9CBB8}
+.codeblock .copy{position:absolute;top:10px;right:10px}
+.cyber-demo{position:relative;overflow:hidden;border-radius:var(--radius-lg);border:1px solid #00e5ff33;padding:46px 34px;text-align:center;isolation:isolate}
+.cyber-demo h3{font:600 clamp(28px,4vw,44px)/1.06 var(--sans);margin:12px 0 0}
+.cyber-demo .kicker{position:relative}
+.pills{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:16px;position:relative}
+.foot{margin-top:80px;border-top:1px solid var(--line);padding-top:20px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;color:var(--muted);font:500 10px var(--mono);letter-spacing:.16em;text-transform:uppercase}
+.rule-list{margin:0;padding:0;list-style:none;display:grid;gap:9px}
+.rule-list li{padding:11px 14px;border:1px solid var(--line);border-radius:10px;background:var(--panel);font-size:13.5px;color:var(--text)}
+.rule-list li b{color:var(--accent2)}
+@media(max-width:700px){.topbar,.cnav{padding-left:16px;padding-right:16px}.wrap{padding:30px 16px 70px}.hero-guide{padding:28px 22px}}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><div class="brandmark">S</div><div><strong>SKIN SERMON</strong><small>ONDE PASSEI · v1.0</small></div></div>
+  <div class="top-actions">
+    <button class="iconbtn" id="grainBtn" title="Ligar/desligar grain de filme">▦</button>
+    <button class="btn gold" id="themeBtn">◐ Alternar tema</button>
+  </div>
+</header>
+<nav class="cnav">
+  <a href="#paleta-escura">Paleta escura</a><a href="#paleta-clara">Paleta clara</a><a href="#gradientes">Gradientes</a><a href="#tipografia">Tipografia</a><a href="#botoes">Botões</a><a href="#campos">Campos</a><a href="#chips">Chips</a><a href="#cartoes">Cartões</a><a href="#feedback">Feedback</a><a href="#pulpito">Púlpito Cyber</a><a href="#regras">Regras</a><a href="#aplicar">Como aplicar</a>
+</nav>
+<main class="wrap">
+
+<section class="hero-guide">
+  <div class="eyebrow">Design System · Teal-noite + Caramelo</div>
+  <h1 class="display-2" style="margin:12px 0 0">Skin <span class="gold-text">Sermon Workspace</span></h1>
+  <p>A identidade visual completa do seu app: paletas escura e clara, gradiente dourado, tipografia Bebas&nbsp;Neue&nbsp;+&nbsp;DM&nbsp;Sans&nbsp;+&nbsp;JetBrains&nbsp;Mono, grain de filme e glow quente. Toque em qualquer cor para copiar o código hex. Use o botão ◐ para ver tudo no tema claro.</p>
+  <div class="status" style="margin-top:18px"><i class="dot"></i> Grain de filme ativo nesta página — igual ao do app</div>
+</section>
+
+<section class="sec" id="paleta-escura">
+  <div class="sec-head"><span class="num">01</span><h2>Paleta escura (padrão)</h2><span class="hint">toque para copiar o hex</span></div>
+  <div class="grid-sw" data-theme-block="dark"></div>
+</section>
+
+<section class="sec" id="paleta-clara">
+  <div class="sec-head"><span class="num">02</span><h2>Paleta clara</h2><span class="hint">valores fixos do tema light</span></div>
+  <div class="grid-sw" data-theme-block="light"></div>
+</section>
+
+<section class="sec" id="gradientes">
+  <div class="sec-head"><span class="num">03</span><h2>Gradientes</h2><span class="hint">dourado oficial + capas</span></div>
+  <div class="demo-grid">
+    <div class="sw-card" data-copy="linear-gradient(135deg,#F3D8B8 0%,#CF9D7B 48%,#B07D55 100%)"><div class="sw-color" style="background:linear-gradient(135deg,#F3D8B8 0%,#CF9D7B 48%,#B07D55 100%)"></div><div class="sw-info"><b>--gold (escuro)</b><span>135deg · creme → caramelo → bronze</span><i>toque para copiar</i></div></div>
+    <div class="sw-card" data-copy="linear-gradient(135deg,#E8C9A8 0%,#CF9D7B 48%,#B07D55 100%)"><div class="sw-color" style="background:linear-gradient(135deg,#E8C9A8 0%,#CF9D7B 48%,#B07D55 100%)"></div><div class="sw-info"><b>--gold (claro)</b><span>135deg · areia → caramelo → bronze</span><i>toque para copiar</i></div></div>
+  </div>
+  <p class="label-mono" style="margin:22px 0 10px">Capas / hero — 6 pares oficiais (gradiente 135deg, escolha por hash % 6)</p>
+  <div class="grid-sw" id="coverPairs"></div>
+</section>
+
+<section class="sec" id="tipografia">
+  <div class="sec-head"><span class="num">04</span><h2>Tipografia</h2><span class="hint">Bebas Neue · DM Sans · JetBrains Mono</span></div>
+  <div class="type-spec"><div class="display-1">Display 1 · Títulos de página — Bebas Neue</div><div class="type-meta">clamp(32px, 4vw, 46px) / 1.05 · peso 600 · letter-spacing .04em · var(--serif)</div></div>
+  <div class="type-spec"><div class="stat-number">0123456789 · Números de destaque</div><div class="type-meta">36px / 1.02 · peso 400 · letter-spacing .05em · cor var(--accent2)</div></div>
+  <div class="type-spec"><div class="title">Título de seção 22px — usado nos painéis e cartões</div><div class="type-meta">22px · peso 600 · var(--serif)</div></div>
+  <div class="type-spec"><p style="margin:0;font-size:15px">Corpo de texto — DM Sans 15px/1.55. Este é o tamanho padrão da interface: parágrafos, descrições e conteúdos corridos usam sempre esta escala, com Inter como fallback e suavização de fontes ativada.</p><div class="type-meta">15px / 1.55 · peso 400 · var(--sans)</div></div>
+  <div class="type-spec"><div class="eyebrow">Eyebrow · etiqueta de destaque</div><div class="type-meta">mono 600 10px · letter-spacing .3em · uppercase · cor var(--accent)</div></div>
+  <div class="type-spec"><div class="label-mono">Label mono · 9.5px · .16em · uppercase · muted</div><div class="type-meta">mono 600 9.5px · cor var(--muted)</div></div>
+  <div class="type-spec"><div class="crumb">Breadcrumb / biblioteca / editor</div><div class="type-meta">mono 500 10.5px · letter-spacing .24em · uppercase</div></div>
+</section>
+
+<section class="sec" id="botoes">
+  <div class="sec-head"><span class="num">05</span><h2>Botões</h2><span class="hint">pílula 999px · sheen dourado no hover</span></div>
+  <div class="demo-row">
+    <button class="btn gold">＋ Ação principal</button>
+    <button class="btn">◎ Ação padrão</button>
+    <button class="btn ghost">✦ Ação suave</button>
+    <button class="btn danger">⌫ Excluir</button>
+    <button class="btn small">Botão pequeno</button>
+    <button class="iconbtn">◐</button>
+    <button class="iconbtn sm">＋</button>
+    <button class="iconbtn glass">★</button>
+  </div>
+</section>
+
+<section class="sec" id="campos">
+  <div class="sec-head"><span class="num">06</span><h2>Campos de formulário</h2><span class="hint">foco: borda accent + anel 3px</span></div>
+  <div class="demo-grid">
+    <div class="field"><label>Campo de texto</label><input placeholder="Ex.: João 2:1–11"></div>
+    <div class="field"><label>Seletor</label><select><option>Pregação expositiva</option><option>Pregação temática</option></select></div>
+    <div class="field full" style="grid-column:1/-1"><label>Área de texto</label><textarea placeholder="Escreva aqui…"></textarea></div>
+    <div class="field full" style="grid-column:1/-1"><label>Busca (só underline)</label><input class="search" placeholder="⌕  Buscar por título, tema ou texto…"></div>
+  </div>
+</section>
+
+<section class="sec" id="chips">
+  <div class="sec-head"><span class="num">07</span><h2>Chips · Segmentos · Tags</h2><span class="hint">filtro ativo = gradiente dourado</span></div>
+  <div class="demo-row" style="display:block">
+    <div class="chips" style="margin-bottom:16px">
+      <button class="chip active">Todos<em>12</em></button><button class="chip">Expositiva<em>4</em></button><button class="chip">Temática<em>3</em></button><button class="chip">Evangelística<em>2</em></button>
+    </div>
+    <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center">
+      <div class="seg"><button class="active">▦ Galeria</button><button>☰ Lista</button></div>
+      <span class="tag">PREGAÇÃO EXPOSITIVA</span><span class="tag">CONFERÊNCIA</span>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="cartoes">
+  <div class="sec-head"><span class="num">08</span><h2>Cartões</h2><span class="hint">painel + hairline + sombra profunda</span></div>
+  <div class="demo-grid">
+    <div class="stat"><div class="stat-number">24</div><span class="label-mono">Estatística · barra accent + filete gold</span></div>
+    <div class="card hover"><div class="subtitle">Cartão com hover</div><p class="muted" style="margin:8px 0 0;font-size:13.5px">Passe o mouse: elevação de 4px, borda accent e glow radial — receita usada nos cartões da biblioteca.</p></div>
+    <div class="sidebox"><h3>Caixa lateral</h3><span class="muted" style="font-size:13px">Painel radius 14 · título serif 16px · usado para controles auxiliares.</span></div>
+    <div class="section-block"><strong>SEÇÃO · 01</strong><p class="muted" style="margin:8px 0 0;font-size:13.5px">Bloco de conteúdo do editor: fundo translúcido, borda hairline, título mono espaçado.</p></div>
+  </div>
+  <div class="empty" style="margin-top:16px"><div class="big">✦</div><b style="font:600 21px var(--serif);color:var(--text)">Estado vazio</b><p class="muted" style="margin:6px 0 0">Borda tracejada accent · fundo painel · ícone caramelo</p></div>
+</section>
+
+<section class="sec" id="feedback">
+  <div class="sec-head"><span class="num">09</span><h2>Feedback</h2><span class="hint">toast dourado · status com glow</span></div>
+  <div class="demo-row">
+    <span class="status"><i class="dot"></i> Salvo neste dispositivo</span>
+    <button class="btn gold" id="toastDemo">✦ Mostrar toast</button>
+    <span class="status"><i class="dot" style="background:#F3D8B8;box-shadow:0 0 8px #F3D8B8"></i> Salvando… (creme)</span>
+    <span class="status"><i class="dot" style="background:var(--danger);box-shadow:0 0 8px var(--danger)"></i> Erro (danger)</span>
+  </div>
+</section>
+
+<section class="sec" id="pulpito">
+  <div class="sec-head"><span class="num">10</span><h2>Púlpito · modo Cyber</h2><span class="hint">acento #00E5FF · não alterar</span></div>
+  <p class="muted" style="margin:0 0 16px;font-size:13.5px">O modo de apresentação usa uma identidade própria: ciano elétrico sobre azul-noite, grade sutil de 42px, Space Grotesk nos títulos e sem grain. Não substitui o tema caramelo — convive com ele.</p>
+  <div class="cyber cyber-demo">
+    <div class="kicker">Abertura</div>
+    <h3 class="heading-underline" style="position:relative">Modo Apresentação</h3>
+    <div class="pills"><span class="pill">Pregação expositiva</span><span class="pill">07/11/2026</span></div>
+    <div style="margin-top:20px;position:relative"><button class="ctl">← Anterior</button> <button class="ctl">Próximo →</button></div>
+    <div class="watermark">01</div>
+  </div>
+  <div class="grid-sw" style="margin-top:16px" data-theme-block="cyber"></div>
+</section>
+
+<section class="sec" id="regras">
+  <div class="sec-head"><span class="num">11</span><h2>Regras de uso</h2><span class="hint">as 12 leis da skin</span></div>
+  <ul class="rule-list">
+    <li><b>Caramelo #CF9D7B é o acento</b> — destaques, bordas ativas, ícones e eyebrow; nunca em fundos grandes.</li>
+    <li><b>Creme #F3D8B8 (accent2)</b> para números e títulos de valor sobre painéis escuros.</li>
+    <li><b>Gradiente gold sempre com texto em --ink</b> por cima (contraste garantido).</li>
+    <li><b>Teal-noite #0C1519</b> é fundo da página e também o "ink" sobre superfícies douradas.</li>
+    <li><b>JetBrains Mono sempre em CAIXA ALTA</b> com letter-spacing .16em–.3em para labels e metadados.</li>
+    <li><b>Bebas Neue para títulos grandes; DM Sans para corpo</b> — nunca trocar as famílias de lugar.</li>
+    <li><b>Hairlines usam o acento com 15–22% de alpha</b> — nunca cinza puro.</li>
+    <li><b>Hover sempre eleva</b>: translateY negativo + sombra mais profunda + borda accent 55%.</li>
+    <li><b>Grain de filme na camada mais alta</b> (z 9999, pointer-events none); desligar no modo apresentação.</li>
+    <li><b>Modo apresentação</b>: acento #00E5FF, fundo #04060a, grade sutil de 42px e sem grain.</li>
+    <li><b>Radius</b>: 12px padrão, 16px cartões grandes, 999px pílulas.</li>
+    <li><b>Tema claro</b>: accent vira #A9713F e accent2 #724B39 — mesma estrutura de tokens.</li>
+  </ul>
+</section>
+
+<section class="sec" id="aplicar">
+  <div class="sec-head"><span class="num">12</span><h2>Como aplicar no seu app</h2><span class="hint">3 passos · toque para copiar</span></div>
+  <div class="field"><label>Passo 1 · Fontes ( cole no &lt;head&gt; )</label></div>
+  <div class="codeblock" data-copy-text><button class="btn small copy">⧉ Copiar</button><pre>&lt;link rel="preconnect" href="https://fonts.googleapis.com"&gt;
+&lt;link rel="preconnect" href="https://fonts.gstatic.com" crossorigin&gt;
+&lt;link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&amp;family=DM+Sans:ital,opsz,wght@0,9..40,200;0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,300&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@300;400;500;600;700&amp;family=Space+Grotesk:wght@400;500;600;700&amp;display=swap" rel="stylesheet"&gt;</pre></div>
+  <div class="field" style="margin-top:22px"><label>Passo 2 · Tokens + componentes ( importe o CSS pronto )</label></div>
+  <div class="codeblock" data-copy-text><button class="btn small copy">⧉ Copiar</button><pre>&lt;link rel="stylesheet" href="skin-sermon-workspace.css"&gt;
+&lt;!-- ou cole direto o conteúdo do arquivo no seu &lt;style&gt; --&gt;
+
+&lt;!-- tema claro: basta trocar o atributo no &lt;html&gt; --&gt;
+&lt;html lang="pt-BR" data-theme="light"&gt;</pre></div>
+  <div class="field" style="margin-top:22px"><label>Passo 3 · Use as classes</label></div>
+  <div class="codeblock" data-copy-text><button class="btn small copy">⧉ Copiar</button><pre>&lt;button class="btn gold"&gt;＋ Criar&lt;/button&gt;
+&lt;button class="btn"&gt;Cancelar&lt;/button&gt;
+
+&lt;div class="card hover"&gt;
+  &lt;div class="eyebrow"&gt;Novo registro&lt;/div&gt;
+  &lt;h3 class="title"&gt;Título do cartão&lt;/h3&gt;
+  &lt;p class="muted"&gt;Descrição em DM Sans 15px.&lt;/p&gt;
+&lt;/div&gt;
+
+&lt;div class="field"&gt;
+  &lt;label&gt;Nome do campo&lt;/label&gt;
+  &lt;input placeholder="Digite aqui…"&gt;
+&lt;/div&gt;
+
+&lt;span class="status"&gt;&lt;i class="dot"&gt;&lt;/i&gt; Salvo&lt;/span&gt;
+
+&lt;!-- modo apresentação: contêiner com position:relative/fixa --&gt;
+&lt;section class="cyber" style="position:relative"&gt;
+  &lt;div class="kicker"&gt;Abertura&lt;/div&gt;
+  &lt;h1 class="heading-underline"&gt;Título&lt;/h1&gt;
+  &lt;span class="pill"&gt;Etiqueta&lt;/span&gt;
+&lt;/section&gt;</pre></div>
+  <p class="muted" style="font-size:13px;margin-top:16px">Arquivos desta skin: <b>skin-sermon-workspace.json</b> (tokens completos para ler por código), <b>skin-sermon-workspace.css</b> (estilos prontos) e este guia.</p>
+</section>
+
+<div class="foot"><span>Sermon Workspace · Skin 'Onde Passei' v1.0</span><span>Teal-noite · Caramelo · Grain · Glow</span></div>
+</main>
+<div id="toastBox" class="toast" style="display:none"></div>
+<script>
+(()=>{
+const DARK=[['--bg','#0C1519','fundo da página'],['--panel','#162127','painéis/cards'],['--panel2','#1C2A31','painel elevado'],['--text','#E8E8E8','texto principal'],['--muted','#8A8A8A','texto secundário'],['--accent','#CF9D7B','acento caramelo'],['--accent2','#F3D8B8','creme · valores'],['--ink','#0C1519','texto sobre dourado'],['--danger','#e08060','erro'],['--ok','#81C784','sucesso'],['--warn','#FFB74D','alerta'],['--line','rgba(207,157,123,.15)','hairline']];
+const LIGHT=[['--bg','#F3ECE1','fundo da página'],['--panel','#FBF7EF','painéis/cards'],['--panel2','#EAE0D1','painel elevado'],['--text','#2A211A','texto principal'],['--muted','#8A7E70','texto secundário'],['--accent','#A9713F','acento siena'],['--accent2','#724B39','bronze · valores'],['--ink','#F8F2EA','texto sobre dourado'],['--danger','#C25A3C','erro'],['--ok','#3E7D4F','sucesso'],['--warn','#A86A12','alerta'],['--line','rgba(114,75,57,.22)','hairline']];
+const CYBER=[['--sc','#00E5FF','acento ciano'],['fundo','#04060a','fundo da tela'],['texto','#e8ecf4','texto do slide'],['grade','#ffffff07','linhas 42px'],['claro','#f4f7fb','variante clara']];
+const PAIRS=[['#0C1519','#724B39'],['#101a21','#8a5a3c'],['#131d24','#a8765a'],['#0b1216','#5c3a2e'],['#162127','#CF9D7B'],['#0f181d','#b98a5f']];
+const sw=(v,h,use)=>`<div class="sw-card" data-copy="${h}"><div class="sw-color" style="background:${h};${h==='rgba(207,157,123,.15)'||h==='rgba(114,75,57,.22)'||h==='#ffffff07'?'border-bottom:1px solid #0000002e':''}"></div><div class="sw-info"><b>${v}</b><span>${use}</span><i>${h}</i></div></div>`;
+document.querySelector('[data-theme-block="dark"]').innerHTML=DARK.map(x=>sw(x[0],x[1],x[2])).join('');
+document.querySelector('[data-theme-block="light"]').innerHTML=LIGHT.map(x=>sw(x[0],x[1],x[2])).join('');
+document.querySelector('[data-theme-block="cyber"]').innerHTML=CYBER.map(x=>sw(x[0],x[1],x[2])).join('');
+document.querySelector('#coverPairs').innerHTML=PAIRS.map((p,i)=>`<div class="sw-card" data-copy="linear-gradient(135deg,${p[0]},${p[1]})"><div class="sw-color" style="background:linear-gradient(135deg,${p[0]},${p[1]})"></div><div class="sw-info"><b>Par ${String(i+1).padStart(2,'0')}</b><span>${p[0]} → ${p[1]}</span><i>toque para copiar</i></div></div>`).join('');
+let tT=null;
+function toast(m){const t=document.querySelector('#toastBox');t.textContent=m;t.style.display='block';clearTimeout(tT);tT=setTimeout(()=>t.style.display='none',2200)}
+function copy(txt){if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(()=>toast('Copiado: '+txt),()=>fallback(txt))}else fallback(txt)}
+function fallback(txt){const i=document.createElement('textarea');i.value=txt;document.body.appendChild(i);i.select();try{document.execCommand('copy');toast('Copiado: '+txt)}catch(e){toast(txt)}i.remove()}
+document.addEventListener('click',e=>{const c=e.target.closest('[data-copy]');if(c){copy(c.dataset.copy);return}const cb=e.target.closest('.codeblock');if(cb&&!e.target.closest('.copy')){copy(cb.querySelector('pre').textContent.trim())}});
+document.querySelectorAll('.copy').forEach(b=>b.onclick=e=>{e.stopPropagation();copy(b.closest('.codeblock').querySelector('pre').textContent.trim())});
+const root=document.documentElement;
+function setTheme(t){root.dataset.theme=t;try{localStorage.setItem('skin-guide-theme',t)}catch(e){}}
+try{const saved=localStorage.getItem('skin-guide-theme');if(saved)setTheme(saved)}catch(e){}
+document.querySelector('#themeBtn').onclick=()=>{const t=root.dataset.theme==='dark'?'light':'dark';setTheme(t);toast('Tema '+(t==='dark'?'escuro':'claro')+' ativado')};
+document.querySelector('#grainBtn').onclick=()=>{document.body.classList.toggle('no-grain');toast(document.body.classList.contains('no-grain')?'Grain desligado':'Grain de filme ligado')};
+})();
+</script>
+</body>
+</html>
